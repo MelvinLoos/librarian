@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from './prisma.service';
 
+process.env.DATABASE_URL = 'file:./test.db';
+
 describe('PrismaService', () => {
   let service: PrismaService;
 
