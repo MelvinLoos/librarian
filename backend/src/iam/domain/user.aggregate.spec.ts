@@ -13,7 +13,7 @@ describe('User Aggregate Root', () => {
   beforeEach(() => {
     email = EmailAddress.create('test@example.com');
     password = HashedPassword.create('secure-hash');
-    role = Role.create('Reader');
+    role = Role.create('READER');
   });
 
   describe('create', () => {
@@ -55,7 +55,7 @@ describe('User Aggregate Root', () => {
       const user = User.create('123', email, password, role);
       user.clearEvents();
 
-      const newRole = Role.create('Admin');
+      const newRole = Role.create('ADMIN');
       user.changeRole(newRole);
 
       expect(user.role.equals(newRole)).toBe(true);
@@ -65,15 +65,15 @@ describe('User Aggregate Root', () => {
       const event = events[0] as UserRoleChangedEvent;
       expect(event).toBeInstanceOf(UserRoleChangedEvent);
       expect(event.userId).toBe('123');
-      expect(event.oldRole).toBe('Reader');
-      expect(event.newRole).toBe('Admin');
+      expect(event.oldRole).toBe('READER');
+      expect(event.newRole).toBe('ADMIN');
     });
 
     it('should not add an event if the new role is the same as the current role', () => {
       const user = User.create('123', email, password, role);
       user.clearEvents();
 
-      const sameRole = Role.create('Reader');
+      const sameRole = Role.create('READER');
       user.changeRole(sameRole);
 
       expect(user.domainEvents.length).toBe(0);
