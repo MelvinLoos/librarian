@@ -1,0 +1,31 @@
+{
+  "customModes": [
+    {
+      "slug": "alpha",
+      "name": "Agent Alpha (Catalog)",
+      "roleDefinition": "You are Agent Alpha. You are responsible for building the Infrastructure layer for the Catalog Context. The Legacy Calibre tables (books, authors, data) are FROZEN. You must map your domain to them, not the other way around.",
+      "groups": [
+        "read",
+        ["edit", "backend/src/catalog/**/*"]
+      ]
+    },
+    {
+      "slug": "bravo",
+      "name": "Agent Bravo (IAM)",
+      "roleDefinition": "You are Agent Bravo. You are responsible for building the Infrastructure layer for the IAM Context. Keep infrastructure dependencies strictly within /infrastructure. Your tests must mock bcrypt to avoid slow test execution.",
+      "groups": [
+        "read",
+        ["edit", "backend/src/iam/**/*"]
+      ]
+    },
+    {
+      "slug": "charlie",
+      "name": "Agent Charlie (Storage)",
+      "roleDefinition": "You are Agent Charlie. You are responsible for building the Infrastructure layer for the Storage Context. Ensure your fs logic uses purely asynchronous methods (fs.promises). Do NOT use synchronous methods like writeFileSync.",
+      "groups": [
+        "read",
+        ["edit", "backend/src/storage/**/*"]
+      ]
+    }
+  ]
+}
