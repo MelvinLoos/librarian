@@ -1,64 +1,85 @@
-datasource db {  
-  provider \= "sqlite"  
-  url      \= env("DATABASE\_URL")  
-}  
-generator client {  
-  provider \= "prisma-client-js"  
+// schema.prisma
+
+datasource db {
+  provider = "sqlite"
 }
 
-// \--- 1\. IAM CONTEXT (Librarian Specific \- Managed by Migrations) \---  
-model User {  
-  id           String   @id @default(uuid())  
-  email        String   @unique  
-  passwordHash String  
-  role         String   @default("READER")  
-  createdAt    DateTime @default(now())  
-  @@map("librarian\_users")  
+generator client {
+  provider = "prisma-client-js"
 }
 
-// \--- 2\. CATALOG & STORAGE CONTEXTS (Legacy Calibre Mapping \- FROZEN) \---  
-model Book {  
-  id           Int       @id @default(autoincrement())  
-  title        String    @default("Unknown")  
-  sort         String?  
-  timestamp    DateTime? @default(now())  
-  pubdate      DateTime?  
-  seriesIndex  Float?    @default(1.0) @map("series\_index")  
-  authorSort   String?   @map("author\_sort")  
-  uuid         String?  
-  hasCover     Boolean?  @default(false) @map("has\_cover")  
-  lastModified DateTime  @default(now()) @updatedAt @map("last\_modified")
+// ---------------------------------------------------------------------------
+// 1. IAM CONTEXT (Librarian Specific Tables - Managed by Prisma Migrations)
+// ---------------------------------------------------------------------------
 
-  authors      BookAuthorLink\[\]  
-  formats      Data\[\]  
-  @@map("books")  
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("READER") // ADMIN, CONTRIBUTOR, READER
+  createdAt    DateTime @default(now())
+  
+  @@map("librarian_users")
 }
 
-model Author {  
-  id    Int    @id @default(autoincrement())  
-  name  String  
-  sort  String?  
-  link  String?  
-  books BookAuthorLink\[\]  
-  @@map("authors")  
+// ---------------------------------------------------------------------------
+// 2. CATALOG CONTEXT (Legacy Calibre Mapping - FROZEN SCHEMA)
+// ---------------------------------------------------------------------------
+
+model Book {
+  id           Int       @id @default(autoincrement())
+  title        String    @default("Unknown")
+  sort         String?
+  timestamp    DateTime? @default(now())
+  pubdate      DateTime?
+  seriesIndex  Float?    @default(1.0) @map("series_index")
+  authorSort   String?   @map("author_sort")
+  uuid         String?
+  hasCover     Boolean?  @default(false) @map("has_cover")
+  lastModified DateTime  @default(now()) @updatedAt @map("last_modified")
+
+  // Relationships mapping to Calibre Link Tables
+  authors      BookAuthorLink[]
+  formats      Data[]
+
+  @@map("books")
 }
 
-model BookAuthorLink {  
-  id       Int @id @default(autoincrement())  
-  bookId   Int @map("book")  
-  authorId Int @map("author")  
-  book     Book   @relation(fields: \[bookId\], references: \[id\], onDelete: Cascade)  
-  author   Author @relation(fields: \[authorId\], references: \[id\], onDelete: Cascade)  
-  @@unique(\[bookId, authorId\])  
-  @@map("books\_authors\_link")  
+model Author {
+  id    Int    @id @default(autoincrement())
+  name  String
+  sort  String?
+  link  String?
+
+  books BookAuthorLink[]
+
+  @@map("authors")
 }
 
-model Data {  
-  id               Int    @id @default(autoincrement())  
-  bookId           Int    @map("book")  
-  format           String   
-  uncompressedSize Int    @map("uncompressed\_size")  
-  name             String   
-  book             Book   @relation(fields: \[bookId\], references: \[id\], onDelete: Cascade)  
-  @@map("data")  
+model BookAuthorLink {
+  id       Int @id @default(autoincrement())
+  bookId   Int @map("book")
+  authorId Int @map("author")
+
+  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  author   Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, authorId])
+  @@map("books_authors_link")
+}
+
+// ---------------------------------------------------------------------------
+// 3. STORAGE CONTEXT (Legacy Calibre Mapping - FROZEN SCHEMA)
+// ---------------------------------------------------------------------------
+
+model Data {
+  id               Int    @id @default(autoincrement())
+  bookId           Int    @map("book")
+  format           String 
+  uncompressedSize Int    @map("uncompressed_size")
+  name             String 
+
+  book             Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("data")
 }
