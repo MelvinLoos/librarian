@@ -2,6 +2,8 @@
 
 datasource db {
   provider = "sqlite"
+  // In Prisma 7+, the url property is removed from here.
+  // Connection strings are now managed via prisma.config.ts or the PrismaClient constructor.
 }
 
 generator client {
