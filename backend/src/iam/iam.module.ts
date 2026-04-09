@@ -4,15 +4,35 @@ import { AuthenticateUserUseCase } from './application/use-cases/authenticate-us
 import { UserController } from './presentation/user.controller';
 import { AuthController } from './presentation/auth.controller';
 
+import { IUserRepository } from './application/ports/user.repository.interface';
+import { User } from './domain/user.aggregate';
+import { EmailAddress } from './domain/value-objects/email-address.value-object';
+
+class InMemoryUserRepository implements IUserRepository {
+  private users: Map<string, User> = new Map();
+
+  async save(user: User): Promise<void> {
+    this.users.set(user.id, user);
+  }
+
+  async findByEmail(email: EmailAddress): Promise<User | null> {
+    return Array.from(this.users.values()).find(u => u.email.value === email.value) || null;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.users.get(id) || null;
+  }
+}
+
 @Module({
   controllers: [UserController, AuthController],
   providers: [
     RegisterUserUseCase,
     AuthenticateUserUseCase,
-    // Note: IUserRepository is not provided here yet because we don't have an infrastructure implementation.
-    // It will be provided by the Infrastructure layer in a real scenario.
-    // However, to make the module "valid" for NestJS if it were to start, 
-    // we would need to provide a mock repository here.
+    {
+      provide: IUserRepository,
+      useClass: InMemoryUserRepository,
+    },
   ],
   exports: [RegisterUserUseCase, AuthenticateUserUseCase],
 })
