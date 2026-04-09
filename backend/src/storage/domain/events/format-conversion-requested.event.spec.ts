@@ -9,5 +9,7 @@ describe('FormatConversionRequestedEvent', () => {
 
     expect(event.assetId).toBe('asset-123');
     expect(event.targetMimeType).toBe('application/pdf');
+    expect(event.occurredOn).toBeInstanceOf(Date);
+    expect(event.getName()).toBe('FormatConversionRequestedEvent');
   });
 });

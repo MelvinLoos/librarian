@@ -1,13 +1,17 @@
-import { DomainEvent } from './domain-event.interface';
+import { DomainEvent } from '../../../shared/domain/domain-event';
 
 export class UserRoleChangedEvent implements DomainEvent {
-  public readonly occurredAt: Date;
+  public readonly occurredOn: Date;
 
   constructor(
     public readonly userId: string,
     public readonly oldRole: string,
     public readonly newRole: string
   ) {
-    this.occurredAt = new Date();
+    this.occurredOn = new Date();
+  }
+
+  getName(): string {
+    return 'UserRoleChangedEvent';
   }
 }

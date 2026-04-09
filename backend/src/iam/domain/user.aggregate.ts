@@ -1,7 +1,7 @@
 import { EmailAddress } from './value-objects/email-address.value-object';
 import { HashedPassword } from './value-objects/hashed-password.value-object';
 import { Role } from './value-objects/role.value-object';
-import { DomainEvent } from './events/domain-event.interface';
+import { DomainEvent } from '../../shared/domain/domain-event';
 import { UserRegisteredEvent } from './events/user-registered.event';
 import { UserRoleChangedEvent } from './events/user-role-changed.event';
 
@@ -13,7 +13,7 @@ export class User {
     private _email: EmailAddress,
     private _password: HashedPassword,
     private _role: Role
-  ) {}
+  ) { }
 
   public static create(id: string, email: EmailAddress, password: HashedPassword, role: Role): User {
     const user = new User(id, email, password, role);

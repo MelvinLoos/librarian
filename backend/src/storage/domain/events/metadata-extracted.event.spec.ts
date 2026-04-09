@@ -11,6 +11,8 @@ describe('MetadataExtractedEvent', () => {
     expect(event.assetId).toBe('asset-123');
     expect(event.metadata).toEqual({ title: 'My Book', author: 'Author' });
     expect(event.bookId).toBe(1);
+    expect(event.occurredOn).toBeInstanceOf(Date);
+    expect(event.getName()).toBe('MetadataExtractedEvent');
   });
 
   it('should create a MetadataExtractedEvent without a bookId', () => {
@@ -22,5 +24,7 @@ describe('MetadataExtractedEvent', () => {
     expect(event.assetId).toBe('asset-123');
     expect(event.metadata).toEqual({ title: 'My Book', author: 'Author' });
     expect(event.bookId).toBeUndefined();
+    expect(event.occurredOn).toBeInstanceOf(Date);
+    expect(event.getName()).toBe('MetadataExtractedEvent');
   });
 });

@@ -1,7 +1,7 @@
 import { FilePath } from './value-objects/file-path.value-object';
 import { MimeType } from './value-objects/mime-type.value-object';
 import { ByteSize } from './value-objects/byte-size.value-object';
-import { DomainEvent } from './events/domain-event.interface';
+import { DomainEvent } from '../../shared/domain/domain-event';
 import { AssetUploadedEvent } from './events/asset-uploaded.event';
 import { MetadataExtractedEvent } from './events/metadata-extracted.event';
 import { FormatConversionRequestedEvent } from './events/format-conversion-requested.event';
@@ -18,7 +18,7 @@ export class Asset {
     private _mimeType: MimeType,
     private _byteSize: ByteSize,
     private _bookId?: number
-  ) {}
+  ) { }
 
   public static upload(
     id: string,

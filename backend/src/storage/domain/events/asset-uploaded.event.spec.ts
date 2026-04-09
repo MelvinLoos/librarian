@@ -13,5 +13,7 @@ describe('AssetUploadedEvent', () => {
     expect(event.filePath).toBe('books/1.epub');
     expect(event.mimeType).toBe('application/epub+zip');
     expect(event.byteSize).toBe(1024);
+    expect(event.occurredOn).toBeInstanceOf(Date);
+    expect(event.getName()).toBe('AssetUploadedEvent');
   });
 });
