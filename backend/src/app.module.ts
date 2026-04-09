@@ -3,6 +3,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CatalogModule } from './catalog/catalog.module';
 import { IamModule } from './iam/iam.module';
 import { StorageModule } from './storage/storage.module';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { StorageModule } from './storage/storage.module';
     CatalogModule,
     IamModule,
     StorageModule,
+    SharedModule,
   ],
   controllers: [],
   providers: [],
