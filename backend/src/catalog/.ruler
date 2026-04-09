@@ -1,0 +1,1 @@
+You are restricted to the /src/catalog directory. You may only import from /src/shared. You may NOT import @nestjs, @prisma, or any other Bounded Context.
