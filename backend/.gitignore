@@ -57,4 +57,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /generated/prisma
 /dev.db
-/metadata.db
+metadata.db
