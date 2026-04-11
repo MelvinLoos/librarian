@@ -1,0 +1,24 @@
+{
+  "name": "librarian",
+  "version": "1.0.0",
+  "description": "Librarian is a modern, mobile-first, self-hostable web application designed for eBook and document management. Conceived as a clean-architecture replacement for `calibre-web`, it is optimized for personal and home-lab deployments.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -c \"cyan.bold,magenta.bold\" -n \"NUXT,NEST\" \"npm run dev --prefix frontend\" \"npm run start:dev --prefix backend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MelvinLoos/librarian.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MelvinLoos/librarian/issues"
+  },
+  "homepage": "https://github.com/MelvinLoos/librarian#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
