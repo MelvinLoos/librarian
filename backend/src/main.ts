@@ -6,7 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable global validation using the class-validator DTOs the agents built
+  // Enable global validation using the class-validator DTOs
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   
   // Enable CORS for the upcoming Nuxt 3 frontend
@@ -15,7 +15,7 @@ async function bootstrap() {
   // Setup OpenAPI / Swagger
   const config = new DocumentBuilder()
     .setTitle('Librarian API')
-    .setDescription('The Next-Gen Calibre REST API')
+    .setDescription('The Next-Gen Calibre REST API for managing eBook collections')
     .setVersion('1.0')
     .addBearerAuth() // Sets up the JWT input box in the UI
     .build();
