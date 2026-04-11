@@ -4,6 +4,7 @@ import { CatalogModule } from './catalog/catalog.module';
 import { IamModule } from './iam/iam.module';
 import { StorageModule } from './storage/storage.module';
 import { SharedModule } from './shared/shared.module';
+import { AssetModule } from './assets/asset.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { SharedModule } from './shared/shared.module';
     IamModule,
     StorageModule,
     SharedModule,
+    AssetModule
   ],
   controllers: [],
   providers: [],

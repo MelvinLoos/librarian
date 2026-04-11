@@ -50,6 +50,7 @@ model Book {
   uuid         String?
   hasCover     Boolean?  @default(false) @map("has_cover")
   lastModified DateTime  @default(now()) @updatedAt @map("last_modified")
+  path         String?
 
   // Relationships mapping to Calibre Link Tables
   authors      BookAuthorLink[]

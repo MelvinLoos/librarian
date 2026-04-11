@@ -23,6 +23,7 @@ export interface BookProps {
   shelves?: Shelf[];
   rating?: Rating;
   identifiers?: Identifier[];
+  path?: string;
 }
 
 export class Book extends AggregateRoot<BookProps> {

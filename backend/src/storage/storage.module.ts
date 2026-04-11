@@ -5,6 +5,7 @@ import { AssetController } from './presentation/asset.controller';
 import { UploadAssetUseCase } from './application/use-cases/upload-asset.use-case';
 import { PrismaAssetRepository } from './infrastructure/prisma-asset.repository';
 import { LocalFileStorage } from './infrastructure/local-file.storage';
+import { PrismaLegacyBookRepository } from './infrastructure/prisma-legacy-book.repository';
 
 @Module({
   imports: [SharedModule, EventEmitterModule.forRoot()],
@@ -14,6 +15,10 @@ import { LocalFileStorage } from './infrastructure/local-file.storage';
     {
       provide: 'IAssetRepository',
       useClass: PrismaAssetRepository,
+    },
+    {
+      provide: 'ILegacyBookRepository',
+      useClass: PrismaLegacyBookRepository,
     },
     {
       provide: 'IFileStorage',
