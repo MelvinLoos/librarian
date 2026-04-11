@@ -11,7 +11,9 @@
 3. **Testing:** **EVERY single endpoint and service method MUST have corresponding tests** in `[name].controller.spec.ts` and `[name].service.spec.ts`. You must use `@nestjs/testing` to mock the `PrismaService` and assert that the correct data is returned and correct methods are called.
     
 4. **Error Handling:** Use standard NestJS exceptions (`NotFoundException`, `BadRequestException`) if records are missing or query parameters are invalid. Tests must cover these failure states.
-    
+
+5. **API Documentation:** The API MUST be a first-class citizen. Every Controller method must be decorated with `@ApiOperation`, `@ApiResponse`, and `@ApiTags`. Every DTO property must be decorated with `@ApiProperty` including an `example` and `description`. All endpoints requiring JWTs must be decorated with `@ApiBearerAuth()`.
+
 
 ## Step 1: Schema Updates (Reading Progress)
 

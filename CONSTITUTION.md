@@ -39,6 +39,7 @@ AI Agents contributing to this repository must strictly adhere to the following 
 ## **6\. The API Contract & Observability Rules**
 
 * **API Contracts:** The API must be documented using OpenAPI (Swagger).  
+* **API Documentation:** The API MUST be a first-class citizen. Every Controller method must be decorated with `@ApiOperation`, `@ApiResponse`, and `@ApiTags`. Every DTO property must be decorated with `@ApiProperty` including an `example` and `description`. All endpoints requiring JWTs must be decorated with `@ApiBearerAuth()`.
 * **Standardized Errors:** All API errors MUST conform to **RFC 7807 (Problem Details for HTTP APIs)**.  
 * **Structured Logging:** console.log is forbidden. All logging must be structured JSON emitting { level, message, timestamp, context, traceId }.
 
