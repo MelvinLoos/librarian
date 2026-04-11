@@ -24,6 +24,17 @@ model User {
   @@map("librarian_users")
 }
 
+model LibrarianReadingProgress {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  bookId      Int
+  currentPage Int      @default(0)
+  totalPages  Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, bookId])
+}
+
 // ---------------------------------------------------------------------------
 // 2. CATALOG CONTEXT (Legacy Calibre Mapping - FROZEN SCHEMA)
 // ---------------------------------------------------------------------------
