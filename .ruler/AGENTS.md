@@ -1,77 +1,117 @@
-# Sprint 3: The Infrastructure Layer & External I/O
+# Sprint 4: The Nuxt 3 Frontend (Premium "Netflix-Style" UI)
 
-In this sprint, agents will implement the actual database repositories, file system adapters, and Anti-Corruption Layers (ACL).
+In this sprint, the AI will scaffold the progressive web app (PWA) sequentially using Nuxt 3, Vue 3, and TailwindCSS. The UI must strictly follow our UI/UX research: dark mode by default, highly visual, edge-to-edge mobile designs, and cinematic detail views.
 
-**CRITICAL RULES FOR ALL AGENTS (PARALLEL EXECUTION SAFEGUARDS):**
+**CRITICAL RULES FOR ALL STEPS (READ CAREFULLY):**
 
-1. **NO PACKAGE MUTATIONS:** The human operator has already installed all required packages (including `bcrypt`). You are strictly forbidden from running `npm install` or modifying `package.json`.
+1. **NO NPM INSTALLS:** Tailwind, Pinia, Lucide, `@nuxt/image`, `@vueuse/nuxt`, `vue-sonner`, `vitest`, and PWA modules are already installed. Do not run `npm install` or edit `package.json` or `nuxt.config.ts`.
     
-2. **THE SHARED MODULE EXISTS:** The operator has already created `/backend/src/shared/infrastructure/prisma.service.ts` and exported it from `SharedModule`. You can safely import and inject `PrismaService` without TypeScript errors.
+2. **VUE 3 STRICT MODE:** You MUST use `<script setup lang="ts">` for all components. Do not use the Options API.
     
-3. **MOCK ALL I/O IN TESTS:** You must test your infrastructure classes using Jest mocks.
+3. **SPA ROUTING & IMAGES:** * Use `<NuxtLink>` for all internal navigation. Do NOT use standard `<a>` tags.
     
-    - Mock the file system: `jest.mock('fs/promises')`
+    - Use `<NuxtImg>` for all book covers to ensure automatic WebP optimization. Do NOT use standard `<img>` tags.
         
-    - Mock the database: Inject a mocked `PrismaService` in your `.spec.ts` files using `{ provide: PrismaService, useValue: { ...mockedMethods } }`. Do NOT connect to the actual SQLite database in your tests.
+4. **TESTING:** Every complex component or page MUST have a corresponding `.spec.ts` file using `@vue/test-utils` and `vitest`.
+    
+5. **COLOR PALETTE:** Use `bg-gray-950` or `bg-[#0a0a0a]` for the background. Use `text-gray-200` for primary text. Accent colors should be `violet-600` for primary actions.
+    
+
+## Step 1: Core Layout, IAM (Auth), & Settings
+
+**Target Directory:** `/frontend/`
+
+**Context:** You are responsible for the application shell, global navigation, RBAC state, and user settings.
+
+**Objective:**
+
+1. **State & RBAC:** Create `/stores/auth.ts` using Pinia. It must manage the JWT, user state, and provide getter functions like `isAdmin` and `isReader` based on the user's role.
+    
+2. **Mobile-First Layout:** Create `/layouts/default.vue`.
+    
+    - **Desktop (md+):** Collapsible left sidebar (`w-64 border-r border-gray-800/50 bg-gray-950`).
         
-4. **IMPORTS:** You may now import `@nestjs/common`, `@prisma/client`, `bcrypt`, and standard Node.js libraries ONLY inside the `/infrastructure` folders.
+    - **Mobile (<md):** Fixed bottom tab bar (`fixed bottom-0 left-0 w-full bg-gray-950/90 backdrop-blur-md border-t border-gray-800 z-50`). Add `pb-6` to the tab bar for iOS safe areas. The main content `<slot />` needs `pb-24`.
+        
+    - **Global Search:** Add a visually prominent, glassmorphic search input in the top header (desktop) or a dedicated search tab (mobile). Bind this input to a global search state.
+        
+    - **RBAC Enforcement:** Wrap the "Admin/Upload" navigation link in a `v-if="authStore.isAdmin"` directive so regular readers never see it.
+        
+3. **Global Toaster:** In `app.vue`, import the `Toaster` component from `vue-sonner` and place it alongside `<NuxtLayout>`. Set its theme to `dark`.
+    
+4. **Pages:**
+    
+    - `/pages/login.vue` & `/pages/register.vue`: Glassmorphic centered cards (`bg-gray-900/50 border border-gray-800 rounded-2xl p-8 backdrop-blur-sm max-w-md w-full`). Use `toast.success()` on success.
+        
+    - `/pages/settings.vue`: A simple profile page where the user can view their Role, Email, and a placeholder area for "Personal OPDS Feed URL".
+        
+5. **Tests:** Create `layouts/default.spec.ts` to verify the Admin link only renders when the Pinia store role is ADMIN.
     
 
-## Agent Alpha: Catalog Context
+**Strict Constraints:** Do not touch `/pages/index.vue`.
 
-**Target Directory:** `/backend/src/catalog/`
+## Step 2: Catalog, Discovery, & Search
 
-**Context:** Read the Spec Kit. You are building the Infrastructure layer for the Catalog Context.
+**Target Directory:** `/frontend/`
+
+**Context:** You are responsible for the main library interface, incorporating live search filtering and the cinematic detail view.
 
 **Objective:**
 
-1. **The ACL Mapper:** Create `/catalog/infrastructure/legacy-acl.mapper.ts`. Map the raw Prisma models (`Book`, `Author`, `BookAuthorLink` from the legacy Calibre tables) to your pure `Book` Aggregate. Provide `toDomain()` and `toPersistence()` methods. Account for legacy fields like `author_sort` and `has_cover`.
+1. **The Book Card & Skeleton:** * `/components/BookSkeleton.vue`: Loading placeholder (`aspect-[1/1.5] bg-gray-800 animate-pulse rounded-lg`).
     
-2. **The Repository:** Create `/catalog/infrastructure/prisma-book.repository.ts` implementing `IBookRepository`. Inject `PrismaService`, query the database, and use the `LegacyAclMapper` to translate the results before returning them.
+    - `/components/BookCard.vue`: Aspect ratio `aspect-[1/1.5] bg-gray-900 overflow-hidden rounded-lg`. Use `<NuxtImg format="webp" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.05]">`. Truncate title text below the cover. Apply heavy shadows on hover.
+        
+2. **Main Grid View:** Create `/pages/index.vue`.
     
-3. **Wiring:** Update `catalog.module.ts`. Import the `SharedModule`. Replace the inline mock with `{ provide: 'IBookRepository', useClass: PrismaBookRepository }`.
+    - Fetch data using `useFetch('/api/books', { query: { search: searchQuery } })`. Watch the global search state from Step 1 to dynamically filter the grid.
+        
+    - **Grid:** `grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6`.
+        
+    - **Empty/Loading:** If pending, loop skeletons. If empty, show a centered Lucide icon with a message.
+        
+3. **Cinematic Detail View:** Create `/pages/book/[id].vue`.
+    
+    - **Ambient Background:** Blurred cover art absolutely behind the main content (`blur-3xl saturate-150 opacity-20 -z-10 object-cover w-full h-full absolute inset-0`). Add a gradient overlay (`bg-gradient-to-b from-gray-950/40 to-gray-950 absolute inset-0 -z-10`) to ensure text legibility.
+        
+    - **Metadata:** Display Title (`text-3xl md:text-5xl font-bold tracking-tight`), Author (`text-violet-400`), Tags, and Series.
+        
+    - **The Download Action:** Provide a prominent `violet-600` "Download" button. When clicked, it should trigger a native file download by pointing to `GET /api/assets/download/:bookId`.
+        
+4. **Tests:** Create `pages/index.spec.ts` to verify the grid renders skeletons when `pending` is true.
     
 
-**Strict Constraints:**
+**Strict Constraints:** Do not edit `/layouts/default.vue` or auth-related files.
 
-- The Legacy Calibre tables (`books`, `authors`, `data`) are FROZEN. You must map your domain to them, not the other way around.
-    
+## Step 3: Admin & Storage Ingestion
 
-## Agent Bravo: IAM Context
+**Target Directory:** `/frontend/`
 
-**Target Directory:** `/backend/src/iam/`
-
-**Context:** Read the Spec Kit. You are building the Infrastructure layer for the IAM Context.
+**Context:** You are responsible for the administrative actions. This page must be strictly secured.
 
 **Objective:**
 
-1. **The Repository:** Create `/infrastructure/prisma-user.repository.ts` implementing `IUserRepository`. Inject `PrismaService` and perform CRUD operations on the `librarian_users` table. Translate between the Prisma model and your `User` aggregate.
+1. **Route Protection:** Create a Nuxt middleware `/middleware/admin.ts`. It must verify `authStore.isAdmin`. If false, redirect to `/`.
     
-2. **Security:** Create `/infrastructure/bcrypt-password.hasher.ts` implementing `IPasswordHasher`. Use the standard `bcrypt` library to hash and compare passwords.
+2. **The Dropzone:** Create `/components/UploadDropzone.vue`.
     
-3. **Wiring:** Update `iam.module.ts`. Import the `SharedModule`. Replace the inline mocks with `{ provide: 'IUserRepository', useClass: PrismaUserRepository }` and `{ provide: 'IPasswordHasher', useClass: BcryptPasswordHasher }`.
+    - Massive, dashed-border dropzone (`border-2 border-dashed border-gray-700 rounded-2xl p-12 text-center cursor-pointer transition-all duration-200 hover:border-violet-500 hover:bg-violet-500/10`).
+        
+    - Use `@dragover.prevent` and `@drop.prevent` to stop native browser behavior.
+        
+    - Use `toast.promise()` or `toast.info()` from `vue-sonner` to display upload progress to `/api/assets`.
+        
+3. **Manual Entry Form:** Create `/components/ManualBookForm.vue`.
     
-
-**Strict Constraints:**
-
-- Keep infrastructure dependencies strictly within `/infrastructure`. Ensure your tests mock `bcrypt` to avoid slow test execution.
+    - Form POSTs `{ title, author }` to `/api/books`. Use `toast.success()` on completion.
+        
+4. **Admin Dashboard:** Create `/pages/admin/index.vue`.
     
-
-## Agent Charlie: Storage & Asset Context
-
-**Target Directory:** `/backend/src/storage/`
-
-**Context:** Read the Spec Kit. You are building the Infrastructure layer for the Storage Context.
-
-**Objective:**
-
-1. **File System Adapter:** Create `/infrastructure/local-file.storage.ts` implementing `IFileStorage`. Use native `fs.promises` and `path` to physically save the provided file buffer to a `.librarian/assets/` directory in the project root. Return the saved file path.
-    
-2. **The Repository:** Create `/infrastructure/prisma-asset.repository.ts` implementing `IAssetRepository`. Inject `PrismaService` and map your `Asset` metadata to the legacy `data` Prisma model.
-    
-3. **Wiring:** Update `storage.module.ts`. Import the `SharedModule`. Replace the inline mocks with your new Infrastructure classes.
+    - Apply `definePageMeta({ middleware: ['admin'] })`.
+        
+    - Display the `UploadDropzone` and `ManualBookForm` components.
+        
+5. **Tests:** Create `components/UploadDropzone.spec.ts` to ensure the component is structured properly and emits/handles drag events correctly.
     
 
-**Strict Constraints:**
-
-- Ensure your `fs` logic uses purely asynchronous methods (`fs.promises`). Do NOT use synchronous methods like `writeFileSync`.
+**Strict Constraints:** Place your pages strictly under the `/pages/admin/` directory.
