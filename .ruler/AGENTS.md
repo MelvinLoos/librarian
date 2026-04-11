@@ -64,7 +64,7 @@ In this sprint, the AI will scaffold the progressive web app (PWA) sequentially 
         
 2. **Main Grid View:** Create `/pages/index.vue`.
     
-    - Fetch data using `useFetch('/api/books', { query: { search: searchQuery } })`. Watch the global search state from Step 1 to dynamically filter the grid.
+    - Fetch data using `useFetch('/books', { query: { search: searchQuery } })`. Watch the global search state from Step 1 to dynamically filter the grid.
         
     - **Grid:** `grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6`.
         
@@ -76,7 +76,7 @@ In this sprint, the AI will scaffold the progressive web app (PWA) sequentially 
         
     - **Metadata:** Display Title (`text-3xl md:text-5xl font-bold tracking-tight`), Author (`text-violet-400`), Tags, and Series.
         
-    - **The Download Action:** Provide a prominent `violet-600` "Download" button. When clicked, it should trigger a native file download by pointing to `GET /api/assets/download/:bookId`.
+    - **The Download Action:** Provide a prominent `violet-600` "Download" button. When clicked, it should trigger a native file download by pointing to `GET /assets/download/:bookId`.
         
 4. **Tests:** Create `pages/index.spec.ts` to verify the grid renders skeletons when `pending` is true.
     
@@ -99,11 +99,11 @@ In this sprint, the AI will scaffold the progressive web app (PWA) sequentially 
         
     - Use `@dragover.prevent` and `@drop.prevent` to stop native browser behavior.
         
-    - Use `toast.promise()` or `toast.info()` from `vue-sonner` to display upload progress to `/api/assets`.
+    - Use `toast.promise()` or `toast.info()` from `vue-sonner` to display upload progress to `/assets`.
         
 3. **Manual Entry Form:** Create `/components/ManualBookForm.vue`.
     
-    - Form POSTs `{ title, author }` to `/api/books`. Use `toast.success()` on completion.
+    - Form POSTs `{ title, author }` to `/books`. Use `toast.success()` on completion.
         
 4. **Admin Dashboard:** Create `/pages/admin/index.vue`.
     
