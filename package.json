@@ -4,7 +4,8 @@
   "description": "Librarian is a modern, mobile-first, self-hostable web application designed for eBook and document management. Conceived as a clean-architecture replacement for `calibre-web`, it is optimized for personal and home-lab deployments.",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently -c \"cyan.bold,magenta.bold\" -n \"NUXT,NEST\" \"npm run dev --prefix frontend\" \"npm run start:dev --prefix backend\""
+    "dev": "concurrently -c \"cyan.bold,magenta.bold\" -n \"NUXT,NEST\" \"npm run dev --prefix frontend\" \"npm run start:dev --prefix backend\"",
+    "test": "npm run test --prefix backend && npm run test --prefix frontend"
   },
   "repository": {
     "type": "git",
