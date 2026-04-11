@@ -23,8 +23,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`Librarian API is running on: http://localhost:3000`);
-  console.log(`OpenAPI Docs available at: http://localhost:3000/api/docs`);
+  const PORT = process.env.PORT ?? 3001;
+  await app.listen(PORT);
+  console.log(`Librarian API is running on: http://localhost:` + PORT);
+  console.log(`OpenAPI Docs available at: http://localhost:` + PORT + `/api/docs`);
 }
 bootstrap();
