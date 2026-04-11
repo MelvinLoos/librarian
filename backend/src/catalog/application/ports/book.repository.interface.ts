@@ -1,7 +1,13 @@
 import { Book } from '../../domain/book.aggregate';
 
+export interface FindAllBooksParams {
+  sort?: string;
+  order?: 'asc' | 'desc';
+  limit?: number;
+}
+
 export interface IBookRepository {
   save(book: Book): Promise<void>;
   findById(id: string): Promise<Book | null>;
-  findAll(): Promise<Book[]>;
+  findAll(params?: FindAllBooksParams): Promise<Book[]>;
 }

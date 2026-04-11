@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Param, HttpStatus, HttpCode } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Query, HttpStatus, HttpCode } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CreateBookUseCase } from '../application/use-cases/create-book.use-case';
 import { GetBookUseCase } from '../application/use-cases/get-book.use-case';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -30,9 +30,16 @@ export class BookController {
 
   @Get()
   @ApiOperation({ summary: 'Get all books', description: 'Retrieves a list of all books in the catalog.' })
+  @ApiQuery({ name: 'sort', required: false, description: 'Field to sort by (e.g., "timestamp")', example: 'timestamp' })
+  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], description: 'Sort order', example: 'desc' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Limit the number of results returned', example: 10 })
   @ApiResponse({ status: 200, description: 'List of books retrieved successfully.' })
-  async findAll() {
-    const books = await this.getBookUseCase.executeAll();
+  async findAll(
+    @Query('sort') sort?: string,
+    @Query('order') order?: 'asc' | 'desc',
+    @Query('limit') limit?: number,
+  ) {
+    const books = await this.getBookUseCase.executeAll({ sort, order, limit });
     return books.map(book => ({
       id: book.id,
       title: book.props.title,

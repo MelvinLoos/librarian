@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IBookRepository } from '../application/ports/book.repository.interface';
+import { IBookRepository, FindAllBooksParams } from '../application/ports/book.repository.interface';
 import { Book } from '../domain/book.aggregate';
 import { PrismaService } from '../../shared/infrastructure/prisma.service';
 import { LegacyAclMapper, PrismaBookWithAuthors } from './legacy-acl.mapper';
@@ -19,11 +19,9 @@ export class PrismaBookRepository implements IBookRepository {
     const raw = await this.prisma.book.findUnique({
       where: { id: bookId },
       include: {
-        authors: {
-          include: {
-            author: true
-          }
-        }
+        authors: { include: { author: true } },
+        series: { include: { series: true } }, 
+        comments: true,
       }
     });
 
@@ -31,15 +29,16 @@ export class PrismaBookRepository implements IBookRepository {
     return LegacyAclMapper.toDomain(raw as PrismaBookWithAuthors);
   }
 
-  async findAll(): Promise<Book[]> {
+  async findAll(params?: FindAllBooksParams): Promise<Book[]> {
+    const { sort, order, limit } = params || {};
+
     const raws = await this.prisma.book.findMany({
+      take: limit ? Number(limit) : undefined,
+      orderBy: sort ? { [sort]: order || 'desc' } : undefined,
       include: {
-        authors: {
-          include: {
-            author: true
-          }
-        }
-      }
+        authors: { include: { author: true } },
+        tags: { include: { tag: true } },
+      },
     });
 
     return raws.map(raw => LegacyAclMapper.toDomain(raw as PrismaBookWithAuthors));

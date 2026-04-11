@@ -56,6 +56,10 @@ model Book {
   authors      BookAuthorLink[]
   formats      Data[]
 
+  tags         BookTagLink[]
+  series       BookSeriesLink[]
+  comments     Comment?
+
   @@map("books")
 }
 
@@ -96,4 +100,57 @@ model Data {
   book             Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@map("data")
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String
+
+  books BookTagLink[]
+
+  @@map("tags")
+}
+
+model BookTagLink {
+  id       Int @id @default(autoincrement())
+  bookId   Int @map("book")
+  tagId    Int @map("tag")
+
+  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, tagId])
+  @@map("books_tags_link")
+}
+
+model Series {
+  id    Int    @id @default(autoincrement())
+  name  String
+  sort  String?
+
+  books BookSeriesLink[]
+
+  @@map("series")
+}
+
+model BookSeriesLink {
+  id       Int @id @default(autoincrement())
+  bookId   Int @map("book")
+  seriesId Int @map("series")
+
+  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  series   Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, seriesId])
+  @@map("books_series_link")
+}
+
+model Comment {
+  id       Int    @id @default(autoincrement())
+  bookId   Int    @unique @map("book")
+  text     String
+
+  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
 }

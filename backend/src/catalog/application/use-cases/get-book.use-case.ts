@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Book } from '../../domain/book.aggregate';
-import type { IBookRepository } from '../ports/book.repository.interface';
+import type { IBookRepository, FindAllBooksParams } from '../ports/book.repository.interface';
 
 @Injectable()
 export class GetBookUseCase {
@@ -19,7 +19,7 @@ export class GetBookUseCase {
     return book;
   }
 
-  async executeAll(): Promise<Book[]> {
-    return this.bookRepository.findAll();
+  async executeAll(params?: FindAllBooksParams): Promise<Book[]> {
+    return this.bookRepository.findAll(params);
   }
 }
