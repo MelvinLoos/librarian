@@ -3,12 +3,14 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@ne
 import { UpdateReadingProgressUseCase } from '../application/use-cases/update-reading-progress.use-case';
 import { GetReadingStatesUseCase } from '../application/use-cases/get-reading-states.use-case';
 import { UpdateProgressDto } from './dto/update-progress.dto';
-// import { JwtAuthGuard } from '../your-auth-guard-path'; // Implement based on your JWT setup
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/roles.enum';
 
 @ApiTags('User Progress')
 @ApiBearerAuth()
+@UseGuards(RolesGuard)
 @Controller('users/me')
-// @UseGuards(JwtAuthGuard) // Uncomment once your JWT strategy is wired up!
 export class ProgressController {
   constructor(
     private readonly updateReadingProgressUseCase: UpdateReadingProgressUseCase,
@@ -24,18 +26,19 @@ export class ProgressController {
   @ApiParam({ name: 'bookId', type: 'number', description: 'The ID of the book being read' })
   @ApiResponse({ status: 200, description: 'Progress successfully saved.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @Roles(Role.READER, Role.ADMIN)
   async updateProgress(
-    @Request() req: any, 
-    @Param('bookId', ParseIntPipe) bookId: number, 
-    @Body() dto: UpdateProgressDto
+    @Request() req: any,
+    @Param('bookId', ParseIntPipe) bookId: number,
+    @Body() dto: UpdateProgressDto,
   ) {
-    // Assuming req.user is populated by your Auth Guard
-    const userId = req.user?.id || 'TEST_USER_ID'; // Replace fallback once auth is active
+    const userId = req.user?.id;
     await this.updateReadingProgressUseCase.execute(userId, bookId, dto.currentPage, dto.totalPages);
     return { message: 'Progress updated' };
   }
 
   @Get('reading-states')
+  @Roles(Role.READER, Role.ADMIN)
   @ApiOperation({ 
     summary: 'Get all reading states', 
     description: 'Retrieves all books currently being read by the authenticated user, sorted by recent activity.' 
@@ -43,7 +46,7 @@ export class ProgressController {
   @ApiResponse({ status: 200, description: 'Reading states retrieved successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getStates(@Request() req: any) {
-    const userId = req.user?.id || 'TEST_USER_ID'; // Replace fallback once auth is active
+    const userId = req.user?.id;
     return this.getReadingStatesUseCase.execute(userId);
   }
 }

@@ -1,12 +1,14 @@
 import { Controller, Get, Param, ParseIntPipe, StreamableFile, Header } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { AssetService } from './asset.service';
+import { Public } from '../iam/auth/public.decorator';
 
 @ApiTags('Assets')
 @Controller('assets')
 export class AssetController {
   constructor(private readonly assetService: AssetService) {}
 
+  @Public()
   @Get('covers/:bookId')
   @Header('Content-Type', 'image/jpeg')
   @ApiOperation({ 

@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { SharedModule } from '../shared/shared.module';
 
 // Controllers
@@ -21,10 +24,23 @@ import { PrismaUserRepository } from './infrastructure/prisma-user.repository';
 import { BcryptPasswordHasher } from './infrastructure/bcrypt-password.hasher';
 import { PrismaReadingProgressRepository } from './infrastructure/prisma-reading-progress.repository';
 
+// Auth
+import { AuthService } from './auth/auth.service';
+import { JwtStrategy } from './auth/jwt.strategy';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { RolesGuard } from './auth/roles.guard';
+
 @Module({
-  imports: [SharedModule],
+  imports: [
+    SharedModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'dev-secret',
+      signOptions: { expiresIn: '7d' },
+    }),
+  ],
   controllers: [
-    UserController, 
+    UserController,
     AuthController,
     ProgressController,
   ],
@@ -34,7 +50,16 @@ import { PrismaReadingProgressRepository } from './infrastructure/prisma-reading
     AuthenticateUserUseCase,
     UpdateReadingProgressUseCase,
     GetReadingStatesUseCase,
-    
+
+    // Auth
+    AuthService,
+    JwtStrategy,
+    RolesGuard,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+
     // Infrastructure Adapters bound to their Interface Tokens
     {
       provide: IUserRepository,
@@ -50,7 +75,7 @@ import { PrismaReadingProgressRepository } from './infrastructure/prisma-reading
     },
   ],
   exports: [
-    RegisterUserUseCase, 
+    RegisterUserUseCase,
     AuthenticateUserUseCase,
     UpdateReadingProgressUseCase,
     GetReadingStatesUseCase,

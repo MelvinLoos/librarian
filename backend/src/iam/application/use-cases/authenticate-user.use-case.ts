@@ -1,5 +1,6 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { IUserRepository } from '../ports/user.repository.interface';
+import { IPasswordHasher } from '../ports/password-hasher.interface';
 import { EmailAddress } from '../../domain/value-objects/email-address.value-object';
 
 export interface AuthenticateUserRequest {
@@ -18,6 +19,8 @@ export class AuthenticateUserUseCase {
   constructor(
     @Inject(IUserRepository)
     private readonly userRepository: IUserRepository,
+    @Inject(IPasswordHasher)
+    private readonly passwordHasher: IPasswordHasher,
   ) {}
 
   async execute(request: AuthenticateUserRequest): Promise<AuthenticateUserResponse> {
@@ -28,8 +31,11 @@ export class AuthenticateUserUseCase {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Mocking password verification for now as per constraints
-    const isPasswordValid = user.password.getHash() === `hashed_${request.password}`;
+    const isPasswordValid = await this.passwordHasher.compare(
+      request.password,
+      user.password.getHash(),
+    );
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }

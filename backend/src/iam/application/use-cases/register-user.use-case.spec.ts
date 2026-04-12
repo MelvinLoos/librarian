@@ -1,11 +1,13 @@
 import { ConflictException } from '@nestjs/common';
 import { RegisterUserUseCase } from './register-user.use-case';
 import { IUserRepository } from '../ports/user.repository.interface';
+import { IPasswordHasher } from '../ports/password-hasher.interface';
 import { User } from '../../domain/user.aggregate';
 
 describe('RegisterUserUseCase', () => {
   let useCase: RegisterUserUseCase;
   let userRepository: jest.Mocked<IUserRepository>;
+  let passwordHasher: jest.Mocked<IPasswordHasher>;
 
   beforeEach(() => {
     userRepository = {
@@ -13,7 +15,11 @@ describe('RegisterUserUseCase', () => {
       findByEmail: jest.fn(),
       findById: jest.fn(),
     } as any;
-    useCase = new RegisterUserUseCase(userRepository);
+    passwordHasher = {
+      hash: jest.fn(),
+      compare: jest.fn(),
+    } as any;
+    useCase = new RegisterUserUseCase(userRepository, passwordHasher);
   });
 
   it('should register a user successfully', async () => {
@@ -23,15 +29,18 @@ describe('RegisterUserUseCase', () => {
     };
 
     userRepository.findByEmail.mockResolvedValue(null);
+    passwordHasher.hash.mockResolvedValue('hashed_password123');
 
     const result = await useCase.execute(request);
 
     expect(result.email).toBe(request.email);
-    expect(result.role).toBe('CUSTOMER');
+    expect(result.role).toBe('READER');
+    expect(passwordHasher.hash).toHaveBeenCalledWith(request.password);
     expect(userRepository.save).toHaveBeenCalled();
     const savedUser = userRepository.save.mock.calls[0][0];
     expect(savedUser).toBeInstanceOf(User);
     expect(savedUser.email.value).toBe(request.email);
+    expect(savedUser.password.getHash()).toBe('hashed_password123');
   });
 
   it('should throw ConflictException if user email already exists', async () => {
