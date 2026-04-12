@@ -27,11 +27,17 @@
           />
         </label>
 
+        <div v-if="errorMessage" class="rounded-[2rem] bg-red-950/70 px-4 py-3 text-sm text-red-300">
+          {{ errorMessage }}
+        </div>
+
         <button
           type="submit"
-          class="w-full rounded-[2rem] bg-gradient-to-br from-[#bd9dff] via-[#a77bff] to-[#8a4cfc] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+          :disabled="isLoading"
+          class="w-full rounded-[2rem] bg-gradient-to-br from-[#bd9dff] via-[#a77bff] to-[#8a4cfc] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Sign in
+          <span v-if="isLoading">Signing in…</span>
+          <span v-else>Sign in</span>
         </button>
       </form>
 
@@ -52,12 +58,27 @@ const authStore = useAuthStore()
 const router = useRouter()
 const email = ref('')
 const password = ref('')
+const isLoading = ref(false)
+const errorMessage = ref('')
 
-const handleLogin = () => {
-  const role = email.value.includes('admin') ? 'ADMIN' : 'READER'
-  const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2)
-  authStore.login({ id, email: email.value, role })
-  toast.success('Signed in successfully')
-  router.push('/')
+const handleLogin = async () => {
+  errorMessage.value = ''
+  isLoading.value = true
+
+  try {
+    await authStore.login({
+      email: email.value,
+      password: password.value,
+    })
+
+    toast.success('Welcome back!')
+    return router.replace('/')
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = 'Invalid email or password.'
+    toast.error(errorMessage.value)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>

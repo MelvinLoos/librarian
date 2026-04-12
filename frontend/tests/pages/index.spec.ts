@@ -18,7 +18,7 @@ describe('Index page loading state', () => {
   })
 
   it('renders skeletons when pending is true', async () => {
-    vi.stubGlobal('useFetch', () => ({ data: ref([]), pending: ref(true) }))
+    vi.stubGlobal('useApiFetch', () => ({ data: ref([]), pending: ref(true) }))
     searchState.getBooks = vi.fn(() => [])
 
     const wrapper = mount(

@@ -27,11 +27,28 @@
           />
         </label>
 
+        <label class="block text-sm text-gray-300">
+          <span>Confirm Password</span>
+          <input
+            v-model="confirmPassword"
+            type="password"
+            required
+            placeholder="••••••••"
+            class="mt-3 w-full rounded-[2rem] bg-gray-900/55 px-4 py-3 text-gray-100 placeholder:text-gray-500 outline-none transition focus:bg-gray-900/80 focus:ring-2 focus:ring-violet-500/20"
+          />
+        </label>
+
+        <div v-if="errorMessage" class="rounded-[2rem] bg-red-950/70 px-4 py-3 text-sm text-red-300">
+          {{ errorMessage }}
+        </div>
+
         <button
           type="submit"
-          class="w-full rounded-[2rem] bg-gradient-to-br from-[#bd9dff] via-[#a77bff] to-[#8a4cfc] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+          :disabled="isLoading"
+          class="w-full rounded-[2rem] bg-gradient-to-br from-[#bd9dff] via-[#a77bff] to-[#8a4cfc] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Register
+          <span v-if="isLoading">Creating account…</span>
+          <span v-else>Register</span>
         </button>
       </form>
 
@@ -44,20 +61,47 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
-const router = useRouter()
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
+const isLoading = ref(false)
+const errorMessage = ref('')
 
-const handleRegister = () => {
-  const role = email.value.includes('admin') ? 'ADMIN' : 'READER'
-  const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2)
-  authStore.register({ id, email: email.value, role })
-  toast.success('Account created successfully')
-  router.push('/')
+const handleRegister = async () => {
+  errorMessage.value = ''
+
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = 'Passwords do not match.'
+    toast.error(errorMessage.value)
+    return
+  }
+
+  if (password.value.length < 8 || !/[0-9\W]/.test(password.value)) {
+    errorMessage.value = 'Password must be at least 8 characters long and include a number or special character.'
+    toast.error(errorMessage.value)
+    return
+  }
+
+  isLoading.value = true
+
+  try {
+    await authStore.register({
+      email: email.value,
+      password: password.value,
+    })
+
+    toast.success('Welcome to Librarian!')
+    return navigateTo('/')
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = 'Unable to register. Please try again.'
+    toast.error(errorMessage.value)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>

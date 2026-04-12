@@ -69,7 +69,7 @@ import { useApiBase } from '~/composables/useApiBase'
 const route = useRoute()
 const router = useRouter()
 const apiBase = useApiBase()
-const { data: book } = useFetch(`/books/${route.params.id}`, {
+const { data: book } = useApiFetch(`/books/${route.params.id}`, {
   baseURL: apiBase,
 })
 const downloadUrl = computed(() => `${apiBase}/assets/download/${route.params.id}`)
