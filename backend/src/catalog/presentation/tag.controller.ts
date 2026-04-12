@@ -1,8 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GetTopTagsUseCase } from '../application/use-cases/get-top-tags.use-case';
 
 @ApiTags('Explore')
+@ApiBearerAuth('JWT')
 @Controller('tags')
 export class TagController {
   constructor(private readonly getTopTagsUseCase: GetTopTagsUseCase) {}

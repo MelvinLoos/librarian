@@ -7,10 +7,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { UploadAssetUseCase } from '../application/use-cases/upload-asset.use-case';
 
 @ApiTags('Assets')
+@ApiBearerAuth('JWT')
 @Controller('assets')
 export class AssetController {
   constructor(private readonly uploadAssetUseCase: UploadAssetUseCase) {}

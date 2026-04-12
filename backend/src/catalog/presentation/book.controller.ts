@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Body, Param, Query, HttpStatus, HttpCode } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CreateBookUseCase } from '../application/use-cases/create-book.use-case';
 import { GetBookUseCase } from '../application/use-cases/get-book.use-case';
 import { CreateBookDto } from './dto/create-book.dto';
 
 @ApiTags('Books')
+@ApiBearerAuth('JWT')
 @Controller('books')
 export class BookController {
   constructor(

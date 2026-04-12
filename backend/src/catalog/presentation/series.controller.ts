@@ -1,8 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GetAllSeriesUseCase } from '../application/use-cases/get-all-series.use-case';
 
 @ApiTags('Explore')
+@ApiBearerAuth('JWT')
 @Controller('series')
 export class SeriesController {
   constructor(private readonly getAllSeriesUseCase: GetAllSeriesUseCase) {}

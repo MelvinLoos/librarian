@@ -15,9 +15,20 @@ async function bootstrap() {
   // Setup OpenAPI / Swagger
   const config = new DocumentBuilder()
     .setTitle('Librarian API')
-    .setDescription('The Next-Gen Calibre REST API for managing eBook collections')
+    .setDescription(
+      'The Next-Gen Calibre REST API for managing eBook collections. ' +
+      'Authenticate with POST /auth/login to receive a JWT access token, then send it as Bearer token in the Authorization header for protected endpoints.',
+    )
     .setVersion('1.0')
-    .addBearerAuth() // Sets up the JWT input box in the UI
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT access token returned by /auth/login. Use: Authorization: Bearer <token>',
+      },
+      'JWT',
+    )
     .build();
     
   const document = SwaggerModule.createDocument(app, config);

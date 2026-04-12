@@ -1,8 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GetAllAuthorsUseCase } from '../application/use-cases/get-all-authors.use-case';
 
 @ApiTags('Explore')
+@ApiBearerAuth('JWT')
 @Controller('authors')
 export class AuthorController {
   constructor(private readonly getAllAuthorsUseCase: GetAllAuthorsUseCase) {}

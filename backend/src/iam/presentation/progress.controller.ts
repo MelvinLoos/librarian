@@ -8,7 +8,7 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/roles.enum';
 
 @ApiTags('User Progress')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT')
 @UseGuards(RolesGuard)
 @Controller('users/me')
 export class ProgressController {
