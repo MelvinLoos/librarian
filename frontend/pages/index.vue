@@ -1,14 +1,19 @@
 <template>
   <main class="mx-auto max-w-7xl px-4 pb-28 pt-2 sm:px-6 lg:px-8">
-    <section class="rounded-[2.5rem] border border-white/10 bg-[#0a0a0a]/80 p-5 shadow-2xl backdrop-blur-xl sm:p-6 lg:p-8">
+    <!-- Currently Reading Section -->
+    <section 
+      v-if="currentReading"
+      id="currently-reading" 
+      class="rounded-[2.5rem] border border-white/10 bg-[#0a0a0a]/80 p-5 shadow-2xl backdrop-blur-xl sm:p-6 lg:p-8"
+    >
       <div class="flex flex-col gap-6 md:flex-row md:items-center">
         <div class="relative mx-auto w-full max-w-[18rem] overflow-hidden rounded-[2rem] shadow-2xl md:mx-0">
           <NuxtImg
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp8NSIM0IlSZxzqqXeB0juZeYLHOUs83iscHpWSn6fUsf8iQH4KwOfrim_ZUZh2ESiovpMQ8ptVkl4Zm_fghSUxeZPlgDpIQUflxiptJKTG-IBpSvTFSc0gURPYQjmVAtB5JHIzNUVJN0NwaOEk78rxxYkgHEzONYutLHC0DHa9xkGzuEicRJFJMTXXQe2tKgbwpXSSkMgXX2McotIJ98dBX9Nq9hc5AHVcn7nJ244eLjwWn1oUh6Yv48Dji7c_aKdK5nxqV9dsU4U"
-            alt="Premium hardback book cover with minimalist typography and abstract deep blue patterns on a dark studio background"
+            :src="`/api/assets/covers/${currentReading.bookId}`"
+            :alt="currentReading.book.title"
             format="webp"
             loading="lazy"
-            class="h-full w-full object-cover"
+            class="aspect-[2/3] w-full object-cover"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
         </div>
@@ -16,19 +21,24 @@
         <div class="flex-1 space-y-5 text-center md:text-left">
           <div class="space-y-2">
             <span class="inline-flex rounded-full bg-violet-600/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-violet-300">Currently Reading</span>
-            <h2 class="text-4xl font-semibold tracking-tight text-white sm:text-5xl">The Midnight Archive</h2>
-            <p class="text-sm italic text-gray-300 sm:text-base">by Elena Thorne</p>
+            <h2 class="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{{ currentReading.book.title }}</h2>
+            <p class="text-sm italic text-gray-300 sm:text-base">{{ currentReading.book.authorSort }}</p>
           </div>
 
           <div class="space-y-4 rounded-[2rem] bg-gray-950/70 p-5 text-left">
             <div class="flex items-center justify-between text-sm uppercase tracking-[0.25em] text-gray-500">
               <span>Progress</span>
-              <span class="text-violet-300">64%</span>
+              <span class="text-violet-300">{{ progressPercent }}%</span>
             </div>
             <div class="h-2.5 rounded-full bg-white/5">
-              <div class="h-full w-[64%] rounded-full bg-gradient-to-r from-violet-500 to-violet-300 shadow-[0_0_18px_rgba(168,85,247,0.35)]"></div>
+              <div 
+                class="h-full rounded-full bg-gradient-to-r from-violet-500 to-violet-300 shadow-[0_0_18px_rgba(168,85,247,0.35)] transition-all duration-1000"
+                :style="{ width: `${progressPercent}%` }"
+              ></div>
             </div>
-            <p class="text-xs uppercase tracking-[0.24em] text-gray-400">Last read 2 hours ago • Page 248 of 382</p>
+            <p class="text-xs uppercase tracking-[0.24em] text-gray-400">
+              Last read {{ lastReadDate }} • Page {{ currentReading.currentPage }} of {{ currentReading.totalPages }}
+            </p>
           </div>
 
           <button class="w-full rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-lg transition hover:brightness-[1.05] md:w-auto">
@@ -120,6 +130,32 @@ import BookCard from '~/components/BookCard.vue'
 import BookSkeleton from '~/components/BookSkeleton.vue'
 import { useApiFetch } from '~/composables/useApiFetch';
 
+// 1. Fetch recent additions
 const { data: books, pending } = useApiFetch('/books')
 const library = computed(() => books.value || [])
+
+// 2. Fetch reading states (currently reading)
+const { data: readingStates } = useApiFetch<any[]>('/users/me/reading-states')
+
+const currentReading = computed(() => {
+  if (!readingStates.value || readingStates.value.length === 0) return null
+  return readingStates.value[0]
+})
+
+const progressPercent = computed(() => {
+  if (!currentReading.value) return 0
+  const percent = (currentReading.value.currentPage / currentReading.value.totalPages) * 100
+  return Math.round(percent)
+})
+
+const lastReadDate = computed(() => {
+  if (!currentReading.value) return ''
+  const date = new Date(currentReading.value.updatedAt)
+  return date.toLocaleDateString(undefined, { 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+})
 </script>
