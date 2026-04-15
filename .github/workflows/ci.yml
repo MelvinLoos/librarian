@@ -1,0 +1,66 @@
+name: Librarian CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  test:
+    name: Run Tests & Build
+    runs-on: ubuntu-latest
+
+    services:
+      # If we had a real external DB, it would go here.
+      # Since we use SQLite, we can just use the local file.
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies (Root & Subprojects)
+        run: |
+          npm install
+          cd backend && npm install
+          cd ../frontend && npm install
+
+      - name: Prepare Backend (Prisma)
+        run: |
+          cd backend
+          npx prisma generate
+          # Since it's CI, we can force a push to ensure the DB schema is valid for tests
+          touch metadata.db
+          npx prisma db push --skip-generate --accept-data-loss
+
+      - name: Run Backend Tests
+        run: |
+          cd backend
+          npm run test -- --verbose
+
+      - name: Run Frontend Tests
+        run: |
+          cd frontend
+          npm run test -- --reporter=junit --outputFile=test-results.xml
+
+      - name: Publish Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Frontend Tests
+          path: frontend/test-results.xml
+          reporter: jest-junit
+
+      - name: Check Frontend Build
+        run: |
+          cd frontend
+          npm run build

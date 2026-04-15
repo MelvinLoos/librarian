@@ -1,4 +1,5 @@
 # Librarian (Next-Gen Calibre)
+[![Librarian CI](https://github.com/MelvinLoos/librarian/actions/workflows/ci.yml/badge.svg)](https://github.com/MelvinLoos/librarian/actions/workflows/ci.yml)
 
 Librarian is a modern, mobile-first, self-hostable web application designed for eBook and document management. Conceived as a clean-architecture replacement for `calibre-web`, it is optimized for personal and home-lab deployments.
 
