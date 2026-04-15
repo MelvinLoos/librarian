@@ -1,24 +1,9 @@
 import type { Book, Tag, ReadingProgress } from '~/domain/catalog/Catalog.types'
-import { useAuthStore } from '~/stores/auth'
 
 export const CatalogApi = {
-  /**
-   * Helper to get common fetch options (like Authorization header)
-   */
-  getCommonOptions() {
-    const authStore = useAuthStore()
-    const headers: Record<string, string> = {}
-    
-    if (authStore.token) {
-      headers['Authorization'] = `Bearer ${authStore.token}`
-    }
-    
-    return { headers }
-  },
-
   async getAllBooks(params?: Record<string, any>): Promise<Book[]> {
-    return await $fetch<Book[]>('/api/books', {
-      ...this.getCommonOptions(),
+    const $api = useApi()
+    return await $api<Book[]>('/api/books', {
       params,
     })
   },
@@ -32,20 +17,17 @@ export const CatalogApi = {
   },
 
   async getTopTags(): Promise<Tag[]> {
-    return await $fetch<Tag[]>('/api/tags/top', {
-      ...this.getCommonOptions(),
-    })
+    const $api = useApi()
+    return await $api<Tag[]>('/api/tags/top')
   },
 
   async getBookById(id: number): Promise<Book> {
-    return await $fetch<Book>(`/api/books/${id}`, {
-      ...this.getCommonOptions(),
-    })
+    const $api = useApi()
+    return await $api<Book>(`/api/books/${id}`)
   },
 
   async getReadingStates(): Promise<ReadingProgress[]> {
-    return await $fetch<ReadingProgress[]>('/api/users/me/reading-states', {
-      ...this.getCommonOptions(),
-    })
+    const $api = useApi()
+    return await $api<ReadingProgress[]>('/api/users/me/reading-states')
   }
 }

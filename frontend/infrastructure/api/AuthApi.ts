@@ -6,10 +6,18 @@ export const AuthApi = {
     return await $fetch<AuthResponse>('/api/auth/login', {
       method: 'POST',
       body: credentials,
+      credentials: 'include',
     });
   },
 
   async logout(): Promise<void> {
     // Optional: If your backend has a POST /auth/logout endpoint, call it here
+  },
+
+  async refreshToken(): Promise<{ accessToken: string }> {
+    return await $fetch<{ accessToken: string }>('/api/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+    });
   }
 };

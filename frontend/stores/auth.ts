@@ -61,5 +61,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { token, user, isAuthenticated, isAdmin, login, logout, hydrate };
+  function setToken(newToken: string | null) {
+    token.value = newToken;
+    const cookie = useCookie('auth_token', {
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/'
+    });
+    cookie.value = newToken;
+  }
+
+  return { token, user, isAuthenticated, isAdmin, login, logout, hydrate, setToken };
 });

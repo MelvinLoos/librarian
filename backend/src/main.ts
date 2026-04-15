@@ -4,14 +4,22 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
+import cookieParser from 'cookie-parser';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Enable global validation using the class-validator DTOs
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   
-  // Enable CORS for the upcoming Nuxt 3 frontend
-  app.enableCors();
+  // Use cookie parser for HttpOnly Refresh Tokens
+  app.use(cookieParser());
+
+  // Enable CORS for the Nuxt 3 frontend with credentials support
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
   // Setup OpenAPI / Swagger
   const config = new DocumentBuilder()

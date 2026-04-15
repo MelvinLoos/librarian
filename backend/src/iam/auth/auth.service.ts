@@ -14,8 +14,13 @@ export class AuthService {
     };
 
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, { expiresIn: '15m' }),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
       user,
     };
+  }
+
+  verifyRefreshToken(token: string) {
+    return this.jwtService.verify(token);
   }
 }
