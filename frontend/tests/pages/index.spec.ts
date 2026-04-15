@@ -4,12 +4,16 @@ import { createPinia } from 'pinia'
 import { ref } from 'vue'
 import IndexPage from '../../pages/index.vue'
 
-let searchState = { query: '', setQuery: vi.fn(), booksCache: {}, scrollY: 0, getBooks: vi.fn(), setBooks: vi.fn(), setScrollY: vi.fn() }
-function useSearchStore() {
-  return searchState
-}
-
-vi.mock('~/stores/search', () => ({ useSearchStore }))
+vi.mock('~/composables/useApiFetch', () => {
+  const { ref } = require('vue')
+  return {
+    useApiFetch: () => ({
+      data: ref([]),
+      pending: ref(true),
+      error: ref(null)
+    })
+  }
+})
 vi.mock('~/composables/useApiBase', () => ({ useApiBase: () => 'http://localhost:3000' }))
 
 describe('Index page loading state', () => {
@@ -18,8 +22,6 @@ describe('Index page loading state', () => {
   })
 
   it('renders skeletons when pending is true', async () => {
-    vi.stubGlobal('useApiFetch', () => ({ data: ref([]), pending: ref(true) }))
-    searchState.getBooks = vi.fn(() => [])
 
     const wrapper = mount(
       {
