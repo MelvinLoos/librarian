@@ -1,9 +1,9 @@
 <template>
   <section class="relative min-h-screen overflow-hidden bg-[#080e1a] text-gray-200">
     <div class="absolute inset-0">
-      <NuxtImg
-        v-if="book?.coverUrl"
-        :src="book.coverUrl"
+      <img
+        v-if="coverUrl"
+        :src="coverUrl"
         alt="Cover background"
         class="absolute inset-0 h-full w-full object-cover blur-3xl saturate-150 opacity-20"
       />
@@ -22,10 +22,17 @@
 
       <div class="rounded-[2.5rem] bg-gray-950/75 p-8 shadow-[0_20px_40px_rgba(15,23,42,0.45)] backdrop-blur-xl">
         <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-          <div>
-            <p class="text-sm uppercase tracking-[0.3em] text-violet-400">Book details</p>
-            <h1 class="mt-4 text-3xl font-serif font-semibold tracking-tight text-white md:text-5xl">{{ book?.title || 'Loading…' }}</h1>
-            <p class="mt-4 text-lg text-violet-300">{{ book?.author || 'Unknown author' }}</p>
+          <div class="flex flex-col md:flex-row gap-8 items-start md:items-center">
+            <!-- Actual Cover Image -->
+            <div v-if="coverUrl" class="shrink-0 w-48 overflow-hidden rounded-2xl shadow-2xl">
+               <img :src="coverUrl" :alt="book?.title" class="aspect-[2/3] w-full object-cover" />
+            </div>
+            
+            <div class="flex-1">
+              <p class="text-sm uppercase tracking-[0.3em] text-violet-400">Book details</p>
+              <h1 class="mt-4 text-3xl font-serif font-semibold tracking-tight text-white md:text-5xl">{{ book?.title || 'Loading…' }}</h1>
+              <p class="mt-4 text-lg text-violet-300">{{ book?.author || book?.authors?.map(a => a.name).join(', ') || 'Unknown author' }}</p>
+            </div>
           </div>
 
           <div class="space-y-4 rounded-[2rem] bg-gray-900/65 p-6">
@@ -73,6 +80,7 @@ const { data: book } = useApiFetch(`/books/${route.params.id}`, {
   baseURL: apiBase,
 })
 const downloadUrl = computed(() => `${apiBase}/assets/download/${route.params.id}`)
+const coverUrl = computed(() => book.value?.hasCover ? `/api/assets/covers/${route.params.id}` : null)
 
 const goBack = () => {
   if (typeof window !== 'undefined' && window.history.length > 1) {

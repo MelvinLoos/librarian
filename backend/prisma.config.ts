@@ -7,7 +7,8 @@ import path from "path";
 import Database from "better-sqlite3";
 import { defineConfig } from "prisma/config";
 
-const rawUrl = process.env["PRISMA_DATABASE_URL"] ?? process.env["DATABASE_URL"];
+const libraryPath = process.env.CALIBRE_LIBRARY_PATH;
+const rawUrl = process.env["PRISMA_DATABASE_URL"] ?? process.env["DATABASE_URL"] ?? (libraryPath ? `file:${path.join(libraryPath, 'metadata.db')}` : undefined);
 
 function sanitizeSqliteUrl(url?: string): string | undefined {
   if (!url || !url.startsWith("file:")) {

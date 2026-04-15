@@ -8,12 +8,11 @@
     >
       <div class="flex flex-col gap-6 md:flex-row md:items-center">
         <div class="relative mx-auto w-full max-w-[18rem] overflow-hidden rounded-[2rem] shadow-2xl md:mx-0">
-          <NuxtImg
+          <img
             v-if="currentReading"
             :src="heroImageSrc"
             :alt="currentReading?.book?.title"
             @error="onHeroError"
-            format="webp"
             loading="lazy"
             class="aspect-[2/3] w-full object-cover"
           />
@@ -71,11 +70,10 @@
             class="shrink-0 w-40 md:w-44 rounded-[1.8rem] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-1 bg-gray-950/50 backdrop-blur-sm"
           >
             <div class="aspect-[2/3] w-full overflow-hidden">
-              <NuxtImg
+              <img
                 :src="getBookCover(book)"
                 :alt="book?.title"
                 @error="onCarouselError(book.id)"
-                format="webp"
                 loading="lazy"
                 class="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
               />
@@ -177,7 +175,7 @@ const getBookCover = (book: any) => {
 }
 
 const onCarouselError = (bookId: number) => {
-  brokenImages.value.add(bookId)
+  brokenImages.value = new Set(brokenImages.value).add(bookId)
 }
 
 // Hero Image logic

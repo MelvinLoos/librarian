@@ -2,11 +2,10 @@
   <article class="group space-y-4">
     <div class="relative overflow-hidden rounded-[1.8rem] bg-gray-950 shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_50px_rgba(74,20,140,0.25)]">
       <div class="aspect-[2/3] w-full overflow-hidden">
-        <NuxtImg
+        <img
           :src="imageSrc"
           :alt="book?.title"
           @error="onImageError"
-          format="webp"
           loading="lazy"
           class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
