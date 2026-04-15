@@ -118,7 +118,8 @@
 import { computed } from 'vue'
 import BookCard from '~/components/BookCard.vue'
 import BookSkeleton from '~/components/BookSkeleton.vue'
+import { useApiFetch } from '~/composables/useApiFetch';
 
-const { data: books, pending } = useApiFetch('/api/books')
+const { data: books, pending } = useApiFetch('/books')
 const library = computed(() => books.value || [])
 </script>

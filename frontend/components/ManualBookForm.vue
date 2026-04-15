@@ -37,14 +37,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
-import { useApiBase } from '~/composables/useApiBase'
+import { useApiFetch } from '~/composables/useApiFetch';
 
 const title = ref('')
 const author = ref('')
 const apiBase = useApiBase()
 
 const submitBook = async () => {
-  const response = await fetch(`${apiBase}/books`, {
+  const response = await useApiFetch(`/books`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title: title.value, author: author.value }),

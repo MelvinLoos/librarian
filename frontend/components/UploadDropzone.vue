@@ -20,10 +20,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
-import { useApiBase } from '~/composables/useApiBase'
+import { useApiFetch } from '~/composables/useApiFetch'
 
 const fileInput = ref<HTMLInputElement | null>(null)
-const apiBase = useApiBase()
 
 const triggerFileInput = () => {
   fileInput.value?.click()
@@ -38,7 +37,7 @@ const uploadFiles = async (files: FileList | File[]) => {
   const formData = new FormData()
   Array.from(files).forEach((file) => formData.append('files', file))
 
-  const uploadPromise = fetch(`${apiBase}/assets`, {
+  const uploadPromise = useApiFetch(`/assets`, {
     method: 'POST',
     body: formData,
   }).then(async (response) => {
