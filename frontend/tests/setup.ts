@@ -10,6 +10,12 @@ vi.stubGlobal('onUnmounted', vue.onUnmounted)
 vi.stubGlobal('reactive', vue.reactive)
 vi.stubGlobal('nextTick', vue.nextTick)
 
+// Stub $fetch globally (Nuxt auto-import)
+const fetchMock = vi.fn(() => Promise.resolve([]))
+vi.stubGlobal('$fetch', fetchMock)
+// @ts-ignore
+global.$fetch = fetchMock
+
 // Avoid using variables from outside the factory because of hoisting
 vi.mock('#imports', () => {
   const { ref } = require('vue')

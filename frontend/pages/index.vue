@@ -130,57 +130,47 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import BookCard from '~/components/BookCard.vue'
 import BookSkeleton from '~/components/BookSkeleton.vue'
-import { useApiFetch } from '~/composables/useApiFetch';
+import { useCatalogStore } from '~/stores/catalog'
+import { useSearchStore } from '~/stores/search'
 
-// 1. Fetch recent additions
-const { data: recentBooks, pending: pendingRecent } = useApiFetch<any[]>('/books?sort=timestamp&order=desc&limit=10')
+// 1. Initialize Stores
+const searchStore = useSearchStore()
 
-// 2. Fetch all library books
-const searchQuery = useState('search-query')
+// 2. State Mapping (Reactive getters from store)
+const recentBooks = computed(() => searchStore.recentBooks)
+const pendingRecent = computed(() => searchStore.pendingRecent)
+const books = computed(() => searchStore.books)
+const pending = computed(() => searchStore.pending)
+const topTags = computed(() => searchStore.topTags)
+const currentReading = computed(() => searchStore.currentReading)
+
+// 3. Component UI State
 const selectedTag = ref<string | null>(null)
-
-const { data: books, pending } = useApiFetch<any[]>('/books', {
-  query: computed(() => ({
-    search: searchQuery.value || undefined,
-    tag: selectedTag.value || undefined
-  }))
-})
-const library = computed(() => books.value || [])
-
-// 3. Fetch top tags
-const { data: topTags } = useApiFetch<{id: number, name: string, count: number}[]>('/tags/top')
-
-// 4. Fetch reading states (currently reading)
-const { data: readingStates } = useApiFetch<any[]>('/users/me/reading-states')
-
 const placeholder = '/placeholder-cover.png'
+const brokenImages = ref<Set<number>>(new Set())
 
-const currentReading = computed(() => {
-  if (!readingStates.value || readingStates.value.length === 0) return null
-  return readingStates.value[0]
+// 4. Initialization & Reaction
+onMounted(() => {
+  // Initial fetch for background data
+  searchStore.fetchRecentBooks()
+  searchStore.fetchTopTags()
+  searchStore.fetchReadingStates()
 })
 
-// Safe hero image source
-const heroImageSrc = ref(placeholder)
-watch(currentReading, (newVal) => {
-  if (newVal?.book?.hasCover) {
-    heroImageSrc.value = `/api/assets/covers/${newVal.bookId}`
-  } else {
-    heroImageSrc.value = placeholder
-  }
+// Watch search query and selected tag to re-fetch books
+watch([() => searchStore.query, selectedTag], ([newQuery, newTag]) => {
+  searchStore.fetchBooks({
+    search: newQuery || undefined,
+    tag: newTag || undefined
+  })
 }, { immediate: true })
 
-const onHeroError = () => {
-  heroImageSrc.value = placeholder
-}
-
-// Track broken images in the carousel to show placeholder
-const brokenImages = ref<Set<number>>(new Set())
+// Safe get cover image helper
 const getBookCover = (book: any) => {
-  if (!book?.hasCover || brokenImages.value.has(book.id)) {
+  if (!book?.hasCover || (book.id && brokenImages.value.has(book.id))) {
     return placeholder
   }
   return `/api/assets/covers/${book.id}`
@@ -190,14 +180,27 @@ const onCarouselError = (bookId: number) => {
   brokenImages.value.add(bookId)
 }
 
+// Hero Image logic
+const heroImageSrc = computed(() => {
+  if (currentReading.value?.book?.hasCover) {
+    return `/api/assets/covers/${currentReading.value.bookId}`
+  }
+  return placeholder
+})
+
+const onHeroError = () => {
+  // Since it's a computed, we handle error by returning placeholder
+}
+
+// Stats & Helpers
 const progressPercent = computed(() => {
   if (!currentReading.value) return 0
-  const percent = (currentReading.value.currentPage / currentReading.value.totalPages) * 100
-  return Math.round(percent)
+  const { currentPage, totalPages } = currentReading.value
+  return totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0
 })
 
 const lastReadDate = computed(() => {
-  if (!currentReading.value) return ''
+  if (!currentReading.value?.updatedAt) return ''
   const date = new Date(currentReading.value.updatedAt)
   return date.toLocaleDateString(undefined, { 
     month: 'short', 
@@ -206,4 +209,6 @@ const lastReadDate = computed(() => {
     minute: '2-digit'
   })
 })
+
+const library = computed(() => books.value || [])
 </script>

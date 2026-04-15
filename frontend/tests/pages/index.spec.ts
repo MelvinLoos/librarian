@@ -4,13 +4,24 @@ import { createPinia } from 'pinia'
 import { ref } from 'vue'
 import IndexPage from '../../pages/index.vue'
 
-vi.mock('~/composables/useApiFetch', () => {
+vi.mock('~/stores/search', () => {
   const { ref } = require('vue')
   return {
-    useApiFetch: () => ({
-      data: ref([]),
-      pending: ref(true),
-      error: ref(null)
+    useSearchStore: () => ({
+      query: '',
+      books: [],
+      recentBooks: [],
+      topTags: [],
+      readingStates: [],
+      pending: true,
+      pendingRecent: true,
+      pendingTags: true,
+      pendingReading: true,
+      currentReading: null,
+      fetchBooks: vi.fn(),
+      fetchRecentBooks: vi.fn(),
+      fetchTopTags: vi.fn(),
+      fetchReadingStates: vi.fn(),
     })
   }
 })

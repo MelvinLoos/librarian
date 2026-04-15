@@ -2,12 +2,20 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import DefaultLayout from './default.vue'
 
-let authState = { isAuthenticated: true, user: { email: 'test@example.com', role: 'ADMIN' }, logout: vi.fn() }
-function useAuthStore() {
-  return authState
-}
+vi.mock('../stores/auth', () => ({ 
+  useAuthStore: () => ({ 
+    isAuthenticated: true, 
+    user: { email: 'test@example.com', role: 'ADMIN' }, 
+    logout: vi.fn() 
+  }) 
+}))
 
-vi.mock('../stores/auth', () => ({ useAuthStore }))
+vi.mock('../stores/search', () => ({
+  useSearchStore: () => ({
+    query: '',
+    setQuery: vi.fn()
+  })
+}))
 
 describe('Default layout', () => {
   it('renders the main application shell', () => {
