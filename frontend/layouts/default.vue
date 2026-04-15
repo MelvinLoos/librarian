@@ -27,15 +27,6 @@
               <p class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">{{ authStore.user?.role }}</p>
             </div>
             
-            <button
-              v-if="authStore.isAuthenticated"
-              @click="authStore.logout()"
-              class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 text-gray-400 transition hover:bg-red-500/10 hover:text-red-400 border border-white/10 hover:border-red-500/20"
-              title="Sign Out"
-            >
-              <span class="material-symbols-outlined text-[20px]">logout</span>
-            </button>
-            
             <NuxtLink 
               v-else 
               to="/login"
