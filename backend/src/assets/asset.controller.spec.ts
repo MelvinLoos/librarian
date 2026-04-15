@@ -27,11 +27,13 @@ describe('AssetController', () => {
 
   it('should successfully stream the file returned by the service', async () => {
     const mockStream = { pipe: jest.fn() } as unknown as fs.ReadStream;
+    const mockRes = { set: jest.fn() } as any;
     jest.spyOn(service, 'getCoverStream').mockResolvedValue(mockStream);
 
-    const result = await controller.getCover(1);
+    const result = await controller.getCover(1, mockRes);
 
     expect(result).toBeInstanceOf(StreamableFile);
     expect(service.getCoverStream).toHaveBeenCalledWith(1);
+    expect(mockRes.set).toHaveBeenCalledWith({ 'Content-Type': 'image/jpeg' });
   });
 });
