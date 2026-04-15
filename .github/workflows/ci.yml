@@ -36,7 +36,7 @@ jobs:
           npx prisma generate
           # Since it's CI, we can force a push to ensure the DB schema is valid for tests
           touch metadata.db
-          npx prisma db push --skip-generate --accept-data-loss
+          npx prisma db push --accept-data-loss
 
       - name: Run Backend Tests
         run: |
