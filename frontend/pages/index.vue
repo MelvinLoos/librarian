@@ -131,7 +131,6 @@
 import { computed, watch, onMounted } from 'vue'
 import BookCard from '~/components/BookCard.vue'
 import BookSkeleton from '~/components/BookSkeleton.vue'
-import { useCatalogStore } from '~/stores/catalog'
 import { useSearchStore } from '~/stores/search'
 
 // 1. Initialize Stores
