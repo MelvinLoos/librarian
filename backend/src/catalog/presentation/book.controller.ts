@@ -47,6 +47,10 @@ export class BookController {
       sortTitle: book.props.sortTitle,
       pubdate: book.props.pubdate,
       hasCover: book.props.hasCover,
+      authors: book.props.authors?.map(author => ({
+        id: author?.id,
+        name: author?.props?.name || 'Unknown Author',
+      })),
     }));
   }
 
@@ -63,6 +67,10 @@ export class BookController {
       sortTitle: book.props.sortTitle,
       pubdate: book.props.pubdate,
       hasCover: book.props.hasCover,
+      authors: book.props.authors?.map(author => ({
+        id: author?.id,
+        name: author?.props?.name || 'Unknown Author',
+      })),
     };
   }
 }
