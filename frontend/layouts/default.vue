@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#080e1a] text-gray-200">
     <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#080e1a]/95 backdrop-blur-xl">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 py-3">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
         <div class="flex items-center gap-3 sm:gap-6">
           <NuxtLink to="/" class="flex items-center gap-3 shrink-0">
             <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-600/10 text-violet-300 text-lg font-semibold border border-violet-500/20">L</span>
@@ -11,7 +11,7 @@
           </NuxtLink>
 
           <!-- Search Bar (Unified for all screens) -->
-          <div class="flex-1 max-w-2xl relative group">
+          <div class="flex-1 relative group">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg transition-colors group-focus-within:text-violet-400">search</span>
             <input
               v-model="searchQuery"
@@ -21,7 +21,7 @@
             />
           </div>
 
-          <div class="flex items-center gap-3 shrink-0">
+          <div id="user-info" class="flex items-center gap-3 shrink-0">
             <div v-if="authStore.isAuthenticated" class="hidden md:flex flex-col items-end">
               <p class="text-xs font-medium text-white">{{ authStore.user?.email }}</p>
               <p class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">{{ authStore.user?.role }}</p>
