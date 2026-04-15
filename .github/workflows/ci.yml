@@ -15,6 +15,9 @@ jobs:
     name: Run Tests & Build
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: file:./metadata.db
+
     steps:
       - uses: actions/checkout@v4
 
