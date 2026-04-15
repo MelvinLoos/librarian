@@ -94,12 +94,23 @@
     <section class="mt-10 space-y-6 text-center md:text-left">
       <h3 class="text-3xl font-semibold tracking-tight text-white">Your Library</h3>
 
-      <div class="mt-8 flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
-        <button class="whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.28em] text-gray-200 transition hover:border-violet-400/40 hover:text-white active:bg-violet-600/10 active:text-violet-300">All</button>
-        <button class="whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.28em] text-gray-200 transition hover:border-violet-400/40 hover:text-white">Fiction</button>
-        <button class="whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.28em] text-gray-200 transition hover:border-violet-400/40 hover:text-white">Non-fiction</button>
-        <button class="whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.28em] text-gray-200 transition hover:border-violet-400/40 hover:text-white">Sci-fi</button>
-        <button class="whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.28em] text-gray-200 transition hover:border-violet-400/40 hover:text-white">History</button>
+      <div id="tags" class="mt-8 flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+        <button 
+          @click="selectedTag = null"
+          class="whitespace-nowrap rounded-full border px-5 py-2 text-xs uppercase tracking-[0.28em] transition"
+          :class="!selectedTag ? 'border-violet-500 bg-violet-600/10 text-violet-300 shadow-[0_0_15px_rgba(139,92,246,0.1)]' : 'border-white/10 bg-white/5 text-gray-400 hover:border-violet-400/40 hover:text-white'"
+        >
+          All
+        </button>
+        <button 
+          v-for="tag in topTags" 
+          :key="tag.id"
+          @click="selectedTag = tag.name"
+          class="whitespace-nowrap rounded-full border px-5 py-2 text-xs uppercase tracking-[0.28em] transition"
+          :class="selectedTag === tag.name ? 'border-violet-500 bg-violet-600/10 text-violet-300 shadow-[0_0_15px_rgba(139,92,246,0.1)]' : 'border-white/10 bg-white/5 text-gray-400 hover:border-violet-400/40 hover:text-white'"
+        >
+          {{ tag.name }}
+        </button>
       </div>
 
       <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -129,14 +140,20 @@ const { data: recentBooks, pending: pendingRecent } = useApiFetch<any[]>('/books
 
 // 2. Fetch all library books
 const searchQuery = useState('search-query')
+const selectedTag = ref<string | null>(null)
+
 const { data: books, pending } = useApiFetch<any[]>('/books', {
   query: computed(() => ({
-    search: searchQuery.value || undefined
+    search: searchQuery.value || undefined,
+    tag: selectedTag.value || undefined
   }))
 })
 const library = computed(() => books.value || [])
 
-// 3. Fetch reading states (currently reading)
+// 3. Fetch top tags
+const { data: topTags } = useApiFetch<{id: number, name: string, count: number}[]>('/tags/top')
+
+// 4. Fetch reading states (currently reading)
 const { data: readingStates } = useApiFetch<any[]>('/users/me/reading-states')
 
 const placeholder = '/placeholder-cover.png'

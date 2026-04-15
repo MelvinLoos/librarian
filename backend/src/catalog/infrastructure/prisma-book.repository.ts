@@ -30,15 +30,22 @@ export class PrismaBookRepository implements IBookRepository {
   }
 
   async findAll(params?: FindAllBooksParams): Promise<Book[]> {
-    const { sort, order, limit, search } = params || {};
+    const { sort, order, limit, search, tag } = params || {};
 
     const raws = await this.prisma.book.findMany({
-      where: search ? {
-        OR: [
-          { title: { contains: search } },
-          { authorSort: { contains: search } },
+      where: {
+        AND: [
+          search ? {
+            OR: [
+              { title: { contains: search } },
+              { authorSort: { contains: search } },
+            ]
+          } : {},
+          tag ? {
+            tags: { some: { tag: { name: tag } } }
+          } : {}
         ]
-      } : undefined,
+      },
       take: limit ? Number(limit) : undefined,
       orderBy: sort ? { [sort]: order || 'desc' } : undefined,
       include: {
