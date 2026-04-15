@@ -14,6 +14,7 @@
           <div class="flex-1 max-w-2xl relative group">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg transition-colors group-focus-within:text-violet-400">search</span>
             <input
+              v-model="searchQuery"
               type="search"
               placeholder="Search books, authors, series..."
               class="w-full rounded-2xl border border-white/10 bg-white/5 pl-10 pr-4 py-2 text-sm text-gray-100 outline-none transition focus:border-violet-500 focus:bg-white/10 focus:ring-4 focus:ring-violet-500/10 shadow-inner"
@@ -76,4 +77,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
 const authStore = useAuthStore()
+
+const searchQuery = useState('search-query', () => '')
 </script>

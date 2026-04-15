@@ -4,6 +4,7 @@ export interface FindAllBooksParams {
   sort?: string;
   order?: 'asc' | 'desc';
   limit?: number;
+  search?: string;
 }
 
 export interface IBookRepository {

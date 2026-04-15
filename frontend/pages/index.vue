@@ -128,7 +128,12 @@ import { useApiFetch } from '~/composables/useApiFetch';
 const { data: recentBooks, pending: pendingRecent } = useApiFetch<any[]>('/books?sort=timestamp&order=desc&limit=10')
 
 // 2. Fetch all library books
-const { data: books, pending } = useApiFetch<any[]>('/books')
+const searchQuery = useState('search-query')
+const { data: books, pending } = useApiFetch<any[]>('/books', {
+  query: computed(() => ({
+    search: searchQuery.value || undefined
+  }))
+})
 const library = computed(() => books.value || [])
 
 // 3. Fetch reading states (currently reading)

@@ -34,13 +34,15 @@ export class BookController {
   @ApiQuery({ name: 'sort', required: false, description: 'Field to sort by (e.g., "timestamp")', example: 'timestamp' })
   @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], description: 'Sort order', example: 'desc' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Limit the number of results returned', example: 10 })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search term for title or author', example: 'archive' })
   @ApiResponse({ status: 200, description: 'List of books retrieved successfully.' })
   async findAll(
     @Query('sort') sort?: string,
     @Query('order') order?: 'asc' | 'desc',
     @Query('limit') limit?: number,
+    @Query('search') search?: string,
   ) {
-    const books = await this.getBookUseCase.executeAll({ sort, order, limit });
+    const books = await this.getBookUseCase.executeAll({ sort, order, limit, search });
     return books.map(book => ({
       id: book.id,
       title: book.props.title,
