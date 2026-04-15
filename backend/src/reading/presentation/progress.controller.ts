@@ -3,9 +3,9 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@ne
 import { UpdateReadingProgressUseCase } from '../application/use-cases/update-reading-progress.use-case';
 import { GetReadingStatesUseCase } from '../application/use-cases/get-reading-states.use-case';
 import { UpdateProgressDto } from './dto/update-progress.dto';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../auth/roles.enum';
+import { RolesGuard } from '../../iam/auth/roles.guard';
+import { Roles } from '../../iam/auth/roles.decorator';
+import { Role } from '../../iam/auth/roles.enum';
 
 @ApiTags('User Progress')
 @ApiBearerAuth('JWT')
