@@ -1,96 +1,65 @@
-import { defineStore } from 'pinia'
-interface UserProfile {
-  id: string
-  email: string
-  role: 'ADMIN' | 'READER'
-}
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { useCookie, useRouter } from '#imports';
+import { AuthApi } from '~/infrastructure/api/AuthApi';
+import type { LoginCredentials, User } from '~/domain/auth/Auth.types';
 
-function parseJwt(token: string) {
-  try {
-    const base64Url = token.split('.')[1];
-    if (!base64Url) return null;
+export const useAuthStore = defineStore('auth', () => {
+  const router = useRouter();
 
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-}
+  // 1. STATE
+  // Read the initial cookie value (for SSR/page reloads) into a standard Vue Ref
+  const initialCookie = useCookie<string | null>('auth_token').value;
+  const token = ref<string | null>(initialCookie);
+  const user = ref<User | null>(null);
 
-export const useAuthStore = defineStore('auth', {
-  state: () => {
-    const isProd = process.env.NODE_ENV === 'production'
+  // 2. GETTERS
+  const isAuthenticated = computed(() => !!token.value);
+  const isAdmin = computed(() => user.value?.role === 'ADMIN');
 
-    const token = useCookie<string | null>('auth_token', {
-      secure: isProd,
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7,
-    })
+  // 3. ACTIONS
+  async function login(credentials: LoginCredentials) {
+    try {
+      const response = await AuthApi.login(credentials);
 
-    return {
-      token: token as unknown as string | null,
-      user: null as UserProfile | null,
+      // A. Update Pinia's state so your UI updates immediately
+      token.value = response.accessToken;
+      user.value = response.user;
+
+      // B. Explicitly write to the Nuxt cookie here, bypassing Pinia's proxy
+      const cookie = useCookie('auth_token', {
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/'
+      });
+      cookie.value = response.accessToken;
+
+    } catch (error) {
+      token.value = null;
+      user.value = null;
+      throw error;
     }
-  },
-  getters: {
-    isAuthenticated: (state) => Boolean(state.token),
-    isAdmin: (state) => state.user?.role === 'ADMIN',
-  },
-  actions: {
-    async login(credentials: { email: string; password: string }) {
-      const response = await $fetch<{ token: string; user: UserProfile }>('/api/auth/login', {
-        method: 'POST',
-        body: credentials,
-      })
+  }
 
-      if (response.token) {
-        this.token = response.token
-        const decoded = parseJwt(response.token)
-        if (decoded) {
-          // Map the JWT payload to your user state.
-          this.user = { id: decoded.sub, email: decoded.email, role: decoded.role }
-        }
-      } else {
-        this.token = response.token
-        this.user = response.user
-      }
-    },
+  function logout() {
+    token.value = null;
+    user.value = null;
 
-    async register(credentials: { email: string; password: string }) {
-      await $fetch('/api/users', {
-        method: 'POST',
-        body: credentials,
-      })
+    // Explicitly clear the cookie
+    const cookie = useCookie('auth_token', { path: '/' });
+    cookie.value = null;
 
-      await this.login(credentials)
-    },
+    router.push('/login');
+  }
 
-    logout() {
-      this.token = null
-      this.user = null
-      return navigateTo('/login')
-    },
+  function hydrate() {
+    if (!token.value) return;
+    try {
+      const payload = JSON.parse(atob(token.value.split('.')[1]));
+      user.value = { id: payload.sub, email: payload.email, role: payload.role };
+    } catch (e) {
+      logout();
+    }
+  }
 
-    async fetchUser() {
-      if (!this.token) {
-        return
-      }
-      const decoded = parseJwt(this.token)
-
-      if (decoded) {
-        this.user = { id: decoded.sub, email: decoded.email, role: decoded.role }
-      } else {
-        this.logout() // Token is malformed
-      }
-
-      // this.user = await $fetch<UserProfile>('/api/users/me', {
-      //   headers: {
-      //     Authorization: `Bearer ${this.token}`,
-      //   },
-      // })
-    },
-  },
-})
+  return { token, user, isAuthenticated, isAdmin, login, logout, hydrate };
+});
