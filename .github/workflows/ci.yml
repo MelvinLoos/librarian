@@ -15,10 +15,6 @@ jobs:
     name: Run Tests & Build
     runs-on: ubuntu-latest
 
-    services:
-      # If we had a real external DB, it would go here.
-      # Since we use SQLite, we can just use the local file.
-
     steps:
       - uses: actions/checkout@v4
 
