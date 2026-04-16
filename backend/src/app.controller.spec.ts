@@ -19,4 +19,12 @@ describe('AppController', () => {
       expect(appController.getHello()).toBe('Hello World!');
     });
   });
+
+  describe('system config', () => {
+    it('should return the library path', () => {
+      process.env.CALIBRE_LIBRARY_PATH = '/test/path';
+      const config = appController.getConfig();
+      expect(config).toEqual({ libraryPath: '/test/path' });
+    });
+  });
 });

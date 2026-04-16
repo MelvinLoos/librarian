@@ -40,6 +40,19 @@
             </div>
           </div>
         </div>
+
+        <div class="rounded-[2rem] bg-gray-900/55 p-6 mt-6">
+          <h2 class="text-lg font-semibold text-white">System Information</h2>
+          <div class="mt-4 space-y-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.3em] text-gray-500">Library Path</p>
+              <div class="mt-2 rounded-[1.5rem] bg-gray-950/70 p-4">
+                <code class="text-sm text-violet-300">{{ config?.libraryPath || 'Loading...' }}</code>
+              </div>
+              <p class="mt-2 text-xs text-gray-500 italic">This is the directory on the server where the application scans for metadata.db and book files.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -48,8 +61,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { useApiBase } from '~/composables/useApiBase'
 
 const authStore = useAuthStore()
+const apiBase = useApiBase()
+
+const { data: config } = useApiFetch('/system/config', {
+  baseURL: apiBase,
+})
+
 const email = computed(() => authStore.user?.email ?? '')
 const role = computed(() => authStore.user?.role ?? '')
 const feedUrl = computed(() => {

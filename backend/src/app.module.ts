@@ -6,6 +6,8 @@ import { StorageModule } from './storage/storage.module';
 import { SharedModule } from './shared/shared.module';
 import { AssetModule } from './assets/asset.module';
 import { ReadingModule } from './reading/reading.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -17,7 +19,7 @@ import { ReadingModule } from './reading/reading.module';
     AssetModule,
     ReadingModule
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule { }

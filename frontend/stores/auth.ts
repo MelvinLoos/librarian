@@ -26,7 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await AuthApi.login(credentials);
 
-      // A. Update Pinia's state so your UI updates immediately
+      // A. Update internal state
       token.value = response.accessToken;
       user.value = response.user;
 
@@ -44,6 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     token.value = null;
     user.value = null;
+    authCookie.value = null;
 
     // Explicitly clear the cookie
     authTokenCookie.value = null;
