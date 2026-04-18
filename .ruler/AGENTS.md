@@ -1,143 +1,73 @@
-# Sprint 5: Backend Data Expansion (NestJS + Prisma)
+# Antigravity Agent Orchestration Rules & Sprints
 
-**Context:** We are expanding the NestJS backend to support the "Netflix-style" Nuxt 3 frontend. The frontend requires endpoints for recent additions, deep metadata joins (authors/series/synopsis), cover image streaming, and user reading progress tracking.
+**Context:** This repository uses Spec-Driven Development (SDD) and Clean Architecture to build "Librarian" (Next-Gen Calibre). As an AI Agent operating within the Google Antigravity IDE, your actions are strictly governed by the constraints below.
 
-**CRITICAL RULES FOR AI AGENT:**
+## 🔴 GLOBAL DIRECTIVES FOR AI AGENTS (READ FIRST)
 
-1. **Architecture:** Strictly adhere to NestJS Module/Controller/Service patterns.
-    
-2. **Database:** We are using Prisma with a legacy SQLite Calibre database (`metadata.db`). Do not alter existing legacy table structures.
-    
-3. **Testing:** **EVERY single endpoint and service method MUST have corresponding tests** in `[name].controller.spec.ts` and `[name].service.spec.ts`. You must use `@nestjs/testing` to mock the `PrismaService` and assert that the correct data is returned and correct methods are called.
-    
-4. **Error Handling:** Use standard NestJS exceptions (`NotFoundException`, `BadRequestException`) if records are missing or query parameters are invalid. Tests must cover these failure states.
+1. **The Core Specifications:** Before executing any task, you MUST align your logic with the following source-of-truth documents:
+   - `CONSTITUTION.md`: For tech stack, testing pyramids, and logging/API rules.
+   - `PRODUCT_SPEC.md`: For DDD Ubiquitous Language and Bounded Context rules.
+   - `ARCHITECTURE_PLAN.md`: For strictly enforced directory structures and database mappings.
+2. **The "Artifact First" Rule:** You are strictly forbidden from writing or modifying implementation code immediately. Upon receiving a task, you MUST first generate an **Implementation Plan Artifact**. You must PAUSE and wait for the human user to approve the artifact before writing code.
+3. **Clean Architecture Enforcement:** All Bounded Contexts (`/iam`, `/catalog`, `/storage`, `/reading`) are strictly isolated. You must implement features in this exact order: `Domain` -> `Application (Use Cases)` -> `Infrastructure (Adapters)` -> `Presentation (Controllers)`.
+4. **Database Immutability:** The legacy SQLite tables (`books`, `authors`, `data`) mapped in `schema.prisma` are FROZEN. Do not alter them.
+5. **API & Error Standards:** All controllers must use Swagger decorators (`@ApiOperation`, `@ApiResponse`, etc.). All errors must be thrown using standard NestJS exceptions, which will be caught by the global RFC 7807 filter.
 
-5. **API Documentation:** The API MUST be a first-class citizen. Every Controller method must be decorated with `@ApiOperation`, `@ApiResponse`, and `@ApiTags`. Every DTO property must be decorated with `@ApiProperty` including an `example` and `description`. All endpoints requiring JWTs must be decorated with `@ApiBearerAuth()`.
+---
 
+## Sprint 1: Enforcing Observability (Current Active Task)
 
-## Step 1: Schema Updates (Reading Progress)
+**Target Directory:** `/backend/src/shared/`
 
-**Target Directory:** `/backend/`
+**Objective:** Implement the mandated global error handling and high-performance structured logging using Pino.
 
-**Objective:** Calibre does not track reading progress natively. We need a new table managed by Prisma to store where the user is in a book.
+1. **Artifact Generation:** Outline the creation of `rfc7807-exception.filter.ts` and the integration of `nestjs-pino`.
+2. **Implementation:** - Install `nestjs-pino`, `pino-http`, and `pino-pretty` (as a dev dependency).
+   - The Exception Filter must catch all Domain and standard HTTP exceptions and format them strictly to the `application/problem+json` RFC 7807 standard.
+   - Configure the NestJS `LoggerModule` (from `nestjs-pino`) to log requests/responses with a unique `traceId`. The application must *always* output raw JSON.
+3. **Wiring:** - Update `/backend/src/main.ts` to bind the Pino logger as the global logger and instantiate the Exception Filter.
+   - Update `/backend/package.json` to append ` | pino-pretty` to the `start:dev` and `start:debug` scripts to provide human-readable logs during local development.
 
-1. **Prisma Schema (`prisma/schema.prisma`):**
-    
-    - Add a new model called `LibrarianReadingProgress`.
-        
-    - Fields: `id` (Int, @id, @default(autoincrement())), `userId` (Int), `bookId` (Int), `currentPage` (Int, @default(0)), `totalPages` (Int, @default(0)), `updatedAt` (DateTime, @updatedAt).
-        
-    - Create a unique constraint on `@@unique([userId, bookId])` so a user only has one progress record per book.
-        
-2. **Execution:** After updating the file, provide the terminal command to the user to push this schema (`npx prisma db push`).
-    
-3. **No Tests Needed for Step 1** (Schema only).
-    
+---
 
-## Step 2: The Asset Module (Cover Streaming)
+## Sprint 2: The Storage Context (Cover Streaming)
 
-**Target Directory:** `/backend/src/assets/`
+**Target Directory:** `/backend/src/storage/`
 
-**Context:** The frontend needs a way to fetch the `cover.jpg` file for the cinematic grid.
+**Context:** The frontend needs a way to fetch the `cover.jpg` file for the cinematic grid. 
 
 **Objective:**
+1. **Domain/Application:** Create a `GetCoverStreamUseCase` that takes a `bookId`.
+2. **Infrastructure:** Query the `PrismaService` to find the book's path. Combine it with the base library path to locate `cover.jpg` on the file system. Return a Node `fs.createReadStream`. Throw a `NotFoundException` if the DB record or physical file is missing.
+3. **Presentation:** Create an `AssetController` with `GET /assets/covers/:bookId` that returns the stream wrapped in a NestJS `StreamableFile` with `Content-Type: image/jpeg`.
+4. **Testing:** Write isolated unit tests for the Use Case and Controller mocking `fs` and Prisma.
 
-1. **Service (`AssetService`):**
-    
-    - Create a method `getCoverStream(bookId: number)`.
-        
-    - It must query the `PrismaService` to find the book by ID and get its relative `path` from the Calibre database.
-        
-    - Construct the absolute path to the `cover.jpg` (combining the base Calibre library path from `.env` and the book's relative path).
-        
-    - Use Node's `fs` to check if the file exists. If not, throw `NotFoundException`.
-        
-    - Return a `fs.createReadStream`.
-        
-2. **Controller (`AssetController`):**
-    
-    - Add `GET /assets/covers/:bookId`.
-        
-    - Call the service, and wrap the stream in a NestJS `StreamableFile`.
-        
-    - Set the response header `Content-Type: image/jpeg`.
-        
-3. **Tests (`asset.controller.spec.ts` & `asset.service.spec.ts`):**
-    
-    - **Write strict tests:** Mock `fs.existsSync` and `PrismaService.book.findUnique`.
-        
-    - Assert that `NotFoundException` is thrown if the DB returns null.
-        
-    - Assert that `NotFoundException` is thrown if the file does not exist on disk.
-        
-    - Assert that a stream is successfully returned if both exist.
-        
+---
 
-## Step 3: Catalog Expansion (Deep Metadata & Filters)
+## Sprint 3: Catalog Expansion (Deep Metadata & Filters)
 
 **Target Directory:** `/backend/src/catalog/`
 
-**Context:** We need to upgrade the Book queries to support sorting (Recent Additions), joining relational data (Authors/Series), and aggregating tags.
+**Context:** The Book queries must be upgraded to support sorting, deep relation joining via the Anti-Corruption Layer (ACL), and tag aggregation.
 
 **Objective:**
+1. **Application/Infrastructure (`GetBooksUseCase`):** Add support for sorting (`?sort=added&order=desc&limit=10`). The Prisma query must use the junction tables to `include` authors (`books_authors_link`) and tags.
+2. **Application/Infrastructure (`GetBookUseCase`):** Upgrade the singular book fetch to `include` authors, series, and the `comments` table (synopsis).
+3. **Application/Infrastructure (`GetTopTagsUseCase`):** Create a query that joins `tags` with `books_tags_link` to return the top 15 tags by frequency.
+4. **Presentation:** Update `BookController` and `TagController` with the new endpoints and Swagger documentation.
 
-1. **Upgrade `GET /books` (`BookController` & `BookService`):**
-    
-    - Add optional query parameters: `?sort=added&order=desc&limit=10`.
-        
-    - The Prisma query must use the junction tables to `include` authors (`books_authors_link`) and tags (`books_tags_link`) so the frontend doesn't just get raw IDs.
-        
-2. **Upgrade `GET /books/:id`:**
-    
-    - It must `include` the author(s), series, and the `comments` table (which contains the HTML synopsis in Calibre). If the book doesn't exist, throw `NotFoundException`.
-        
-3. **New Endpoint `GET /tags/top` (`TagController` & `TagService`):**
-    
-    - Query the `tags` table and join it with the junction table to count how many books have each tag.
-        
-    - Return the top 15 tags sorted by frequency.
-        
-4. **New Endpoints `GET /authors` & `GET /series`:**
-    
-    - Return a simple list of all authors and series for the "Explore" UI.
-        
-5. **Tests (`catalog.controller.spec.ts` & `catalog.service.spec.ts`):**
-    
-    - Assert `GET /books` properly passes the `take: 10` and `orderBy` arguments to `PrismaService`.
-        
-    - Assert `GET /tags/top` returns an array of objects containing `{ id, name, count }`.
-        
-    - Assert `GET /books/:id` throws `NotFoundException` when querying an invalid ID.
-        
+---
 
-## Step 4: User Progress Module (Now Reading)
+## Sprint 4: Reading Context (User Progress)
 
-**Target Directory:** `/backend/src/iam/` (or a dedicated `user` module if you split them)
+**Target Directory:** `/backend/src/reading/`
 
-**Context:** The frontend needs to save and retrieve where the user left off.
+**Context:** Implement the formally ratified Bounded Context for tracking user reading progress.
 
 **Objective:**
-
-1. **New Endpoint `PUT /users/me/progress/:bookId`:**
-    
-    - Requires JWT Authentication (extract `userId` from the request object).
-        
-    - Body expects `{ currentPage: number, totalPages: number }`.
-        
-    - Use Prisma's `upsert` on the `LibrarianReadingProgress` table using the unique `[userId, bookId]` constraint.
-        
-2. **New Endpoint `GET /users/me/reading-states`:**
-    
-    - Requires JWT Authentication.
-        
-    - Query `LibrarianReadingProgress` where `userId` matches.
-        
-    - You MUST `include` the `Book` relation in this query so the frontend gets the title and book ID to render the "Now Reading" card. Sort by `updatedAt` descending.
-        
-3. **Tests (`progress.controller.spec.ts` & `progress.service.spec.ts`):**
-    
-    - Assert that unauthenticated requests are rejected (mock the Auth Guard).
-        
-    - Assert the `PUT` endpoint calls `PrismaService.librarianReadingProgress.upsert` with the correct mapped data.
-        
-    - Assert the `GET` endpoint returns an array of reading states attached to book metadata.
+1. **Domain:** Define the `ReadingProgress` Aggregate.
+2. **Application (`UpdateReadingProgressUseCase` & `GetReadingStatesUseCase`):** - Update: Accepts `userId`, `bookId`, `currentPage`, `totalPages`.
+   - Get: Retrieves all states for a `userId`.
+3. **Infrastructure:** Implement `PrismaReadingProgressRepository` utilizing Prisma's `upsert` against the `LibrarianReadingProgress` table. For the `Get` query, ensure the related `Book` data is included.
+4. **Presentation (`ProgressController`):** - `PUT /progress/:bookId` (Protected via JWT, extracts user ID from token).
+   - `GET /progress` (Protected via JWT).

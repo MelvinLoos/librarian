@@ -4,14 +4,22 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { Logger } from 'nestjs-pino';
+import { Rfc7807ExceptionFilter } from './shared/filters/rfc7807-exception.filter';
 
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  // Use Pino as the global logger
+  app.useLogger(app.get(Logger));
 
   // Enable global validation using the class-validator DTOs
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  
+  // Register RFC 7807 Exception Filter globally
+  app.useGlobalFilters(new Rfc7807ExceptionFilter());
   
   // Use cookie parser for HttpOnly Refresh Tokens
   app.use(cookieParser());
