@@ -7,7 +7,6 @@ export const useApiFetch: typeof useFetch = (request, opts?) => {
   return useFetch(request, {
     ...opts,
     onRequest({ options }) {
-      const apiBase = useApiBase()
       options.baseURL = '/api/'
 
       // Create headers object if it doesn't exist

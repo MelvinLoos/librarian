@@ -1,4 +1,3 @@
-import { execSync } from 'child_process';
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
@@ -29,7 +28,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private async autoMigrate() {
     try {
       this.logger.log('Checking and synchronizing Librarian tables...');
-      
+
       // We manually initialize Librarian tables instead of using `prisma db push`.
       // Prisma's `db push` behaves dangerously on unmanaged (legacy) databases by 
       // attempting to align or drop tables/columns (e.g. Calibre's books_authors_link),
@@ -44,7 +43,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
       `);
-      
+
       await this.$executeRawUnsafe(`
         CREATE UNIQUE INDEX IF NOT EXISTS "librarian_users_email_key" ON "librarian_users"("email");
       `);

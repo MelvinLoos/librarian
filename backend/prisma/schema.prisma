@@ -62,7 +62,7 @@ model Book {
 
   tags         BookTagLink[]
   series       BookSeriesLink[]
-  comments     Comment?
+  comments     Comment[]
   
   readingStates LibrarianReadingProgress[]
   @@map("books")
@@ -87,7 +87,6 @@ model BookAuthorLink {
   book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
   author   Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  @@unique([bookId, authorId])
   @@map("books_authors_link")
 }
 
@@ -124,7 +123,6 @@ model BookTagLink {
   book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
   tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
-  @@unique([bookId, tagId])
   @@map("books_tags_link")
 }
 
@@ -146,13 +144,12 @@ model BookSeriesLink {
   book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
   series   Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
 
-  @@unique([bookId, seriesId])
   @@map("books_series_link")
 }
 
 model Comment {
   id       Int    @id @default(autoincrement())
-  bookId   Int    @unique @map("book")
+  bookId   Int    @map("book")
   text     String
 
   book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
