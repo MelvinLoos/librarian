@@ -54,6 +54,11 @@ The system is divided into five strictly isolated Bounded Contexts representing 
 
 * **Responsibility:** Specialized delivery mechanisms for external clients (OPDS, Kobo Sync, SendToKindle).
 
+### 2.6 Reading Context
+* **Responsibility:** Tracks and manages the state of a User's consumption of a specific Book.
+* **Aggregate Root:** `ReadingProgress`
+* **Entities/Value Objects:** `CurrentPage`, `TotalPages`, `CompletionStatus`
+
 ## **3\. Core Domain Events (Choreography)**
 
 Long-running business tasks MUST be decoupled using Domain Events:
@@ -85,3 +90,8 @@ Long-running business tasks MUST be decoupled using Domain Events:
 2. **System:** IAM Context validates the device credentials.  
 3. **System:** Delivery Context queries the Catalog Context for modified Books.  
 4. **System:** Delivery Context formats the Book Aggregates into the specific payload required by the Kobo firmware.
+
+### Scenario 4: Reading Progress Sync
+1. **Actor:** User's client device updates the current reading position.
+2. **System:** Reading Context validates the Book exists (via reference ID, not direct DB join) and the User is authorized.
+3. **System:** Reading Context updates the `ReadingProgress` aggregate and returns the new state.

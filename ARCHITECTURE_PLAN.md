@@ -27,6 +27,11 @@ NestJS Modules map 1:1 with Bounded Contexts. Cross-module imports are strictly 
 │   │   ├── /infrastructure           \# prisma-book.repository.ts, legacy-acl.mapper.ts  
 │   │   └── /presentation             \# book.controller.ts, book.dto.ts  
 │   ├── /storage                      \# Storage Bounded Context Module  
+│   ├── /reading                      \# Reading Bounded Context Module  
+│   │   ├── /domain                   \# progress.aggregate.ts  
+│   │   ├── /application              \# update-progress.use-case.ts  
+│   │   ├── /infrastructure           \# prisma-reading.repository.ts  
+│   │   └── /presentation             \# progress.controller.ts  
 │   ├── /integration                  \# Integration Bounded Context Module  
 │   └── /delivery                     \# Delivery Bounded Context Module  
 └── main.ts                           \# App Entrypoint
