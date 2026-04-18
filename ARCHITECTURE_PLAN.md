@@ -16,25 +16,29 @@ NestJS Modules map 1:1 with Bounded Contexts. Cross-module imports are strictly 
 
 /backend  
 ├── /prisma  
-│   ├── schema.prisma                 \# The single source of truth for DB schemas  
-│   └── migrations/                   \# Managed Prisma migrations  
-├── /src  
-│   ├── /shared                       \# Global Primitives (NO Business Logic)  
-│   ├── /iam                          \# IAM Bounded Context Module  
-│   ├── /catalog                      \# Catalog Bounded Context Module  
-│   │   ├── /domain                   \# book.aggregate.ts, book.events.ts  
-│   │   ├── /application              \# get-book.use-case.ts  
-│   │   ├── /infrastructure           \# prisma-book.repository.ts, legacy-acl.mapper.ts  
-│   │   └── /presentation             \# book.controller.ts, book.dto.ts  
-│   ├── /storage                      \# Storage Bounded Context Module  
-│   ├── /reading                      \# Reading Bounded Context Module  
-│   │   ├── /domain                   \# progress.aggregate.ts  
-│   │   ├── /application              \# update-progress.use-case.ts  
-│   │   ├── /infrastructure           \# prisma-reading.repository.ts  
-│   │   └── /presentation             \# progress.controller.ts  
-│   ├── /integration                  \# Integration Bounded Context Module  
-│   └── /delivery                     \# Delivery Bounded Context Module  
-└── main.ts                           \# App Entrypoint
+│   ├── schema.prisma                           \# The single source of truth for DB schemas  
+│   └── /migrations                             \# Managed Prisma migrations  
+├── /src            
+│   ├── /shared                                 \# Global Primitives (NO Business Logic)  
+│   ├── /iam                                    \# IAM Bounded Context Module  
+│   ├── /catalog                                \# Catalog Bounded Context Module  
+│   │   ├── /domain                             \# book.aggregate.ts, book.events.ts  
+│   │   ├── /application                        \# get-book.use-case.ts  
+│   │   ├── /infrastructure                     \# prisma-book.repository.ts, legacy-acl.mapper.ts  
+│   │   └── /presentation                       \# book.controller.ts, book.dto.ts  
+│   ├── /storage                                \# Storage Bounded Context Module  
+│   |   ├── /application
+│   |   │   ├── get-cover-stream.use-case.ts
+│   |   │   ├── stream-asset.use-case.ts        \# Handles HTTP 206 Partial Content
+│   |   │   ├── download-asset.use-case.ts      \# Handles Content-Disposition: attachment
+│   ├── /reading                                \# Reading Bounded Context Module  
+│   │   ├── /domain                             \# progress.aggregate.ts  
+│   │   ├── /application                        \# update-progress.use-case.ts  
+│   │   ├── /infrastructure                     \# prisma-reading.repository.ts  
+│   │   └── /presentation                       \# progress.controller.ts  
+│   ├── /integration                            \# Integration Bounded Context Module  
+│   └── /delivery                               \# Delivery Bounded Context Module  
+└── main.ts                                     \# App Entrypoint
 
 ## **3\. NestJS Execution Lifecycles**
 

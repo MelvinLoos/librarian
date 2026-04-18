@@ -57,7 +57,7 @@ The system is divided into five strictly isolated Bounded Contexts representing 
 ### 2.6 Reading Context
 * **Responsibility:** Tracks and manages the state of a User's consumption of a specific Book.
 * **Aggregate Root:** `ReadingProgress`
-* **Entities/Value Objects:** `CurrentPage`, `TotalPages`, `CompletionStatus`
+* **Entities/Value Objects:** `Locator` (Generic String representation of progress, e.g., EPUB CFI or PDF Page), `ProgressPercentage` (Float 0-100), `CompletionStatus`
 
 ## **3\. Core Domain Events (Choreography)**
 

@@ -10,31 +10,32 @@
    - `ARCHITECTURE_PLAN.md`: For strictly enforced directory structures and database mappings.
 2. **The "Artifact First" Rule:** You are strictly forbidden from writing or modifying implementation code immediately. Upon receiving a task, you MUST first generate an **Implementation Plan Artifact**. You must PAUSE and wait for the human user to approve the artifact before writing code.
 3. **Clean Architecture Enforcement:** All Bounded Contexts (`/iam`, `/catalog`, `/storage`, `/reading`) are strictly isolated. You must implement features in this exact order: `Domain` -> `Application (Use Cases)` -> `Infrastructure (Adapters)` -> `Presentation (Controllers)`.
-4. **Database Immutability:** The legacy SQLite tables (`books`, `authors`, `data`) mapped in `schema.prisma` are FROZEN. Do not alter them.
-5. **API & Error Standards:** All controllers must use Swagger decorators (`@ApiOperation`, `@ApiResponse`, etc.). All errors must be thrown using standard NestJS exceptions, which will be caught by the global RFC 7807 filter. All logging must use the globally injected Pino logger.
+4. **Database Immutability:** The legacy SQLite tables (`books`, `authors`, `data`) mapped in `schema.prisma` are FROZEN. Do not alter them. 
+5. **API & Error Standards:** All controllers must use Swagger decorators (`@ApiOperation`, `@ApiResponse`, etc.). All errors must be thrown using standard NestJS exceptions. All logging must use the globally injected Pino logger.
 
 ---
 
 ## Sprint 1: Enforcing Observability (✅ Completed)
 - Implemented global `rfc7807-exception.filter.ts`.
-- Integrated `nestjs-pino` with `pino-http` and `pino-pretty` for local DX.
+- Integrated `nestjs-pino` with single-line terminal DX.
+
+## Sprint 2: Observability Retrofit & DDD Audit (✅ Completed)
+- Retrofitted `/storage`, `/catalog`, and `/reading` with Pino and strict RFC 7807 error handling.
 
 ---
 
-## Sprint 2: Observability Retrofit & DDD Audit (🎯 Current Active Task)
+## Sprint 3: The Consumption Pipeline (Asset Delivery & Locator Tracking)
 
-**Target Directories:** `/backend/src/storage/`, `/backend/src/catalog/`, `/backend/src/reading/`
+**Target Directories:** `prisma/schema.prisma`, `/backend/src/storage/`, `/backend/src/reading/`
 
-**Context:** These modules were scaffolded prior to the enforcement of the Pino observability layer and strict RFC 7807 error handling. They must be retrofitted to comply with the current architecture.
+**Context:** Users need the ability to stream books into a web reader using chunking, download books for offline use, and track their reading progress agnostically (supporting both EPUB CFIs and PDF pages).
 
 **Objective:**
-1. **Artifact Generation:** Analyze all controllers, services, and use cases across these three Bounded Contexts.
-2. **Implementation:** - Replace any instances of `console.log` or the standard NestJS `Logger` with the newly injected Pino logger.
-   - Ensure that any "not found" states (e.g., Book missing for cover stream, missing reading progress) explicitly throw a standard NestJS exception (e.g., `NotFoundException`) so they are caught by the global RFC 7807 filter.
-   - Verify that there are no illegal cross-module imports (e.g., `/catalog` importing from `/storage`).
-3. **Validation:** Run all existing `.spec.ts` files to ensure the logging changes do not break any unit tests.
-
----
-
-## Sprint 3: Storage, Catalog & Reading Contexts (✅ Implemented, Pending Audit via Sprint 2)
-*Features exist in the codebase and are awaiting the retrofit and validation phase to ensure strict DDD and Clean Architecture compliance.*
+1. **Schema Update:** Modify `LibrarianReadingProgress` in `schema.prisma`. Remove `currentPage` and `totalPages`. Add `locator` (String) and `percentage` (Float).
+2. **Reading Retrofit:** Update `UpdateReadingProgressUseCase`, `ProgressController`, and their corresponding DTOs to accept and return the new `locator` and `percentage` fields.
+3. **Storage Application:** Create `StreamAssetUseCase` and `DownloadAssetUseCase`. 
+   - `StreamAssetUseCase` MUST handle `Range` headers to support HTTP 206 Partial Content for chunked web-reader streaming.
+4. **Storage Presentation:** Update `AssetController` with two new endpoints:
+   - `GET /assets/books/:id/stream`: Must return a `StreamableFile` with correct `Content-Range`, `Accept-Ranges`, and `Content-Length` headers.
+   - `GET /assets/books/:id/download`: Must return a `StreamableFile` with `Content-Disposition: attachment`.
+   - Update OpenAPI Swagger decorators to explicitly document the Range/Chunking support.
