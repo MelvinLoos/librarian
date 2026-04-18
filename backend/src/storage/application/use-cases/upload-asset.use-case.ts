@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Asset } from '../../domain/asset.aggregate';
 import { FilePath } from '../../domain/value-objects/file-path.value-object';
@@ -19,6 +19,8 @@ export interface UploadAssetCommand {
 
 @Injectable()
 export class UploadAssetUseCase {
+  private readonly logger = new Logger(UploadAssetUseCase.name);
+
   constructor(
     @Inject('IAssetRepository')
     private readonly assetRepository: IAssetRepository,
@@ -56,6 +58,8 @@ export class UploadAssetUseCase {
     }
     
     asset.clearEvents();
+
+    this.logger.log(`Successfully uploaded asset ${assetId} to physical storage and persisted metadata`);
 
     return assetId;
   }

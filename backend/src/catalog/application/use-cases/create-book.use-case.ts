@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { Book } from '../../domain/book.aggregate';
 import type { IBookRepository } from '../ports/book.repository.interface';
 
@@ -11,6 +11,8 @@ export interface CreateBookCommand {
 
 @Injectable()
 export class CreateBookUseCase {
+  private readonly logger = new Logger(CreateBookUseCase.name);
+
   constructor(
     @Inject('IBookRepository')
     private readonly bookRepository: IBookRepository
@@ -26,6 +28,8 @@ export class CreateBookUseCase {
 
     await this.bookRepository.save(book);
     
+    this.logger.log(`Successfully created and saved book aggregate: ${book.id}`);
+
     return book;
   }
 }

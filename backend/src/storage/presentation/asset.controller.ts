@@ -5,6 +5,8 @@ import {
   UseInterceptors,
   HttpCode,
   HttpStatus,
+  Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
@@ -14,6 +16,8 @@ import { UploadAssetUseCase } from '../application/use-cases/upload-asset.use-ca
 @ApiBearerAuth('JWT')
 @Controller('assets')
 export class AssetController {
+  private readonly logger = new Logger(AssetController.name);
+
   constructor(private readonly uploadAssetUseCase: UploadAssetUseCase) {}
 
   @Post('upload')
@@ -43,8 +47,11 @@ export class AssetController {
     // without @types/multer which might not be global, but Nest uses it.
     
     if (!file) {
-      throw new Error('File is required');
+      this.logger.warn('Upload attempt failed: File is required');
+      throw new BadRequestException('File is required');
     }
+
+    this.logger.log(`Initiating upload for file: ${file.originalname} (size: ${file.size} bytes)`);
 
     const assetId = await this.uploadAssetUseCase.execute({
       file: {

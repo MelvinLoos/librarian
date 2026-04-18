@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { IFileStorage } from '../application/ports/file-storage.interface';
 import { join, basename, resolve } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
@@ -7,6 +7,7 @@ import * as path from 'path';
 
 @Injectable()
 export class LocalFileStorage implements IFileStorage {
+  private readonly logger = new Logger(LocalFileStorage.name);
   private readonly assetsDir = join('.librarian', 'assets');
 
   async upload({ buffer, originalName, mimeType }: { buffer: Buffer; originalName: string; mimeType: string }): Promise<string> {
@@ -17,6 +18,8 @@ export class LocalFileStorage implements IFileStorage {
     await mkdir(resolve(process.cwd(), this.assetsDir), { recursive: true });
     await writeFile(absolutePath, buffer);
 
+    this.logger.log(`File written to disk: ${absolutePath}`);
+
     return relativePath;
   }
   
@@ -25,7 +28,8 @@ export class LocalFileStorage implements IFileStorage {
     const coverPath = path.join(libraryPath, relativePath, 'cover.jpg');
 
     if (!fs.existsSync(coverPath)) {
-      throw new Error('File does not exist');
+      this.logger.warn(`Cover file does not exist at path: ${coverPath}`);
+      throw new NotFoundException('File does not exist');
     }
 
     return fs.createReadStream(coverPath);

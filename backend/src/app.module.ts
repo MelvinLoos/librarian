@@ -15,8 +15,20 @@ import { AppService } from './app.service';
   imports: [
     LoggerModule.forRoot({
       pinoHttp: {
-        genReqId: (req) => {
-          return req.id || crypto.randomUUID();
+        // Generate a unique traceId per request
+        genReqId: (req) => req.id ?? crypto.randomUUID(),
+        // Attach traceId as a top-level log property
+        customProps: (req) => ({ traceId: req.id }),
+        // Concise success message: [GET] /api/books - 200
+        customSuccessMessage: (req, res) =>
+          `[${req.method}] ${req.url} - ${res.statusCode}`,
+        // Concise error message: [POST] /api/auth/login - 401 Unauthorized
+        customErrorMessage: (req, res, err: any) =>
+          `[${req.method}] ${req.url} - ${err?.status ?? res.statusCode} ${err?.message ?? ''}`.trim(),
+        // Trim down the req/res objects to avoid verbose dumps
+        serializers: {
+          req: (req) => ({ method: req.method, url: req.url }),
+          res: (res) => ({ statusCode: res.statusCode }),
         },
       },
     }),
@@ -26,9 +38,9 @@ import { AppService } from './app.service';
     StorageModule,
     SharedModule,
     AssetModule,
-    ReadingModule
+    ReadingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

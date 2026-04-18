@@ -1,4 +1,4 @@
-import { Controller, Put, Get, Param, Body, ParseIntPipe, Request, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Put, Get, Param, Body, ParseIntPipe, Request, UseGuards, HttpCode, HttpStatus, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { UpdateReadingProgressUseCase } from '../application/use-cases/update-reading-progress.use-case';
 import { GetReadingStatesUseCase } from '../application/use-cases/get-reading-states.use-case';
@@ -12,6 +12,8 @@ import { Role } from '../../iam/auth/roles.enum';
 @UseGuards(RolesGuard)
 @Controller('users/me')
 export class ProgressController {
+  private readonly logger = new Logger(ProgressController.name);
+
   constructor(
     private readonly updateReadingProgressUseCase: UpdateReadingProgressUseCase,
     private readonly getReadingStatesUseCase: GetReadingStatesUseCase,
@@ -33,6 +35,7 @@ export class ProgressController {
     @Body() dto: UpdateProgressDto,
   ) {
     const userId = req.user?.id;
+    this.logger.log(`Received request to update progress for user: ${userId}, book: ${bookId} to page ${dto.currentPage}/${dto.totalPages}`);
     await this.updateReadingProgressUseCase.execute(userId, bookId, dto.currentPage, dto.totalPages);
     return { message: 'Progress updated' };
   }
@@ -47,6 +50,7 @@ export class ProgressController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getStates(@Request() req: any) {
     const userId = req.user?.id;
+    this.logger.log(`Received request to get reading states for user: ${userId}`);
     return this.getReadingStatesUseCase.execute(userId);
   }
 }

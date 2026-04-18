@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, HttpStatus, HttpCode, Logger } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CreateBookUseCase } from '../application/use-cases/create-book.use-case';
 import { GetBookUseCase } from '../application/use-cases/get-book.use-case';
@@ -8,6 +8,8 @@ import { CreateBookDto } from './dto/create-book.dto';
 @ApiBearerAuth('JWT')
 @Controller('books')
 export class BookController {
+  private readonly logger = new Logger(BookController.name);
+
   constructor(
     private readonly createBookUseCase: CreateBookUseCase,
     private readonly getBookUseCase: GetBookUseCase
@@ -19,6 +21,7 @@ export class BookController {
   @ApiResponse({ status: 201, description: 'The book has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad request payload.' })
   async create(@Body() createBookDto: CreateBookDto) {
+    this.logger.log(`Received request to create book: ${createBookDto.title}`);
     const book = await this.createBookUseCase.execute(createBookDto);
     return {
       id: book.id,
@@ -44,6 +47,7 @@ export class BookController {
     @Query('search') search?: string,
     @Query('tag') tag?: string,
   ) {
+    this.logger.log(`Received request to find all books (search: ${search}, tag: ${tag}, limit: ${limit})`);
     const books = await this.getBookUseCase.executeAll({ sort, order, limit, search, tag });
     return books.map(book => ({
       id: book.id,
@@ -64,6 +68,7 @@ export class BookController {
   @ApiResponse({ status: 200, description: 'Book retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Book not found.' })
   async findOne(@Param('id') id: string) {
+    this.logger.log(`Received request to find book by ID: ${id}`);
     const book = await this.getBookUseCase.execute(id);
     return {
       id: book.id,
