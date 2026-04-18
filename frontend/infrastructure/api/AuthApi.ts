@@ -1,4 +1,4 @@
-import type { LoginCredentials, AuthResponse } from '~/domain/auth/Auth.types';
+import type { LoginCredentials, RegisterCredentials, AuthResponse } from '~/domain/auth/Auth.types';
 
 export const AuthApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -7,6 +7,13 @@ export const AuthApi = {
       method: 'POST',
       body: credentials,
       credentials: 'include',
+    });
+  },
+
+  async register(credentials: RegisterCredentials): Promise<{ id: string; email: string; role: string }> {
+    return await $fetch('/api/users', {
+      method: 'POST',
+      body: credentials,
     });
   },
 

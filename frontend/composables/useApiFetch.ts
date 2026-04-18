@@ -23,8 +23,6 @@ export const useApiFetch: typeof useFetch = (request, opts?) => {
       // Optional: Auto-logout if the token is expired/invalid
       if (response.status === 401) {
         authStore.logout()
-        const router = useRouter()
-        router.push('/login')
       }
     }
   })
