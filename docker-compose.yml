@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  librarian:
+    build: .
+    container_name: librarian
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=file:///calibre/metadata.db
+      - CALIBRE_LIBRARY_PATH=/calibre
+      - JWT_SECRET=${JWT_SECRET:-fallback_secret_for_dev_only}
+    volumes:
+      - ${HOST_CALIBRE_DIR:-./library}:/calibre
