@@ -38,7 +38,7 @@
               ></div>
             </div>
             <p class="text-xs uppercase tracking-[0.24em] text-gray-400">
-              Last read {{ lastReadDate }} • Page {{ currentReading.currentPage }} of {{ currentReading.totalPages }}
+              Last read {{ lastReadDate }} • {{ progressPercent }}% Completed
             </p>
           </div>
 
@@ -196,8 +196,7 @@ const onHeroError = () => {
 // Stats & Helpers
 const progressPercent = computed(() => {
   if (!currentReading.value) return 0
-  const { currentPage, totalPages } = currentReading.value
-  return totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0
+  return Math.round(currentReading.value.percentage || 0)
 })
 
 const lastReadDate = computed(() => {
