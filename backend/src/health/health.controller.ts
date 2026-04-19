@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthCheckService, HealthCheck, MemoryHealthIndicator } from '@nestjs/terminus';
+import { Public } from '../iam/auth/public.decorator';
 
 @Controller('health')
 export class HealthController {
@@ -8,8 +9,8 @@ export class HealthController {
     private memory: MemoryHealthIndicator,
   ) {}
 
+  @Public()
   @Get()
-  @Public()s
   @HealthCheck()
   check() {
     return this.health.check([
