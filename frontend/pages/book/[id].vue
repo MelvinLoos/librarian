@@ -93,7 +93,7 @@ const apiBase = useApiBase()
 const { data: book } = useApiFetch(`/books/${route.params.id}`, {
   baseURL: apiBase,
 })
-const downloadUrl = computed(() => `${apiBase}/assets/download/${route.params.id}`)
+const downloadUrl = computed(() => `/api/assets/books/${route.params.id}/download`)
 const coverUrl = computed(() => book.value?.hasCover ? `/api/assets/covers/${route.params.id}` : null)
 
 const goBack = () => {
