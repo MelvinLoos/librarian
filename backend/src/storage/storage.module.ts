@@ -6,12 +6,17 @@ import { UploadAssetUseCase } from './application/use-cases/upload-asset.use-cas
 import { PrismaAssetRepository } from './infrastructure/prisma-asset.repository';
 import { LocalFileStorage } from './infrastructure/local-file.storage';
 import { PrismaLegacyBookRepository } from './infrastructure/prisma-legacy-book.repository';
+import { StreamAssetUseCase } from './application/use-cases/stream-asset.use-case';
+import { DownloadAssetUseCase } from './application/use-cases/download-asset.use-case';
+import { PrismaBookFormatRepository } from './infrastructure/prisma-book-format.repository';
 
 @Module({
   imports: [SharedModule, EventEmitterModule.forRoot()],
   controllers: [AssetController],
   providers: [
     UploadAssetUseCase,
+    StreamAssetUseCase,
+    DownloadAssetUseCase,
     {
       provide: 'IAssetRepository',
       useClass: PrismaAssetRepository,
@@ -24,7 +29,11 @@ import { PrismaLegacyBookRepository } from './infrastructure/prisma-legacy-book.
       provide: 'IFileStorage',
       useClass: LocalFileStorage,
     },
+    {
+      provide: 'IBookFormatRepository',
+      useClass: PrismaBookFormatRepository,
+    },
   ],
-  exports: [UploadAssetUseCase],
+  exports: [UploadAssetUseCase, StreamAssetUseCase, DownloadAssetUseCase],
 })
-export class StorageModule {}
+export class StorageModule { }

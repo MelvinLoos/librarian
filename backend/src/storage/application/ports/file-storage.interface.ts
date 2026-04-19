@@ -6,4 +6,7 @@ export interface IFileStorage {
    */
   upload(file: { buffer: Buffer; originalName: string; mimeType: string }): Promise<string>;
   getCoverStream(relativePath: string): Promise<ReadStream>;
+  getBookFilePath(bookFolderPath: string, fileName: string, format: string): string;
+  getFileSize(absolutePath: string): Promise<number>;
+  createReadStreamWithRange(absolutePath: string, start?: number, end?: number): ReadStream;
 }

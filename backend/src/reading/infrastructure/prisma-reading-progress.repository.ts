@@ -4,15 +4,15 @@ import { IReadingProgressRepository } from '../application/ports/reading-progres
 
 @Injectable()
 export class PrismaReadingProgressRepository implements IReadingProgressRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  async upsertProgress(userId: string, bookId: number, currentPage: number, totalPages: number): Promise<void> {
+  async upsertProgress(userId: string, bookId: number, locator: string, percentage: number): Promise<void> {
     await this.prisma.librarianReadingProgress.upsert({
       where: {
         userId_bookId: { userId, bookId }, // Uses the unique constraint
       },
-      update: { currentPage, totalPages },
-      create: { userId, bookId, currentPage, totalPages },
+      update: { locator, percentage },
+      create: { userId, bookId, locator, percentage },
     });
   }
 

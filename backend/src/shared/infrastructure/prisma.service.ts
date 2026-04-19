@@ -53,8 +53,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
           "userId" TEXT NOT NULL,
           "bookId" INTEGER NOT NULL,
-          "currentPage" INTEGER NOT NULL DEFAULT 0,
-          "totalPages" INTEGER NOT NULL DEFAULT 0,
+          "locator" TEXT,
+          "percentage" REAL NOT NULL DEFAULT 0.0,
           "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT "LibrarianReadingProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "librarian_users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
           CONSTRAINT "LibrarianReadingProgress_bookId_fkey" FOREIGN KEY ("bookId") REFERENCES "books" ("id") ON DELETE CASCADE ON UPDATE CASCADE

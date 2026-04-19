@@ -17,13 +17,13 @@ export class ProgressController {
   constructor(
     private readonly updateReadingProgressUseCase: UpdateReadingProgressUseCase,
     private readonly getReadingStatesUseCase: GetReadingStatesUseCase,
-  ) {}
+  ) { }
 
   @Put('progress/:bookId')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
-    summary: 'Update reading progress', 
-    description: 'Upserts the user reading progress for a specific book.' 
+  @ApiOperation({
+    summary: 'Update reading progress',
+    description: 'Upserts the user reading progress for a specific book.'
   })
   @ApiParam({ name: 'bookId', type: 'number', description: 'The ID of the book being read' })
   @ApiResponse({ status: 200, description: 'Progress successfully saved.' })
@@ -35,16 +35,16 @@ export class ProgressController {
     @Body() dto: UpdateProgressDto,
   ) {
     const userId = req.user?.id;
-    this.logger.log(`Received request to update progress for user: ${userId}, book: ${bookId} to page ${dto.currentPage}/${dto.totalPages}`);
-    await this.updateReadingProgressUseCase.execute(userId, bookId, dto.currentPage, dto.totalPages);
+    this.logger.log(`Received request to update progress for user: ${userId}, book: ${bookId} to locator ${dto.locator}, percentage ${dto.percentage}`);
+    await this.updateReadingProgressUseCase.execute(userId, bookId, dto.locator, dto.percentage);
     return { message: 'Progress updated' };
   }
 
   @Get('reading-states')
   @Roles(Role.READER, Role.ADMIN)
-  @ApiOperation({ 
-    summary: 'Get all reading states', 
-    description: 'Retrieves all books currently being read by the authenticated user, sorted by recent activity.' 
+  @ApiOperation({
+    summary: 'Get all reading states',
+    description: 'Retrieves all books currently being read by the authenticated user, sorted by recent activity.'
   })
   @ApiResponse({ status: 200, description: 'Reading states retrieved successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })

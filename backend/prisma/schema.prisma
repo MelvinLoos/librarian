@@ -20,21 +20,22 @@ model User {
   passwordHash String
   role         String   @default("READER") // ADMIN, CONTRIBUTOR, READER
   createdAt    DateTime @default(now())
-  
+
   readingStates LibrarianReadingProgress[]
+
   @@map("librarian_users")
 }
 
 model LibrarianReadingProgress {
-  id          Int      @id @default(autoincrement())
-  userId      String   // Changed from Int to String to match User model!
-  bookId      Int
-  currentPage Int      @default(0)
-  totalPages  Int      @default(0)
-  updatedAt   DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  userId     String // Changed from Int to String to match User model!
+  bookId     Int
+  locator    String   @default("")
+  percentage Float    @default(0)
+  updatedAt  DateTime @updatedAt
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bookId])
 }
@@ -57,22 +58,23 @@ model Book {
   path         String?
 
   // Relationships mapping to Calibre Link Tables
-  authors      BookAuthorLink[]
-  formats      Data[]
+  authors BookAuthorLink[]
+  formats Data[]
 
-  tags         BookTagLink[]
-  series       BookSeriesLink[]
-  comments     Comment[]
-  
+  tags     BookTagLink[]
+  series   BookSeriesLink[]
+  comments Comment[]
+
   readingStates LibrarianReadingProgress[]
+
   @@map("books")
 }
 
 model Author {
-  id    Int    @id @default(autoincrement())
-  name  String
-  sort  String?
-  link  String?
+  id   Int     @id @default(autoincrement())
+  name String
+  sort String?
+  link String?
 
   books BookAuthorLink[]
 
@@ -84,8 +86,8 @@ model BookAuthorLink {
   bookId   Int @map("book")
   authorId Int @map("author")
 
-  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  author   Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("books_authors_link")
 }
@@ -97,18 +99,18 @@ model BookAuthorLink {
 model Data {
   id               Int    @id @default(autoincrement())
   bookId           Int    @map("book")
-  format           String 
+  format           String
   uncompressedSize Int    @map("uncompressed_size")
-  name             String 
+  name             String
 
-  book             Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@map("data")
 }
 
 model Tag {
-  id    Int    @id @default(autoincrement())
-  name  String
+  id   Int    @id @default(autoincrement())
+  name String
 
   books BookTagLink[]
 
@@ -116,20 +118,20 @@ model Tag {
 }
 
 model BookTagLink {
-  id       Int @id @default(autoincrement())
-  bookId   Int @map("book")
-  tagId    Int @map("tag")
+  id     Int @id @default(autoincrement())
+  bookId Int @map("book")
+  tagId  Int @map("tag")
 
-  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@map("books_tags_link")
 }
 
 model Series {
-  id    Int    @id @default(autoincrement())
-  name  String
-  sort  String?
+  id   Int     @id @default(autoincrement())
+  name String
+  sort String?
 
   books BookSeriesLink[]
 
@@ -141,18 +143,18 @@ model BookSeriesLink {
   bookId   Int @map("book")
   seriesId Int @map("series")
 
-  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  series   Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
 
   @@map("books_series_link")
 }
 
 model Comment {
-  id       Int    @id @default(autoincrement())
-  bookId   Int    @map("book")
-  text     String
+  id     Int    @id @default(autoincrement())
+  bookId Int    @map("book")
+  text   String
 
-  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }

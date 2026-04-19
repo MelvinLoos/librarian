@@ -22,7 +22,7 @@ export class LocalFileStorage implements IFileStorage {
 
     return relativePath;
   }
-  
+
   async getCoverStream(relativePath: string): Promise<fs.ReadStream> {
     const libraryPath = process.env.CALIBRE_LIBRARY_PATH || '';
     const coverPath = path.join(libraryPath, relativePath, 'cover.jpg');
@@ -33,5 +33,38 @@ export class LocalFileStorage implements IFileStorage {
     }
 
     return fs.createReadStream(coverPath);
+  }
+
+  /**
+   * Resolves the absolute path to a book file using the Calibre library structure.
+   */
+  getBookFilePath(bookFolderPath: string, fileName: string, format: string): string {
+    const libraryPath = process.env.CALIBRE_LIBRARY_PATH || '';
+    // Calibre stores files as: {Library}/{Author}/{Title}/{Name}.{extension}
+    return path.join(libraryPath, bookFolderPath, `${fileName}.${format.toLowerCase()}`);
+  }
+
+  /**
+   * Returns the total size of the file in bytes.
+   */
+  async getFileSize(absolutePath: string): Promise<number> {
+    try {
+      const stats = await fs.promises.stat(absolutePath);
+      return stats.size;
+    } catch (error) {
+      throw new Error(`Could not access file at ${absolutePath}`);
+    }
+  }
+
+  /**
+   * Creates a ReadStream. If start/end are provided, it only reads that byte range.
+   */
+  createReadStreamWithRange(absolutePath: string, start?: number, end?: number): fs.ReadStream {
+    const options: any = {};
+    if (start !== undefined) options.start = start;
+    if (end !== undefined) options.end = end;
+
+    // highWaterMark defaults to 64KB, ensuring RAM safety
+    return fs.createReadStream(absolutePath, options);
   }
 }

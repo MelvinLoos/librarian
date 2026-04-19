@@ -8,12 +8,12 @@ export class UpdateReadingProgressUseCase {
   constructor(
     @Inject('IReadingProgressRepository')
     private readonly progressRepository: IReadingProgressRepository,
-  ) {}
+  ) { }
 
-  async execute(userId: string, bookId: number, currentPage: number, totalPages: number): Promise<void> {
-    this.logger.debug(`Updating reading progress: User ${userId}, Book ${bookId}, Page ${currentPage}/${totalPages}`);
+  async execute(userId: string, bookId: number, locator: string, percentage: number): Promise<void> {
+    this.logger.debug(`Updating reading progress: User ${userId}, Book ${bookId}, Page ${locator}/${percentage}`);
     try {
-      await this.progressRepository.upsertProgress(userId, bookId, currentPage, totalPages);
+      await this.progressRepository.upsertProgress(userId, bookId, locator, percentage);
       this.logger.log(`Successfully updated reading progress for User ${userId}, Book ${bookId}`);
     } catch (error: any) {
       this.logger.error(`Failed to update reading progress for User ${userId}, Book ${bookId}`, error.stack);
