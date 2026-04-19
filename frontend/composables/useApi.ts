@@ -5,6 +5,7 @@ export const useApi = () => {
   const authStore = useAuthStore()
 
   const $api = $fetch.create({
+    baseURL: '/api',
     onRequest({ options }) {
       if (authStore.token) {
         options.headers = {
@@ -12,7 +13,6 @@ export const useApi = () => {
           Authorization: `Bearer ${authStore.token}`,
         }
       }
-      options.baseURL = '/api'
       // Ensure cookies (refreshToken) are sent
       options.credentials = 'include'
     },

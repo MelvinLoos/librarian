@@ -4,6 +4,7 @@ const isDev = process.env.NODE_ENV !== 'production'
 
 // https://nuxt.com/docs/configuration/nuxt-config
 export default defineNuxtConfig({
+  ssr: false,
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxtjs/google-fonts',
@@ -46,7 +47,7 @@ export default defineNuxtConfig({
         wght: [200, 300, 400, 500, 600, 700, 800]
       },
       'Material+Symbols+Outlined': true
-    },
+  },
     display: 'block',
     download: true
   },
@@ -62,11 +63,11 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: process.env.API_BASE || 'http://localhost:3000'
+      apiBase: process.env.API_BASE || '/api'
     }
   },
   routeRules: {
-    '/api/**': { proxy: 'http://localhost:3001/**' }
+    '/api/**': { proxy: 'http://localhost:3001/api/**' }
   },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true }

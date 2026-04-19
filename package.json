@@ -8,6 +8,10 @@
     "install:backend": "npm install --prefix backend",
     "install:all": "npm install && npm run install:frontend && npm run install:backend",
     "dev": "concurrently -c \"cyan.bold,magenta.bold\" -n \"NUXT,NEST\" \"npm run dev --prefix frontend\" \"npm run start:dev --prefix backend\"",
+    "build:frontend": "npm run generate --prefix frontend",
+    "build:backend": "npm run build --prefix backend",
+    "build": "npm run build:frontend && npm run build:backend",
+    "start": "NODE_ENV=production npm run start:prod --prefix backend",
     "test": "npm run test --prefix backend && npm run test --prefix frontend"
   },
   "repository": {
