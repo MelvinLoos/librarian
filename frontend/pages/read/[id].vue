@@ -12,31 +12,20 @@
         </div>
       </div>
       
-      <div class="flex gap-2">
-        <button 
-          v-if="activeFormat === 'EPUB' && toc.length > 0" 
-          @click="isTocOpen = !isTocOpen"
-          class="flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium transition"
-          :class="isTocOpen ? 'bg-violet-600/20 text-violet-300' : 'bg-white/5 hover:bg-white/10'"
-        >
-          <span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
-          <span class="hidden sm:inline">Chapters</span>
-        </button>
-
-        <div v-if="activeFormat === 'EPUB'" class="flex gap-2 ml-2">
-          <button @click="prevPage" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 transition hover:bg-white/10">
-            <span class="material-symbols-outlined">chevron_left</span>
-          </button>
-          <button @click="nextPage" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 transition hover:bg-white/10">
-            <span class="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </div>
+      <button 
+        v-if="activeFormat === 'EPUB' && toc.length > 0" 
+        @click="isTocOpen = !isTocOpen"
+        class="flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium transition"
+        :class="isTocOpen ? 'bg-violet-600/20 text-violet-300' : 'bg-white/5 hover:bg-white/10'"
+      >
+        <span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
+        <span class="hidden sm:inline">Chapters</span>
+      </button>
     </header>
 
     <div 
       v-if="isTocOpen"
-      class="absolute right-0 top-[65px] z-40 h-[calc(100vh-65px)] w-full max-w-sm overflow-y-auto border-l border-white/10 bg-[#0a0f1d]/95 p-4 shadow-2xl backdrop-blur-2xl transition-transform"
+      class="absolute right-0 top-[65px] z-50 h-[calc(100vh-65px)] w-full max-w-sm overflow-y-auto border-l border-white/10 bg-[#0a0f1d]/95 p-4 shadow-2xl backdrop-blur-2xl transition-transform"
     >
       <h2 class="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Document Outline</h2>
       <ul class="space-y-1">
@@ -51,13 +40,53 @@
       </ul>
     </div>
 
-    <div class="relative flex-1 overflow-hidden" @click="isTocOpen = false">
+    <div 
+      class="relative flex-1 overflow-hidden" 
+      @click="isTocOpen = false"
+      @touchstart="handleTouchStart"
+      @touchend="handleTouchEnd"
+    >
       <div v-if="isLoading" class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-[#080e1a]">
         <div class="h-8 w-8 animate-spin rounded-full border-4 border-violet-500 border-t-transparent"></div>
         <p class="text-sm uppercase tracking-widest text-violet-300">Loading Content...</p>
       </div>
+
+      <div 
+        v-if="activeFormat === 'EPUB'" 
+        @click.stop="prevPage"
+        class="group absolute inset-y-0 left-0 z-40 flex w-1/4 cursor-pointer items-center justify-start transition-all duration-500 hover:bg-gradient-to-r hover:from-black/60 hover:to-transparent sm:w-24"
+      >
+        <div class="flex h-full w-1.5 bg-violet-500/0 transition-colors duration-500 group-hover:bg-violet-500/50 group-hover:shadow-[0_0_15px_rgba(138,76,252,0.8)]"></div>
+        <div class="ml-2 flex h-16 w-16 -translate-x-4 items-center justify-center rounded-full bg-[#080e1a]/90 text-white opacity-0 shadow-[0_0_30px_rgba(138,76,252,0.4)] backdrop-blur-md transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:ml-4">
+          <span class="material-symbols-outlined text-3xl text-violet-300">chevron_left</span>
+        </div>
+      </div>
+
+      <div 
+        v-if="activeFormat === 'EPUB'" 
+        @click.stop="nextPage"
+        class="group absolute inset-y-0 right-0 z-40 flex w-1/4 cursor-pointer items-center justify-end transition-all duration-500 hover:bg-gradient-to-l hover:from-black/60 hover:to-transparent sm:w-24"
+      >
+        <div class="mr-2 flex h-16 w-16 translate-x-4 items-center justify-center rounded-full bg-[#080e1a]/90 text-white opacity-0 shadow-[0_0_30px_rgba(138,76,252,0.4)] backdrop-blur-md transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:mr-4">
+          <span class="material-symbols-outlined text-3xl text-violet-300">chevron_right</span>
+        </div>
+        <div class="flex h-full w-1.5 bg-violet-500/0 transition-colors duration-500 group-hover:bg-violet-500/50 group-hover:shadow-[0_0_15px_rgba(138,76,252,0.8)]"></div>
+      </div>
       
-      <div v-show="activeFormat === 'EPUB'" id="viewer" class="h-full w-full"></div>
+      <div 
+        v-show="activeFormat === 'EPUB'" 
+        id="viewer" 
+        class="h-full w-full"
+        :class="[
+          (transitionState === 'next-out' || transitionState === 'prev-out') ? 'transition-all duration-150 ease-in' : '',
+          transitionState === 'idle' ? 'transition-all duration-150 ease-out' : '',
+          transitionState === 'next-out' ? 'opacity-0 -translate-x-6 scale-[0.98]' : '',
+          transitionState === 'next-in' ? 'opacity-0 translate-x-6 scale-[0.98]' : '',
+          transitionState === 'prev-out' ? 'opacity-0 translate-x-6 scale-[0.98]' : '',
+          transitionState === 'prev-in' ? 'opacity-0 -translate-x-6 scale-[0.98]' : '',
+          transitionState === 'idle' ? 'opacity-100 translate-x-0 scale-100' : ''
+        ]"
+      ></div>
 
       <iframe 
         v-if="activeFormat === 'PDF' && pdfUrl" 
@@ -90,6 +119,7 @@ const bookMetadata = ref<any>(null)
 const progressPercent = ref(0)
 const activeFormat = ref<'EPUB' | 'PDF' | null>(null)
 const pdfUrl = ref<string | null>(null)
+const transitionState = ref<'idle' | 'next-out' | 'next-in' | 'prev-out' | 'prev-in'>('idle')
 
 // TOC State
 const toc = ref<any[]>([])
@@ -99,7 +129,52 @@ let epubBook: any = null
 let rendition: any = null
 let saveProgressTimeout: any = null
 
+// --- Interaction Handlers ---
+let touchStartX = 0
+let touchStartY = 0
+let touchEndX = 0
+let touchEndY = 0
+
+const handleTouchStart = (e: TouchEvent) => {
+  touchStartX = e.changedTouches[0].screenX
+  touchStartY = e.changedTouches[0].screenY
+}
+
+const handleTouchEnd = (e: TouchEvent) => {
+  touchEndX = e.changedTouches[0].screenX
+  touchEndY = e.changedTouches[0].screenY
+  handleSwipe()
+}
+
+const handleSwipe = () => {
+  if (activeFormat.value !== 'EPUB') return;
+  const diffX = touchEndX - touchStartX;
+  const diffY = touchEndY - touchStartY;
+
+  // Only trigger swipe if horizontal movement is dominant
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    const swipeThreshold = 50; // pixels required to count as a swipe
+    if (diffX < -swipeThreshold) {
+      nextPage(); // Swiped left -> Go Forward
+    } else if (diffX > swipeThreshold) {
+      prevPage(); // Swiped right -> Go Backward
+    }
+  }
+};
+
+const handleKeyboard = (e: KeyboardEvent) => {
+  if (activeFormat.value !== 'EPUB') return;
+  if (e.key === 'ArrowLeft') {
+    prevPage();
+  } else if (e.key === 'ArrowRight') {
+    nextPage();
+  }
+};
+
+// --- Lifecycle ---
 onMounted(async () => {
+  window.addEventListener('keyup', handleKeyboard);
+
   try {
     bookMetadata.value = await $api(`/books/${bookId}`)
     const formats = bookMetadata.value?.formats?.map((f: any) => f.format.toUpperCase()) || []
@@ -145,6 +220,12 @@ const loadEpub = async () => {
       a: { color: '#c38bf5' }
     })
 
+    // Listen for inputs inside the iframe
+    rendition.on('keyup', handleKeyboard);
+    rendition.on('touchstart', handleTouchStart);
+    rendition.on('touchend', handleTouchEnd);
+
+    // Extract Table of Contents
     epubBook.loaded.navigation.then((nav: any) => {
       toc.value = nav.toc
     })
@@ -180,13 +261,55 @@ const loadEpub = async () => {
   }
 }
 
+// --- Actions ---
+// --- Actions ---
 const goToChapter = (href: string) => {
-  if (rendition) {
-    rendition.display(href)
-    isTocOpen.value = false
+  if (rendition && transitionState.value === 'idle') {
+    // Treat chapter jumps as a forward fade
+    transitionState.value = 'next-out'
+    setTimeout(() => {
+      rendition.display(href)
+      transitionState.value = 'next-in'
+      isTocOpen.value = false
+      
+      setTimeout(() => {
+        transitionState.value = 'idle'
+      }, 50)
+    }, 150)
   }
 }
 
+const prevPage = () => {
+  // Lockout prevents rapid-fire button mashing from breaking the animation
+  if (!rendition || transitionState.value !== 'idle') return
+  transitionState.value = 'prev-out'
+  
+  setTimeout(() => {
+    rendition.prev()
+    // Snap the invisible wrapper to the left side
+    transitionState.value = 'prev-in' 
+    
+    setTimeout(() => {
+      // 50ms buffer ensures the browser removes the CSS transition class before snapping,
+      // then restores it so we can smoothly slide back to the center ('idle')
+      transitionState.value = 'idle' 
+    }, 50) 
+  }, 150) // 150ms matches the Tailwind CSS duration
+}
+
+const nextPage = () => {
+  if (!rendition || transitionState.value !== 'idle') return
+  transitionState.value = 'next-out'
+  
+  setTimeout(() => {
+    rendition.next()
+    transitionState.value = 'next-in'
+    
+    setTimeout(() => {
+      transitionState.value = 'idle'
+    }, 50)
+  }, 150)
+}
 const debouncedSaveProgress = (locator: string, percentage: number) => {
   if (saveProgressTimeout) clearTimeout(saveProgressTimeout)
   saveProgressTimeout = setTimeout(async () => {
@@ -201,9 +324,6 @@ const debouncedSaveProgress = (locator: string, percentage: number) => {
   }, 2000)
 }
 
-const prevPage = () => rendition && rendition.prev()
-const nextPage = () => rendition && rendition.next()
-
 const goBack = () => {
   if (window.history.length > 1) {
     router.back()
@@ -213,6 +333,7 @@ const goBack = () => {
 }
 
 onBeforeUnmount(() => {
+  window.removeEventListener('keyup', handleKeyboard);
   if (saveProgressTimeout) clearTimeout(saveProgressTimeout)
   if (epubBook) epubBook.destroy()
 })
