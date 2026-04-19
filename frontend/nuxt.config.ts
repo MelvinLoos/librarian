@@ -6,6 +6,7 @@ const isDev = process.env.NODE_ENV !== 'production'
 export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
+    '@nuxtjs/google-fonts',
     '@pinia/nuxt',
     'lucide-nuxt',
     '@nuxt/image',
@@ -35,15 +36,24 @@ export default defineNuxtConfig({
       }
     }]
   ],
+  googleFonts: {
+    families: {
+      Newsreader: {
+        wght: [200, 300, 400, 500, 600, 700, 800],
+        ital: [200, 800]
+      },
+      Manrope: {
+        wght: [200, 300, 400, 500, 600, 700, 800]
+      },
+      'Material+Symbols+Outlined': true
+    },
+    display: 'block',
+    download: true
+  },
   css: [fileURLToPath(new URL('./assets/css/main.css', import.meta.url))],
   app: {
     head: {
-      link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap' },
-      ],
+      link: [],
     },
   },
   pages: true,

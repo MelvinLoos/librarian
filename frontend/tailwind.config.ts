@@ -75,6 +75,11 @@ export default {
         headline: ['Newsreader'],
         body: ['Manrope'],
         label: ['Manrope'],
+        serif: ['Newsreader', 'serif'],
+        sans: ['Manrope', 'sans-serif'],
+      },
+      backgroundImage: {
+        'primary-gradient': 'linear-gradient(135deg, #bd9dff 0%, #8a4cfc 100%)',
       },
     },
   },
