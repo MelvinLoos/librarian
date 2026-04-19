@@ -13,10 +13,10 @@
     <div class="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-8">
       <button
         @click="goBack"
-        class="inline-flex items-center gap-2 rounded-full bg-gray-900/70 px-4 py-2 text-sm font-medium text-gray-200 transition hover:bg-gray-900"
+        class="group inline-flex w-fit items-center gap-2 rounded-full bg-white/5 px-5 py-2.5 text-sm font-semibold text-gray-200 shadow-lg backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:text-white hover:shadow-[0_0_20px_rgba(138,76,252,0.2)]"
         type="button"
       >
-        <LucideArrowLeft class="h-4 w-4" />
+        <LucideArrowLeft class="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
         Back to overview
       </button>
 
@@ -59,17 +59,17 @@
             v-html="book?.description || 'No description available for this title.'"
           ></div>
 
-          <div class="flex gap-4">
+          <div class="flex w-full shrink-0 flex-col gap-3 sm:w-48">
             <NuxtLink
               :to="`/read/${route.params.id}`"
-              class="inline-flex items-center justify-center rounded-[2rem] bg-gradient-to-br from-violet-600 to-fuchsia-500 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:brightness-[1.05]"
+              class="inline-flex w-full items-center justify-center rounded-[2rem] bg-gradient-to-br from-violet-600 to-fuchsia-500 px-8 py-3 text-sm font-semibold tracking-wide text-white shadow-[0_0_20px_rgba(138,76,252,0.3)] transition-all hover:scale-[1.02] hover:brightness-[1.1]"
             >
               Read Now
             </NuxtLink>
 
             <a
               :href="downloadUrl"
-              class="inline-flex items-center justify-center rounded-[2rem] bg-white/10 border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
+              class="inline-flex w-full items-center justify-center rounded-[2rem] border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-gray-300 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white"
               download
             >
               Download
