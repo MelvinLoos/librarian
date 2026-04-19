@@ -21,6 +21,7 @@ export interface BookProps {
   pubdate?: Date;
   hasCover?: boolean;
   authorSort?: string;
+  description?: string;
 
   authors?: Author[];
   tags?: Tag[];
@@ -45,6 +46,7 @@ export class Book extends AggregateRoot<BookProps> {
       hasCover: props.hasCover ?? false,
       authorSort: props.authorSort ?? '',
       formats: props.formats ?? [],
+      description: props.description,
     }, id);
   }
 

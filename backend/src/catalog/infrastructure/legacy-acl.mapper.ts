@@ -7,6 +7,9 @@ export type PrismaBookWithAuthors = PrismaBook & {
     author: PrismaAuthor;
   })[];
   formats?: any[];
+  comments?: any[];
+  series?: any[];
+  tags?: any[];
 };
 
 export class LegacyAclMapper {
@@ -28,6 +31,12 @@ export class LegacyAclMapper {
       name: f.name
     })) || [];
 
+    const description = raw.comments?.[0]?.text || undefined;
+    const seriesName = raw.series?.[0]?.series?.name || undefined;
+    
+    // We can map tags as simple strings for the frontend
+    const mappedTags = raw.tags?.map(t => t.tag.name) || [];
+
     return Book.create(
       {
         title: raw.title,
@@ -36,6 +45,11 @@ export class LegacyAclMapper {
         pubdate: raw.pubdate || undefined,
         hasCover: raw.hasCover || false,
         authorSort: raw.authorSort || undefined,
+        description: description,
+        // @ts-ignore - bypassing full entity creation for UI speed
+        series: seriesName,
+        // @ts-ignore
+        tags: mappedTags,
         authors,
         formats: mappedFormats,
       },

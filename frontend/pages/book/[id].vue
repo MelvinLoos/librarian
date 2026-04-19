@@ -38,6 +38,7 @@
           <div class="space-y-4 rounded-[2rem] bg-gray-900/65 p-6">
             <div class="text-sm uppercase tracking-[0.3em] text-gray-500">Series</div>
             <div class="text-base text-gray-200">{{ book?.series || 'Standalone' }}</div>
+            
             <div class="text-sm uppercase tracking-[0.3em] text-gray-500">Tags</div>
             <div class="flex flex-wrap gap-2">
               <span
@@ -52,8 +53,11 @@
           </div>
         </div>
 
-        <div class="mt-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <p class="max-w-2xl text-sm leading-7 text-gray-300">{{ book?.description || 'A cinematic view of the book metadata with author, series, and download action.' }}</p>
+        <div class="mt-10 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          <div 
+            class="max-w-3xl text-sm leading-relaxed text-gray-300 opacity-90 prose prose-invert prose-p:mb-4 prose-a:text-violet-400"
+            v-html="book?.description || 'No description available for this title.'"
+          ></div>
 
           <div class="flex gap-4">
             <NuxtLink

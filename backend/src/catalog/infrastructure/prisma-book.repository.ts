@@ -29,6 +29,7 @@ export class PrismaBookRepository implements IBookRepository {
         series: { include: { series: true } },
         comments: true,
         formats: true,
+        tags: { include: { tag: true } },
       }
     });
 

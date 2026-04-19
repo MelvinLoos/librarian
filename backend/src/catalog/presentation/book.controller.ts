@@ -77,6 +77,9 @@ export class BookController {
       pubdate: book.props.pubdate,
       hasCover: book.props.hasCover,
       formats: book.props.formats,
+      description: book.props.description,
+      series: book.props.series,
+      tags: book.props.tags,
       authors: book.props.authors?.map(author => ({
         id: author?.id,
         name: author?.props?.name || 'Unknown Author',
