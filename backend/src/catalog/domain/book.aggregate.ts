@@ -8,6 +8,12 @@ import { Rating } from './value-objects/rating.value-object';
 import { Identifier } from './value-objects/identifier.value-object';
 import { BookCreatedEvent } from './events/book-created.event';
 
+export interface BookFormat {
+  format: string;
+  uncompressedSize: number;
+  name: string;
+}
+
 export interface BookProps {
   title: string;
   sortTitle?: string;
@@ -15,7 +21,7 @@ export interface BookProps {
   pubdate?: Date;
   hasCover?: boolean;
   authorSort?: string;
-  
+
   authors?: Author[];
   tags?: Tag[];
   series?: Series;
@@ -24,6 +30,7 @@ export interface BookProps {
   rating?: Rating;
   identifiers?: Identifier[];
   path?: string;
+  formats?: BookFormat[];
 }
 
 export class Book extends AggregateRoot<BookProps> {
@@ -37,6 +44,7 @@ export class Book extends AggregateRoot<BookProps> {
       identifiers: props.identifiers ?? [],
       hasCover: props.hasCover ?? false,
       authorSort: props.authorSort ?? '',
+      formats: props.formats ?? [],
     }, id);
   }
 
@@ -51,11 +59,11 @@ export class Book extends AggregateRoot<BookProps> {
     };
 
     const book = new Book(cleanProps, id);
-    
+
     if (!id) {
       book.addDomainEvent(new BookCreatedEvent(book.id, book.props.title));
     }
-    
+
     return book;
   }
 

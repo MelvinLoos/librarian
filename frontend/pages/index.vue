@@ -7,7 +7,7 @@
       class="rounded-[2.5rem] border border-white/10 bg-[#0a0a0a]/80 p-5 shadow-2xl backdrop-blur-xl sm:p-6 lg:p-8"
     >
       <div class="flex flex-col gap-6 md:flex-row md:items-center">
-        <div class="relative mx-auto w-full max-w-[18rem] overflow-hidden rounded-[2rem] shadow-2xl md:mx-0">
+        <NuxtLink :to="`/book/${currentReading.bookId}`" class="block relative mx-auto w-full max-w-[18rem] overflow-hidden rounded-[2rem] shadow-2xl md:mx-0 transition hover:scale-[1.02]">
           <img
             v-if="currentReading"
             :src="heroImageSrc"
@@ -17,13 +17,13 @@
             class="aspect-[2/3] w-full object-cover"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-        </div>
+        </NuxtLink>
 
         <div class="flex-1 space-y-5 text-center md:text-left">
-          <div class="space-y-2">
+          <div v-if="currentReading" class="space-y-2">
             <span class="inline-flex rounded-full bg-violet-600/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-violet-300">Currently Reading</span>
-            <h2 class="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{{ currentReading.book.title }}</h2>
-            <p class="text-sm italic text-gray-300 sm:text-base">{{ currentReading.book.authorSort }}</p>
+            <h2 class="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{{ currentReading.book?.title }}</h2>
+            <p class="text-sm italic text-gray-300 sm:text-base">{{ currentReading.book?.authorSort }}</p>
           </div>
 
           <div class="space-y-4 rounded-[2rem] bg-gray-950/70 p-5 text-left">
@@ -42,9 +42,12 @@
             </p>
           </div>
 
-          <button class="w-full rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-lg transition hover:brightness-[1.05] md:w-auto">
-            Continue Reading
-          </button>
+          <NuxtLink 
+          :to="`/read/${currentReading.bookId}`"
+          class="inline-flex justify-center w-full rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-lg transition hover:brightness-[1.05] md:w-auto"
+        >
+          Continue Reading
+        </NuxtLink>
         </div>
       </div>
     </section>
@@ -64,10 +67,11 @@
           </div>
         </template>
         <template v-else>
-          <div 
+          <NuxtLink 
             v-for="book in recentBooks" 
             :key="book.id"
-            class="shrink-0 w-40 md:w-44 rounded-[1.8rem] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-1 bg-gray-950/50 backdrop-blur-sm"
+            :to="`/book/${book.id}`"
+            class="block shrink-0 w-40 md:w-44 rounded-[1.8rem] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-1 bg-gray-950/50 backdrop-blur-sm"
           >
             <div class="aspect-[2/3] w-full overflow-hidden">
               <img
@@ -84,7 +88,7 @@
                 {{ book.authors?.map(a => a.name).join(', ') || 'Unknown Author' }}
               </p>
             </div>
-          </div>
+          </NuxtLink>
         </template>
       </div>
     </section>

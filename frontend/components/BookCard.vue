@@ -1,5 +1,5 @@
 <template>
-  <article class="group space-y-4">
+  <NuxtLink :to="`/book/${book.id}`" class="group space-y-4">
     <div class="relative overflow-hidden rounded-[1.8rem] bg-gray-950 shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_50px_rgba(74,20,140,0.25)]">
       <div class="aspect-[2/3] w-full overflow-hidden">
         <img
@@ -30,7 +30,7 @@
         <span class="ml-1 text-[10px] uppercase tracking-[0.24em] text-gray-400">4.2</span>
       </div>
     </div>
-  </article>
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">

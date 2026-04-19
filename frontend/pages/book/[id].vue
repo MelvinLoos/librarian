@@ -54,13 +54,23 @@
 
         <div class="mt-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <p class="max-w-2xl text-sm leading-7 text-gray-300">{{ book?.description || 'A cinematic view of the book metadata with author, series, and download action.' }}</p>
-          <a
-            :href="downloadUrl"
-            class="inline-flex items-center justify-center rounded-[2rem] bg-gradient-to-br from-[#bd9dff] via-[#a77bff] to-[#8a4cfc] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-95"
-            download
-          >
-            Download
-          </a>
+
+          <div class="flex gap-4">
+            <NuxtLink
+              :to="`/read/${route.params.id}`"
+              class="inline-flex items-center justify-center rounded-[2rem] bg-gradient-to-br from-violet-600 to-fuchsia-500 px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:brightness-[1.05]"
+            >
+              Read Now
+            </NuxtLink>
+
+            <a
+              :href="downloadUrl"
+              class="inline-flex items-center justify-center rounded-[2rem] bg-white/10 border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
+              download
+            >
+              Download
+            </a>
+          </div>
         </div>
       </div>
     </div>

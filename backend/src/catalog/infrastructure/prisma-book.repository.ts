@@ -11,7 +11,7 @@ export class PrismaBookRepository implements IBookRepository {
   constructor(
     @Inject(PrismaService)
     private readonly prisma: PrismaService
-  ) {}
+  ) { }
 
   async findById(id: string): Promise<Book | null> {
     const bookId = parseInt(id, 10);
@@ -26,8 +26,9 @@ export class PrismaBookRepository implements IBookRepository {
       where: { id: bookId },
       include: {
         authors: { include: { author: true } },
-        series: { include: { series: true } }, 
+        series: { include: { series: true } },
         comments: true,
+        formats: true,
       }
     });
 
@@ -66,7 +67,7 @@ export class PrismaBookRepository implements IBookRepository {
 
   async save(book: Book): Promise<void> {
     const persistence = LegacyAclMapper.toPersistence(book);
-    
+
     // Check if ID is a legacy integer ID
     const bookId = parseInt(book.id, 10);
     const isLegacyId = !isNaN(bookId) && book.id === bookId.toString();

@@ -12,6 +12,7 @@ export const useApi = () => {
           Authorization: `Bearer ${authStore.token}`,
         }
       }
+      options.baseURL = '/api'
       // Ensure cookies (refreshToken) are sent
       options.credentials = 'include'
     },
@@ -23,7 +24,7 @@ export const useApi = () => {
         try {
           const { accessToken } = await AuthApi.refreshToken()
           authStore.setToken(accessToken)
-          
+
           // Use the global $fetch with the new token
           // Since we're in a create() instance, we can just call it again with the updated headers
           // @ts-ignore

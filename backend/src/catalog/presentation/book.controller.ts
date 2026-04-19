@@ -13,7 +13,7 @@ export class BookController {
   constructor(
     private readonly createBookUseCase: CreateBookUseCase,
     private readonly getBookUseCase: GetBookUseCase
-  ) {}
+  ) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -76,6 +76,7 @@ export class BookController {
       sortTitle: book.props.sortTitle,
       pubdate: book.props.pubdate,
       hasCover: book.props.hasCover,
+      formats: book.props.formats,
       authors: book.props.authors?.map(author => ({
         id: author?.id,
         name: author?.props?.name || 'Unknown Author',

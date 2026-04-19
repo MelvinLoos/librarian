@@ -9,6 +9,8 @@ export const useAuthStore = defineStore('auth', () => {
   const authTokenCookie = useCookie<string | null>('auth_token', {
     maxAge: 60 * 60 * 24 * 7,
     path: '/',
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
   });
 
   // 1. STATE

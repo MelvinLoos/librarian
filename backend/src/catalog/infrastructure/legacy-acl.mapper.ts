@@ -6,6 +6,7 @@ export type PrismaBookWithAuthors = PrismaBook & {
   authors: (BookAuthorLink & {
     author: PrismaAuthor;
   })[];
+  formats?: any[];
 };
 
 export class LegacyAclMapper {
@@ -21,6 +22,12 @@ export class LegacyAclMapper {
       );
     });
 
+    const mappedFormats = raw.formats?.map(f => ({
+      format: f.format,
+      uncompressedSize: f.uncompressedSize,
+      name: f.name
+    })) || [];
+
     return Book.create(
       {
         title: raw.title,
@@ -30,6 +37,7 @@ export class LegacyAclMapper {
         hasCover: raw.hasCover || false,
         authorSort: raw.authorSort || undefined,
         authors,
+        formats: mappedFormats,
       },
       raw.id.toString(),
     );
