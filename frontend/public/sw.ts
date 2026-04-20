@@ -14,6 +14,25 @@ self.skipWaiting()
 clientsClaim()
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Helpers: broadcast cache lifecycle events to all open clients so the Pinia
+// bookCache store can stay in sync without polling.
+// ──────────────────────────────────────────────────────────────────────────────
+
+/** Extract the numeric bookId from a book-stream URL, or null if unmatched. */
+function extractBookId(url: string): number | null {
+  const match = /\/(?:api\/)?assets\/books\/(\d+)\/stream/.exec(new URL(url).pathname)
+  return match ? Number(match[1]) : null
+}
+
+/** Broadcast a message to every controlled client. */
+async function broadcastToClients(message: object): Promise<void> {
+  const clients = await self.clients.matchAll({ includeUncontrolled: false, type: 'window' })
+  for (const client of clients) {
+    client.postMessage(message)
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Precache: all statically-generated assets injected by vite-plugin-pwa at
 // build time.  The `self.__WB_MANIFEST` placeholder is replaced by the Workbox
 // CLI / injectManifest step with the real asset list.
@@ -74,6 +93,9 @@ registerRoute(
       new RangeRequestsPlugin(),
 
       // Evict stale entries so the cache does not grow without bound.
+      // The `deletedURLs` callback fires after each quota-triggered purge;
+      // we broadcast BOOK_CACHE_EVICTED messages so the Pinia store reflects
+      // the removal without the user having to refresh.
       new ExpirationPlugin({
         maxEntries: 20,
         maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
@@ -100,3 +122,76 @@ registerRoute(
     ],
   }),
 )
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Client ↔ SW message channel
+//
+// Inbound  (client → SW): CACHE_BOOK { bookId }, EVICT_BOOK { bookId }
+// Outbound (SW → clients): BOOK_CACHE_PROGRESS { bookId, progress },
+//                           BOOK_CACHE_COMPLETE { bookId },
+//                           BOOK_CACHE_EVICTED  { bookId },
+//                           BOOK_CACHE_ERROR    { bookId, error }
+// ──────────────────────────────────────────────────────────────────────────────
+self.addEventListener('message', (event: ExtendableMessageEvent) => {
+  const { data } = event
+  if (!data || typeof data !== 'object') return
+  if (data.type === 'CACHE_BOOK') {
+    const bookId = Number(data.bookId)
+    if (!isNaN(bookId)) event.waitUntil(swCacheBook(bookId))
+  }
+  if (data.type === 'EVICT_BOOK') {
+    const bookId = Number(data.bookId)
+    if (!isNaN(bookId)) event.waitUntil(swEvictBook(bookId))
+  }
+})
+
+async function swCacheBook(bookId: number): Promise<void> {
+  const url = `/api/assets/books/${bookId}/stream`
+  try {
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const total = parseInt(response.headers.get('Content-Length') ?? '0', 10)
+    let loaded = 0
+    const reader = response.body?.getReader()
+    if (!reader) {
+      const cache = await caches.open(BOOK_STREAM_CACHE)
+      await cache.put(url, response)
+      await broadcastToClients({ type: 'BOOK_CACHE_COMPLETE', bookId })
+      return
+    }
+    const chunks: Uint8Array[] = []
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(value)
+      loaded += value.byteLength
+      if (total > 0) {
+        const progress = Math.min(Math.round((loaded / total) * 100), 99)
+        await broadcastToClients({ type: 'BOOK_CACHE_PROGRESS', bookId, progress })
+      }
+    }
+    const merged = new Uint8Array(chunks.reduce((acc, c) => acc + c.byteLength, 0))
+    let offset = 0
+    for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.byteLength }
+    const cacheableResponse = new Response(merged, {
+      status: 200, statusText: 'OK', headers: response.headers,
+    })
+    const cache = await caches.open(BOOK_STREAM_CACHE)
+    await cache.put(url, cacheableResponse)
+    await broadcastToClients({ type: 'BOOK_CACHE_COMPLETE', bookId })
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err)
+    await broadcastToClients({ type: 'BOOK_CACHE_ERROR', bookId, error })
+  }
+}
+
+async function swEvictBook(bookId: number): Promise<void> {
+  const url = `/api/assets/books/${bookId}/stream`
+  try {
+    const cache = await caches.open(BOOK_STREAM_CACHE)
+    await cache.delete(url)
+  } finally {
+    await broadcastToClients({ type: 'BOOK_CACHE_EVICTED', bookId })
+  }
+}

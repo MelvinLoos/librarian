@@ -36,3 +36,21 @@ export interface ReadingProgress {
   updatedAt: string;
   book?: Book;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Offline / Cache types
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Three-state model for a book's presence in the offline Cache Storage. */
+export type BookCacheStatus = 'not-cached' | 'partial' | 'cached'
+
+/** Per-book cache entry held by the bookCache Pinia store. */
+export interface BookCacheEntry {
+  /** Current cache state for this book. */
+  status: BookCacheStatus
+  /**
+   * Download progress as an integer between 0 and 100.
+   * Only meaningful while `status === 'partial'`.
+   */
+  progress: number
+}
