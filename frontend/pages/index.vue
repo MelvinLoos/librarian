@@ -115,7 +115,7 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div v-if="isOnline" class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         <template v-if="pending">
           <BookSkeleton v-for="index in 10" :key="index" />
         </template>
@@ -127,6 +127,12 @@
           />
         </template>
       </div>
+      <div v-else class="flex flex-col items-center justify-center py-20 text-center">
+        <h2 class="text-display-lg text-white">You are offline.</h2>
+        <NuxtLink to="/downloads" class="mt-8 rounded-full border border-gray-600/50 bg-gray-900/50 px-8 py-3 text-lg font-semibold text-white shadow-lg backdrop-blur-md transition hover:bg-gray-800/60">
+          Go to Downloads
+        </NuxtLink>
+      </div>
     </section>
   </main>
 </template>
@@ -136,6 +142,10 @@ import { computed, watch, onMounted } from 'vue'
 import BookCard from '~/components/BookCard.vue'
 import BookSkeleton from '~/components/BookSkeleton.vue'
 import { useSearchStore } from '~/stores/search'
+
+// Inject the online status from the plugin
+const { $onlineStatus } = useNuxtApp()
+const { isOnline } = $onlineStatus
 
 // 1. Initialize Stores
 const searchStore = useSearchStore()
@@ -163,10 +173,13 @@ onMounted(() => {
 
 // Watch search query and selected tag to re-fetch books
 watch([() => searchStore.query, selectedTag], ([newQuery, newTag]) => {
-  searchStore.fetchBooks({
-    search: newQuery || undefined,
-    tag: newTag || undefined
-  })
+  // Only fetch if online
+  if (isOnline.value) {
+    searchStore.fetchBooks({
+      search: newQuery || undefined,
+      tag: newTag || undefined
+    })
+  }
 }, { immediate: true })
 
 // Safe get cover image helper

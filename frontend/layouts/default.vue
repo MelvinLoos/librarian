@@ -43,6 +43,8 @@
       <slot />
     </main>
 
+    <OfflineIndicator />
+
     <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#080e1a]/95 backdrop-blur-md pb-6 pt-2">
       <div class="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6">
         <NuxtLink to="/" class="flex flex-col items-center justify-center gap-1 text-xs text-gray-300 transition hover:text-violet-300">
@@ -77,6 +79,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
 import { useSearchStore } from '~/stores/search'
+import OfflineIndicator from '~/components/OfflineIndicator.vue'
 
 const authStore = useAuthStore()
 const searchStore = useSearchStore()
