@@ -175,27 +175,86 @@ export const useBookCacheStore = defineStore('bookCache', () => {
    * Download and cache the book stream for `bookId` offline.
    * Progress is reflected in `cacheStatusMap[bookId].progress` (0–100).
    *
-   * @param bookId - Numeric book ID.
+   * Uses a TransformStream pipeline so that chunks are passed through and
+   * written to Cache Storage incrementally — no full-body buffering occurs.
+   *
+   * @param bookId    - Numeric book ID.
    * @param fetchImpl - Injectable fetch (defaults to `globalThis.fetch`).
+   *                    Accepts the same signature as the Web Fetch API.
    */
-  async function cacheBook(bookId: number): Promise<void> {
+  async function cacheBook(
+    bookId: number,
+    fetchImpl: typeof globalThis.fetch = globalThis.fetch,
+  ): Promise<void> {
     if (!cacheApiAvailable.value) {
       console.warn('[bookCache] Cache Storage API not available')
       return
     }
 
-    // Prevent concurrent downloads for the same book
+    // Prevent concurrent downloads for the same book.
     if (cacheStatusMap.value[bookId]?.status === 'partial') return
 
     _setStatus(bookId, 'partial', 0)
 
-    if (!navigator.serviceWorker?.controller) {
-      console.error('[bookCache] No active Service Worker controller found for caching.')
-      _setStatus(bookId, 'not-cached', 0, 'Service Worker not active.')
-      throw new Error('Service Worker not active.')
-    }
+    const url = bookStreamUrl(bookId)
 
-    navigator.serviceWorker.controller.postMessage({ type: 'CACHE_BOOK', bookId })
+    try {
+      const response = await fetchImpl(url)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+      const total = parseInt(response.headers.get('Content-Length') ?? '0', 10)
+      let loaded = 0
+      let lastBroadcastedProgress = -1
+
+      // ── Streaming pipe via TransformStream — zero memory accumulation ───────
+      //
+      // Each chunk is enqueued straight through without being stored anywhere.
+      // Only the integer-percentage cursor and the last-broadcast cursor are
+      // held as local variables; the actual payload bytes are never buffered.
+      const transformStream = new TransformStream<Uint8Array, Uint8Array>({
+        transform(chunk, controller) {
+          controller.enqueue(chunk)
+
+          loaded += chunk.byteLength
+          if (total > 0) {
+            const progress = Math.floor((loaded / total) * 100)
+            // Throttle: only update state when the integer percentage has
+            // increased by at least 1 point since the last broadcast.
+            if (progress > lastBroadcastedProgress) {
+              lastBroadcastedProgress = progress
+              _setStatus(bookId, 'partial', Math.min(progress, 100))
+            }
+          }
+        },
+      })
+
+      const cache = await caches.open(BOOK_STREAM_CACHE)
+
+      if (!response.body) {
+        // No body stream (e.g. empty response in test stubs) — cache directly.
+        await cache.put(url, response)
+        _setStatus(bookId, 'cached', 100)
+        return
+      }
+
+      const stream = response.body.pipeThrough(transformStream)
+
+      // Pass the live ReadableStream directly into the Response so Cache
+      // Storage consumes it incrementally — do NOT await the full body first.
+      const cacheableResponse = new Response(stream, {
+        status: 200,
+        statusText: 'OK',
+        headers: response.headers,
+      })
+
+      // cache.put resolves only after the stream is fully consumed and
+      // committed, so marking 'cached' after this await is always correct.
+      await cache.put(url, cacheableResponse)
+      _setStatus(bookId, 'cached', 100)
+    } catch (err) {
+      _setStatus(bookId, 'not-cached', 0)
+      throw err
+    }
   }
 
   // ── 4c. clearCachedBook ───────────────────────────────────────────────────

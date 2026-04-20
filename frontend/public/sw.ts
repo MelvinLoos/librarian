@@ -192,36 +192,94 @@ async function swCacheBook(bookId: number): Promise<void> {
   try {
     const response = await fetch(url)
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
     const total = parseInt(response.headers.get('Content-Length') ?? '0', 10)
     let loaded = 0
-    const reader = response.body?.getReader()
-    if (!reader) {
+    let lastBroadcastedProgress = -1
+
+    // ── Streaming pipe via TransformStream — zero memory accumulation ─────────
+    //
+    // Each chunk is passed straight through (controller.enqueue) without being
+    // stored anywhere.  Only the integer-percentage counter and the last-
+    // broadcast cursor are kept in local variables; the payload bytes are never
+    // buffered.
+    const transformStream = new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        controller.enqueue(chunk)
+
+        loaded += chunk.byteLength
+        if (total > 0) {
+          const progress = Math.floor((loaded / total) * 100)
+          // Throttle: only broadcast when the integer percentage has increased
+          // by at least 1 point since the last broadcast.
+          if (progress > lastBroadcastedProgress) {
+            lastBroadcastedProgress = progress
+            // Fire-and-forget — intentionally not awaited inside the
+            // synchronous transform callback.
+            broadcastToClients({ type: 'BOOK_CACHE_PROGRESS', bookId, progress })
+          }
+        }
+      },
+    })
+
+    // Pipe the response body through the transform.  When response.body is
+    // null (e.g. a HEAD response or test stub) fall back to caching the
+    // original response directly so the no-body path is still covered.
+    if (!response.body) {
       const cache = await caches.open(BOOK_STREAM_CACHE)
       await cache.put(url, response)
       await broadcastToClients({ type: 'BOOK_CACHE_COMPLETE', bookId })
       return
     }
-    const chunks: Uint8Array[] = []
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
-      loaded += value.byteLength
-      if (total > 0) {
-        const progress = Math.min(Math.round((loaded / total) * 100), 99)
-        await broadcastToClients({ type: 'BOOK_CACHE_PROGRESS', bookId, progress })
-      }
-    }
-    const merged = new Uint8Array(chunks.reduce((acc, c) => acc + c.byteLength, 0))
-    let offset = 0
-    for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.byteLength }
-    const cacheableResponse = new Response(merged, {
-      status: 200, statusText: 'OK', headers: response.headers,
+
+    const stream = response.body.pipeThrough(transformStream)
+
+    // Construct the cacheable response from the *streaming* readable — do NOT
+    // await the full body before calling cache.put.  The Cache Storage API
+    // accepts a Response backed by a live ReadableStream and will consume it
+    // incrementally, which is the whole point of this zero-copy approach.
+    const cacheableResponse = new Response(stream, {
+      status: 200,
+      statusText: 'OK',
+      headers: response.headers,
     })
+
     const cache = await caches.open(BOOK_STREAM_CACHE)
+
+    // cache.put itself returns a promise that resolves once the stream has
+    // been fully consumed and committed to cache storage.  Awaiting it here
+    // means BOOK_CACHE_COMPLETE is only sent after the data is safely stored.
     await cache.put(url, cacheableResponse)
     await broadcastToClients({ type: 'BOOK_CACHE_COMPLETE', bookId })
+
+    // ── Side-cache: book metadata ─────────────────────────────────────────────
+    //
+    // Explicitly populate 'book-metadata-v1' so the Downloads page can render
+    // book titles offline without depending solely on the StaleWhileRevalidate
+    // route handler having been triggered before the device went offline.
+    try {
+      const metadataResponse = await fetch(`/api/books/${bookId}`)
+      if (metadataResponse.ok) {
+        const metadataCache = await caches.open('book-metadata-v1')
+        await metadataCache.put(`/api/books/${bookId}`, metadataResponse)
+      }
+    } catch (metaErr) {
+      console.warn(`[SW] swCacheBook: failed to cache metadata for book ${bookId}`, metaErr)
+    }
+
+    // ── Side-cache: cover image ───────────────────────────────────────────────
+    //
+    // Explicitly populate 'book-covers-v1' so cover thumbnails render offline
+    // on the Downloads page.
+    try {
+      const coverResponse = await fetch(`/api/assets/covers/${bookId}`)
+      if (coverResponse.ok) {
+        const coversCache = await caches.open('book-covers-v1')
+        await coversCache.put(`/api/assets/covers/${bookId}`, coverResponse)
+      }
+    } catch (coverErr) {
+      console.warn(`[SW] swCacheBook: failed to cache cover for book ${bookId}`, coverErr)
+    }
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err)
     await broadcastToClients({ type: 'BOOK_CACHE_ERROR', bookId, error })
