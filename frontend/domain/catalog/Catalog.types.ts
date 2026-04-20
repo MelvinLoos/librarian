@@ -53,4 +53,6 @@ export interface BookCacheEntry {
    * Only meaningful while `status === 'partial'`.
    */
   progress: number
+  /** Latest error message, if any. */
+  errorMessage?: string
 }

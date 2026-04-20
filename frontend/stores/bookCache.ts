@@ -16,11 +16,12 @@
  *   • `markBookCached` / `unmarkBookCached` are first-class actions that update
  *     both the in-memory map and the localStorage persistence layer.
  *   • `isCached` is a synchronous predicate that reads from the in-memory map.
- *   • `cacheBook` streams the book via the Fetch API, reports progress through
- *     the store, and writes the completed response into Cache Storage directly
- *     so the Service Worker's CacheFirst route can serve it offline.
- *   • `clearCachedBook` removes the book stream entry from Cache Storage and
- *     resets the store entry to 'not-cached'.
+ *   • `cacheBook` sends a message to the service worker to initiate streaming and caching.
+ *   • `clearCachedBook` sends a message to the service worker to remove the book stream entry.
+ *   • `initSwListener` hooks into SW messages to keep the store in sync when
+ *     the SW independently evict or caches entries.
+ *   • `cacheBook` sends a message to the service worker to initiate streaming and caching.
+ *   • `clearCachedBook` sends a message to the service worker to remove the book stream entry.
  *   • `initSwListener` hooks into SW messages to keep the store in sync when
  *     the SW independently evicts or caches entries.
  */
@@ -118,10 +119,10 @@ export const useBookCacheStore = defineStore('bookCache', () => {
     cacheStatusMap.value = { ...cacheStatusMap.value, [bookId]: entry }
   }
 
-  function _setStatus(bookId: number, status: BookCacheStatus, progress = 0): void {
-    _setEntry(bookId, { status, progress })
+  function _setStatus(bookId: number, status: BookCacheStatus, progress = 0, errorMessage: string | undefined = undefined): void {
+    _setEntry(bookId, { status, progress, errorMessage })
     // Keep localStorage in sync for fully-cached and evicted books.
-    if (status === 'cached' || status === 'not-cached') {
+    if (status === 'cached' || status === 'not-cached' || errorMessage) {
       const ids = _lsRead()
       if (status === 'cached') {
         ids.add(bookId)
@@ -177,10 +178,7 @@ export const useBookCacheStore = defineStore('bookCache', () => {
    * @param bookId - Numeric book ID.
    * @param fetchImpl - Injectable fetch (defaults to `globalThis.fetch`).
    */
-  async function cacheBook(
-    bookId: number,
-    fetchImpl: typeof fetch = globalThis.fetch,
-  ): Promise<void> {
+  async function cacheBook(bookId: number): Promise<void> {
     if (!cacheApiAvailable.value) {
       console.warn('[bookCache] Cache Storage API not available')
       return
@@ -191,56 +189,13 @@ export const useBookCacheStore = defineStore('bookCache', () => {
 
     _setStatus(bookId, 'partial', 0)
 
-    const url = bookStreamUrl(bookId)
-
-    try {
-      const response = await fetchImpl(url)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status} fetching ${url}`)
-      }
-
-      const total = parseInt(response.headers.get('Content-Length') ?? '0', 10)
-      let loaded = 0
-      const reader = response.body?.getReader()
-
-      if (!reader) {
-        const cache = await caches.open(BOOK_STREAM_CACHE)
-        await cache.put(url, response)
-        _setStatus(bookId, 'cached', 100)
-        return
-      }
-
-      const chunks: Uint8Array[] = []
-
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        chunks.push(value)
-        loaded += value.byteLength
-        if (total > 0) {
-          _setStatus(bookId, 'partial', Math.min(Math.round((loaded / total) * 100), 99))
-        }
-      }
-
-      // Merge chunks into a single buffer
-      const merged = new Uint8Array(chunks.reduce((acc, c) => acc + c.byteLength, 0))
-      let offset = 0
-      for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.byteLength }
-
-      const cacheableResponse = new Response(merged, {
-        status: 200, statusText: 'OK', headers: response.headers,
-      })
-
-      const cache = await caches.open(BOOK_STREAM_CACHE)
-      await cache.put(url, cacheableResponse)
-      _setStatus(bookId, 'cached', 100)
-    } catch (err) {
-      console.error('[bookCache] cacheBook failed:', err)
-      _setStatus(bookId, 'not-cached', 0)
-      throw err
+    if (!navigator.serviceWorker?.controller) {
+      console.error('[bookCache] No active Service Worker controller found for caching.')
+      _setStatus(bookId, 'not-cached', 0, 'Service Worker not active.')
+      throw new Error('Service Worker not active.')
     }
+
+    navigator.serviceWorker.controller.postMessage({ type: 'CACHE_BOOK', bookId })
   }
 
   // ── 4c. clearCachedBook ───────────────────────────────────────────────────
