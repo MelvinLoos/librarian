@@ -1,4 +1,5 @@
 <template>
+  <VitePwaManifest />
   <Toaster theme="dark" position="top-right" />
   <NuxtLayout>
     <NuxtPage />
