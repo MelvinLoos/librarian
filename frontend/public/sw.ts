@@ -2,7 +2,7 @@
 import { clientsClaim } from 'workbox-core'
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
-import { CacheFirst, NetworkFirst } from 'workbox-strategies'
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
 import { RangeRequestsPlugin } from 'workbox-range-requests'
 import { CacheableResponsePlugin } from 'workbox-cacheable-response'
 import { ExpirationPlugin } from 'workbox-expiration'
@@ -100,6 +100,14 @@ registerRoute(
         maxEntries: 20,
         maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
         purgeOnQuotaError: true,
+        deletedURLs: async (urls: string[]) => {
+          for (const url of urls) {
+            const bookId = extractBookId(url)
+            if (bookId !== null) {
+              await broadcastToClients({ type: 'BOOK_CACHE_EVICTED', bookId })
+            }
+          }
+        },
       }),
     ],
   }),
@@ -107,9 +115,17 @@ registerRoute(
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Cover images — NetworkFirst so fresh covers load online, fall back to cache.
+// Covers are relatively small (<50 KB each) and stale-on-refresh is acceptable.
+//
+// Matches:
+//   /api/assets/books/<id>/cover  — primary route used by the frontend
+//   /api/assets/covers/<id>       — alternate route alias
+//   /assets/…                     — direct backend paths (wider SW scope)
 // ──────────────────────────────────────────────────────────────────────────────
 registerRoute(
-  ({ url }) => /\/api\/assets\/books\/\d+\/cover/.test(url.pathname),
+  ({ url }) =>
+    /\/api\/assets\/(?:books\/\d+\/cover|covers\/\d+)/.test(url.pathname) ||
+    /\/assets\/(?:books\/\d+\/cover|covers\/\d+)/.test(url.pathname),
   new NetworkFirst({
     cacheName: 'book-covers-v1',
     plugins: [
@@ -117,6 +133,32 @@ registerRoute(
       new ExpirationPlugin({
         maxEntries: 200,
         maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        purgeOnQuotaError: true,
+      }),
+    ],
+  }),
+)
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Book metadata JSON — StaleWhileRevalidate so the UI renders instantly from
+// cache while fresh data is fetched in the background.
+//
+// Matches:
+//   /api/books         — catalogue listing (with or without query params)
+//   /api/books/<id>    — single-book detail
+//
+// Only HTTP 200 responses are cached; error pages are never persisted.
+// Entries expire after 7 days and are capped at 500 to bound storage.
+// ──────────────────────────────────────────────────────────────────────────────
+registerRoute(
+  ({ url }) => /^\/api\/books(?:\/\d+)?$/.test(url.pathname),
+  new StaleWhileRevalidate({
+    cacheName: 'book-metadata-v1',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [200] }),
+      new ExpirationPlugin({
+        maxEntries: 500,
+        maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
         purgeOnQuotaError: true,
       }),
     ],

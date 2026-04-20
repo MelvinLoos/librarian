@@ -8,8 +8,14 @@
  *
  * Architecture:
  *   • State lives in `cacheStatusMap` — a plain reactive Record<bookId, BookCacheEntry>.
+ *   • `cachedBookIds` is a Set<number> persisted to localStorage under
+ *     LS_CACHED_BOOK_IDS_KEY so fully-cached books are immediately available
+ *     across page reloads before the async Cache Storage inspection completes.
  *   • `refreshCacheStatus` inspects the Cache Storage API to build the initial
  *     snapshot and re-sync at any time.
+ *   • `markBookCached` / `unmarkBookCached` are first-class actions that update
+ *     both the in-memory map and the localStorage persistence layer.
+ *   • `isCached` is a synchronous predicate that reads from the in-memory map.
  *   • `cacheBook` streams the book via the Fetch API, reports progress through
  *     the store, and writes the completed response into Cache Storage directly
  *     so the Service Worker's CacheFirst route can serve it offline.
@@ -28,9 +34,44 @@ import type { BookCacheEntry, BookCacheStatus } from '~/domain/catalog/Catalog.t
 // ─────────────────────────────────────────────────────────────────────────────
 export const BOOK_STREAM_CACHE = 'book-streams-v1'
 
+/**
+ * localStorage key under which the set of fully-cached book IDs is persisted.
+ * Storing this lets the UI reflect offline-ready state synchronously on mount,
+ * before the async Cache Storage inspection in `refreshCacheStatus` resolves.
+ */
+export const LS_CACHED_BOOK_IDS_KEY = 'librarian:cachedBookIds'
+
 /** Build the stream URL for a given book ID (matches the SW route pattern). */
 export function bookStreamUrl(bookId: number | string): string {
   return `/api/assets/books/${bookId}/stream`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// localStorage helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Read the persisted cached-book ID set from localStorage, or return empty. */
+function _lsRead(): Set<number> {
+  if (typeof localStorage === 'undefined') return new Set()
+  try {
+    const raw = localStorage.getItem(LS_CACHED_BOOK_IDS_KEY)
+    if (!raw) return new Set()
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return new Set()
+    return new Set(parsed.map(Number).filter((n) => !isNaN(n)))
+  } catch {
+    return new Set()
+  }
+}
+
+/** Persist the cached-book ID set to localStorage. */
+function _lsWrite(ids: Set<number>): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(LS_CACHED_BOOK_IDS_KEY, JSON.stringify(Array.from(ids)))
+  } catch {
+    // Quota exceeded or private browsing — silently ignore.
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -39,8 +80,18 @@ export function bookStreamUrl(bookId: number | string): string {
 export const useBookCacheStore = defineStore('bookCache', () => {
   // ── 1. STATE ──────────────────────────────────────────────────────────────
 
+  /**
+   * Seed the in-memory map from localStorage so the UI can reflect cached
+   * state synchronously before the async Cache Storage inspection resolves.
+   */
+  const _lsIds = _lsRead()
+  const _initialMap: Record<number, BookCacheEntry> = {}
+  for (const id of _lsIds) {
+    _initialMap[id] = { status: 'cached', progress: 100 }
+  }
+
   /** Map of bookId → BookCacheEntry. */
-  const cacheStatusMap = ref<Record<number, BookCacheEntry>>({})
+  const cacheStatusMap = ref<Record<number, BookCacheEntry>>(_initialMap)
 
   /** Whether the Cache Storage API is available in this environment. */
   const cacheApiAvailable = computed(
@@ -69,6 +120,16 @@ export const useBookCacheStore = defineStore('bookCache', () => {
 
   function _setStatus(bookId: number, status: BookCacheStatus, progress = 0): void {
     _setEntry(bookId, { status, progress })
+    // Keep localStorage in sync for fully-cached and evicted books.
+    if (status === 'cached' || status === 'not-cached') {
+      const ids = _lsRead()
+      if (status === 'cached') {
+        ids.add(bookId)
+      } else {
+        ids.delete(bookId)
+      }
+      _lsWrite(ids)
+    }
   }
 
   // ── 4a. refreshCacheStatus ────────────────────────────────────────────────
@@ -197,7 +258,43 @@ export const useBookCacheStore = defineStore('bookCache', () => {
     }
   }
 
-  // ── 4d. initSwListener ────────────────────────────────────────────────────
+  // ── 4d. markBookCached / unmarkBookCached / isCached ─────────────────────
+
+  /**
+   * Synchronously mark a book as fully cached in both the in-memory store and
+   * the localStorage persistence layer.
+   *
+   * Intended for use by callers that manage Cache Storage directly (e.g. after
+   * receiving a BOOK_CACHE_COMPLETE SW message) and need a first-class,
+   * named action.
+   */
+  function markBookCached(bookId: number): void {
+    _setStatus(bookId, 'cached', 100)
+  }
+
+  /**
+   * Synchronously mark a book as no longer cached in both the in-memory store
+   * and the localStorage persistence layer.
+   *
+   * Does NOT delete the entry from Cache Storage — call `clearCachedBook` for
+   * that.  This action is useful for reflecting external evictions.
+   */
+  function unmarkBookCached(bookId: number): void {
+    _setStatus(bookId, 'not-cached', 0)
+  }
+
+  /**
+   * Synchronous predicate: returns `true` if the book is marked as fully
+   * cached in the in-memory store.
+   *
+   * Uses the in-memory map rather than the Cache Storage API, so it is safe
+   * to call in render/computed contexts.
+   */
+  function isCached(bookId: number): boolean {
+    return getStatus(bookId) === 'cached'
+  }
+
+  // ── 4e. initSwListener ────────────────────────────────────────────────────
 
   /**
    * Wire up a `message` listener on the SW so the store stays in sync when
@@ -258,6 +355,9 @@ export const useBookCacheStore = defineStore('bookCache', () => {
     getStatus,
     getProgress,
     refreshCacheStatus,
+    markBookCached,
+    unmarkBookCached,
+    isCached,
     cacheBook,
     clearCachedBook,
     initSwListener,

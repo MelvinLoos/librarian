@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useBookCacheStore, BOOK_STREAM_CACHE, bookStreamUrl } from './bookCache'
+import { useBookCacheStore, BOOK_STREAM_CACHE, LS_CACHED_BOOK_IDS_KEY, bookStreamUrl } from './bookCache'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test helpers
@@ -59,15 +59,33 @@ function makeSwMock() {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// localStorage stub
+// ─────────────────────────────────────────────────────────────────────────────
+
+function makeLocalStorageMock() {
+  const store = new Map<string, string>()
+  return {
+    store,
+    getItem: vi.fn((key: string) => store.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => { store.set(key, value) }),
+    removeItem: vi.fn((key: string) => { store.delete(key) }),
+    clear: vi.fn(() => { store.clear() }),
+  }
+}
+
 describe('bookCache store', () => {
   let cacheMock: ReturnType<typeof makeCacheMock>
   let cachesMock: ReturnType<typeof makeCachesMock>
+  let lsMock: ReturnType<typeof makeLocalStorageMock>
 
   beforeEach(() => {
     setActivePinia(createPinia())
     cacheMock = makeCacheMock()
     cachesMock = makeCachesMock(cacheMock)
     vi.stubGlobal('caches', cachesMock)
+    lsMock = makeLocalStorageMock()
+    vi.stubGlobal('localStorage', lsMock)
   })
 
   afterEach(() => {
@@ -272,6 +290,97 @@ describe('bookCache store', () => {
 
   it('is true when the caches global is present', () => {
     expect(useBookCacheStore().cacheApiAvailable).toBe(true)
+  })
+
+  // ── markBookCached / unmarkBookCached / isCached ──────────────────────────
+
+  it('markBookCached sets status to cached and progress to 100', () => {
+    const store = useBookCacheStore()
+    store.markBookCached(10)
+    expect(store.getStatus(10)).toBe('cached')
+    expect(store.getProgress(10)).toBe(100)
+  })
+
+  it('unmarkBookCached sets status to not-cached and progress to 0', () => {
+    const store = useBookCacheStore()
+    store.markBookCached(10)
+    store.unmarkBookCached(10)
+    expect(store.getStatus(10)).toBe('not-cached')
+    expect(store.getProgress(10)).toBe(0)
+  })
+
+  it('isCached returns true for a cached book', () => {
+    const store = useBookCacheStore()
+    store.markBookCached(10)
+    expect(store.isCached(10)).toBe(true)
+  })
+
+  it('isCached returns false for an uncached book', () => {
+    expect(useBookCacheStore().isCached(99)).toBe(false)
+  })
+
+  it('isCached returns false for a partial book', () => {
+    const store = useBookCacheStore()
+    store.cacheStatusMap[5] = { status: 'partial', progress: 50 }
+    expect(store.isCached(5)).toBe(false)
+  })
+
+  // ── localStorage persistence ───────────────────────────────────────────────
+
+  it('markBookCached persists the bookId to localStorage', () => {
+    const store = useBookCacheStore()
+    store.markBookCached(42)
+    expect(lsMock.setItem).toHaveBeenCalledWith(
+      LS_CACHED_BOOK_IDS_KEY,
+      expect.stringContaining('42'),
+    )
+  })
+
+  it('unmarkBookCached removes the bookId from localStorage', () => {
+    const store = useBookCacheStore()
+    store.markBookCached(42)
+    store.unmarkBookCached(42)
+    const lastCall = lsMock.setItem.mock.calls.at(-1)
+    const written: number[] = JSON.parse(lastCall![1])
+    expect(written).not.toContain(42)
+  })
+
+  it('cacheBook persists the bookId to localStorage on success', async () => {
+    const store = useBookCacheStore()
+    await store.cacheBook(11, makeFetch(new Uint8Array([1, 2])) as any)
+    const lastCall = lsMock.setItem.mock.calls.at(-1)
+    const written: number[] = JSON.parse(lastCall![1])
+    expect(written).toContain(11)
+  })
+
+  it('clearCachedBook removes the bookId from localStorage', async () => {
+    const store = useBookCacheStore()
+    store.markBookCached(22)
+    cacheMock.store.set(`http://localhost${bookStreamUrl(22)}`, new Response('data'))
+    await store.clearCachedBook(22)
+    const lastCall = lsMock.setItem.mock.calls.at(-1)
+    const written: number[] = JSON.parse(lastCall![1])
+    expect(written).not.toContain(22)
+  })
+
+  it('seeds cacheStatusMap from localStorage on store creation', () => {
+    // Pre-seed localStorage before creating the store
+    lsMock.store.set(LS_CACHED_BOOK_IDS_KEY, JSON.stringify([7, 13]))
+    const store = useBookCacheStore()
+    expect(store.getStatus(7)).toBe('cached')
+    expect(store.getStatus(13)).toBe('cached')
+    expect(store.getProgress(7)).toBe(100)
+  })
+
+  it('handles corrupt localStorage data gracefully', () => {
+    lsMock.store.set(LS_CACHED_BOOK_IDS_KEY, '{not valid json')
+    expect(() => useBookCacheStore()).not.toThrow()
+    expect(useBookCacheStore().cacheStatusMap).toEqual({})
+  })
+
+  it('handles localStorage being unavailable', () => {
+    vi.stubGlobal('localStorage', undefined)
+    expect(() => useBookCacheStore()).not.toThrow()
   })
 })
 
