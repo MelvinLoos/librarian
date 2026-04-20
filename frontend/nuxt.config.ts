@@ -14,6 +14,16 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     ['@vite-pwa/nuxt', {
       registerType: 'autoUpdate',
+
+      // Use injectManifest so we can supply a hand-crafted service worker that
+      // registers a Workbox CacheFirst + RangeRequestsPlugin route for the
+      // /api/assets/books/:id/stream endpoint.  The build pipeline will inject
+      // the precache manifest (self.__WB_MANIFEST) into public/sw.ts at
+      // compile time.
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'sw.ts',
+
       manifest: {
         name: 'Librarian',
         short_name: 'Librarian',
@@ -21,20 +31,32 @@ export default defineNuxtConfig({
         background_color: '#0a0a0a',
         display: 'standalone',
       },
-      workbox: {
-        navigateFallback: '/',
-        globPatterns: ['**/*.{js,css,html,png,svg,ico}']
+
+      // injectManifest config — controls which assets are precached and
+      // injected into self.__WB_MANIFEST inside the custom SW.
+      injectManifest: {
+        // Scope the injected precache to static shell assets only.
+        // Book-stream blobs are handled by the runtime CacheFirst route in
+        // sw.ts; they must NOT be listed here because their URLs are dynamic.
+        globPatterns: ['**/*.{js,css,html,png,svg,ico,woff,woff2}'],
+
+        // Prevent Workbox from silently skipping assets that are legitimately
+        // large (e.g. font subsets).  The build will throw with a clear message
+        // instead of silently omitting files.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB
       },
+
       client: {
         installPrompt: true,
-        periodicSyncForUpdates: 3600 // Check for updates every hour
+        periodicSyncForUpdates: 3600, // Check for updates every hour
       },
+
       devOptions: {
         enabled: !isDev,
         suppressWarnings: true,
         navigateFallbackAllowlist: [/^\/$/],
         type: 'module',
-      }
+      },
     }]
   ],
   googleFonts: {
