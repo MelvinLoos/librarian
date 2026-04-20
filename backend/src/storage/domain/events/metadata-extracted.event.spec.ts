@@ -1,29 +1,15 @@
 import { MetadataExtractedEvent } from './metadata-extracted.event';
+import { AssetProcessingState } from '../asset-processing-state.enum';
 
 describe('MetadataExtractedEvent', () => {
   it('should create a MetadataExtractedEvent with the given properties', () => {
     const event = new MetadataExtractedEvent(
       'asset-123',
-      { title: 'My Book', author: 'Author' },
-      1,
+      AssetProcessingState.READY,
     );
 
     expect(event.assetId).toBe('asset-123');
-    expect(event.metadata).toEqual({ title: 'My Book', author: 'Author' });
-    expect(event.bookId).toBe(1);
-    expect(event.occurredOn).toBeInstanceOf(Date);
-    expect(event.getName()).toBe('MetadataExtractedEvent');
-  });
-
-  it('should create a MetadataExtractedEvent without a bookId', () => {
-    const event = new MetadataExtractedEvent(
-      'asset-123',
-      { title: 'My Book', author: 'Author' }
-    );
-
-    expect(event.assetId).toBe('asset-123');
-    expect(event.metadata).toEqual({ title: 'My Book', author: 'Author' });
-    expect(event.bookId).toBeUndefined();
+    expect(event.state).toBe(AssetProcessingState.READY);
     expect(event.occurredOn).toBeInstanceOf(Date);
     expect(event.getName()).toBe('MetadataExtractedEvent');
   });

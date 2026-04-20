@@ -1,12 +1,12 @@
 import { DomainEvent } from '../../../shared/domain/domain-event';
+import { AssetProcessingState } from '../asset-processing-state.enum';
 
 export class MetadataExtractedEvent implements DomainEvent {
   public readonly occurredOn: Date;
 
   constructor(
     public readonly assetId: string,
-    public readonly metadata: Record<string, any>,
-    public readonly bookId?: number,
+    public readonly state: AssetProcessingState,
   ) {
     this.occurredOn = new Date();
   }

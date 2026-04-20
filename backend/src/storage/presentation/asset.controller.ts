@@ -12,6 +12,7 @@ import {
   HttpStatus,
   Logger,
   BadRequestException,
+  NotFoundException,
   ParseIntPipe,
   StreamableFile,
   Header
@@ -22,6 +23,8 @@ import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiConsumes, Ap
 import { UploadAssetUseCase } from '../application/use-cases/upload-asset.use-case';
 import { StreamAssetUseCase } from '../application/use-cases/stream-asset.use-case';
 import { DownloadAssetUseCase } from '../application/use-cases/download-asset.use-case';
+import { GetAssetStatusUseCase } from '../application/use-cases/get-asset-status.use-case';
+import { AssetStatusResult } from '../application/use-cases/get-asset-status.use-case';
 
 @ApiTags('Assets')
 @ApiBearerAuth('JWT')
@@ -33,6 +36,7 @@ export class AssetController {
     private readonly uploadAssetUseCase: UploadAssetUseCase,
     private readonly streamAssetUseCase: StreamAssetUseCase,
     private readonly downloadAssetUseCase: DownloadAssetUseCase,
+    private readonly getAssetStatusUseCase: GetAssetStatusUseCase,
   ) { }
 
   @Post('upload')
@@ -145,5 +149,25 @@ export class AssetController {
     });
 
     return new StreamableFile(result.stream);
+  }
+
+  @Get(':id/status')
+  @ApiOperation({
+    summary: 'Get asset processing status',
+    description: 'Retrieves the current processing status of an asset by its ID.',
+  })
+  @ApiParam({ name: 'id', type: 'string', description: 'Asset ID' })
+  @ApiResponse({ status: 200, description: 'Asset status retrieved successfully.', type: Object })
+  @ApiResponse({ status: 404, description: 'Asset not found.' })
+  async getAssetStatus(@Param('id') assetId: string): Promise<AssetStatusResult> {
+    this.logger.log(`Received request for asset status: ${assetId}`);
+
+    const status = await this.getAssetStatusUseCase.execute({ assetId });
+
+    if (!status) {
+      throw new NotFoundException(`Asset with ID ${assetId} not found.`);
+    }
+
+    return status;
   }
 }

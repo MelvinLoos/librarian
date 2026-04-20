@@ -5,6 +5,7 @@ import { Asset } from '../domain/asset.aggregate';
 import { FilePath } from '../domain/value-objects/file-path.value-object';
 import { MimeType } from '../domain/value-objects/mime-type.value-object';
 import { ByteSize } from '../domain/value-objects/byte-size.value-object';
+import { AssetProcessingState } from '../domain/asset-processing-state.enum';
 
 @Injectable()
 export class PrismaAssetRepository implements IAssetRepository {
@@ -49,6 +50,7 @@ export class PrismaAssetRepository implements IAssetRepository {
       new FilePath(parsed.filePath),
       new MimeType(parsed.mimeType),
       new ByteSize(data.uncompressedSize),
+      AssetProcessingState.READY, // Default state for reconstructed assets
       data.bookId,
     );
   }

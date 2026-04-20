@@ -9,7 +9,9 @@ import { PrismaLegacyBookRepository } from './infrastructure/prisma-legacy-book.
 import { StreamAssetUseCase } from './application/use-cases/stream-asset.use-case';
 import { DownloadAssetUseCase } from './application/use-cases/download-asset.use-case';
 import { PrismaBookFormatRepository } from './infrastructure/prisma-book-format.repository';
-
+import { MetadataExtractionPoolAdapter } from './infrastructure/metadata-extraction-pool.adapter';
+import { AssetUploadedListener } from './infrastructure/asset-uploaded.listener';
+import { GetAssetStatusUseCase } from './application/use-cases/get-asset-status.use-case';
 @Module({
   imports: [SharedModule, EventEmitterModule.forRoot()],
   controllers: [AssetController],
@@ -17,6 +19,9 @@ import { PrismaBookFormatRepository } from './infrastructure/prisma-book-format.
     UploadAssetUseCase,
     StreamAssetUseCase,
     DownloadAssetUseCase,
+    GetAssetStatusUseCase,
+    MetadataExtractionPoolAdapter,
+    AssetUploadedListener,
     {
       provide: 'IAssetRepository',
       useClass: PrismaAssetRepository,
