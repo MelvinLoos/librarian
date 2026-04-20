@@ -55,6 +55,11 @@
           <span class="material-symbols-outlined text-2xl">explore</span>
           <span>Discover</span>
         </NuxtLink>
+        <NuxtLink to="/downloads" class="flex flex-col items-center justify-center gap-1 text-xs text-gray-300 transition hover:text-violet-300">
+          <span class="material-symbols-outlined text-2xl">download_for_offline</span>
+          <span>Downloads</span>
+        </NuxtLink>
+
         <NuxtLink to="/settings" class="flex flex-col items-center justify-center gap-1 text-xs text-gray-300 transition hover:text-violet-300">
           <span class="material-symbols-outlined text-2xl">settings</span>
           <span>Settings</span>
