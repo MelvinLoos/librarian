@@ -116,7 +116,7 @@ export const useBookCacheStore = defineStore('bookCache', () => {
   // ── 3. INTERNAL HELPERS ───────────────────────────────────────────────────
 
   function _setEntry(bookId: number, entry: BookCacheEntry): void {
-    cacheStatusMap.value = { ...cacheStatusMap.value, [bookId]: entry }
+    cacheStatusMap.value[bookId] = entry
   }
 
   function _setStatus(bookId: number, status: BookCacheStatus, progress = 0, errorMessage: string | undefined = undefined): void {
@@ -189,6 +189,12 @@ export const useBookCacheStore = defineStore('bookCache', () => {
     if (!cacheApiAvailable.value) {
       console.warn('[bookCache] Cache Storage API not available')
       return
+    }
+
+
+    if (!navigator.serviceWorker?.controller) {
+      _setStatus(bookId, 'not-cached', 0, 'Service worker controller not available.')
+      throw new Error('Service worker controller not available.')
     }
 
     // Prevent concurrent downloads for the same book.
@@ -347,6 +353,11 @@ export const useBookCacheStore = defineStore('bookCache', () => {
         case 'BOOK_CACHE_COMPLETE': {
           const id = Number(data.bookId)
           if (!isNaN(id)) _setStatus(id, 'cached', 100)
+          break
+        }
+        case 'BOOK_CACHE_ERROR': {
+          const id = Number(data.bookId)
+          if (!isNaN(id)) _setStatus(id, 'not-cached', 0)
           break
         }
       }
