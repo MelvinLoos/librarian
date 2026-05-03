@@ -91,14 +91,17 @@ vi.mock('~/composables/useApiFetch', () => {
   }
 })
 
-// Mock NuxtLink globally
+// Mock Nuxt app globally
+const nuxtAppMock = {
+  $onlineStatus: { isOnline: vue.ref(true) },
+  $router: { push: () => {} },
+}
 vi.mock('#app', () => ({
-  useNuxtApp: () => ({
-    $router: { push: () => {} },
-  }),
+  useNuxtApp: () => nuxtAppMock,
 }))
 
 // Set up globals
+vi.stubGlobal('useNuxtApp', () => nuxtAppMock)
 vi.stubGlobal('useState', (key: string, init?: () => any) => vue.ref(init ? init() : null))
 vi.stubGlobal('useFetch', (url: string, opts?: any) => {
   const p = (typeof global !== 'undefined' && global.fetch) 

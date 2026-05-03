@@ -86,6 +86,15 @@ describe('bookCache store', () => {
     vi.stubGlobal('caches', cachesMock)
     lsMock = makeLocalStorageMock()
     vi.stubGlobal('localStorage', lsMock)
+
+    // Mock Service Worker controller
+    const swMock = makeSwMock()
+    vi.stubGlobal('navigator', {
+      serviceWorker: {
+        ...swMock.mock,
+        controller: { postMessage: vi.fn() },
+      }
+    })
   })
 
   afterEach(() => {
@@ -218,8 +227,8 @@ describe('bookCache store', () => {
   it('processes BOOK_CACHE_EVICTED messages', () => {
     const store = useBookCacheStore()
     store.cacheStatusMap[5] = { status: 'cached', progress: 100 }
-    const sw = makeSwMock()
-    vi.stubGlobal('navigator', { serviceWorker: sw.mock })
+    const sw = (navigator.serviceWorker as any).listeners ? { mock: navigator.serviceWorker, listeners: (navigator.serviceWorker as any).listeners } : makeSwMock()
+    if (!(navigator.serviceWorker as any).listeners) vi.stubGlobal('navigator', { serviceWorker: { ...sw.mock, controller: { postMessage: vi.fn() } } })
     store.initSwListener()
     sw.listeners[0](new MessageEvent('message', { data: { type: 'BOOK_CACHE_EVICTED', bookId: 5 } }))
     expect(store.getStatus(5)).toBe('not-cached')
@@ -227,8 +236,8 @@ describe('bookCache store', () => {
 
   it('processes BOOK_CACHE_PROGRESS messages', () => {
     const store = useBookCacheStore()
-    const sw = makeSwMock()
-    vi.stubGlobal('navigator', { serviceWorker: sw.mock })
+    const sw = (navigator.serviceWorker as any).listeners ? { mock: navigator.serviceWorker, listeners: (navigator.serviceWorker as any).listeners } : makeSwMock()
+    if (!(navigator.serviceWorker as any).listeners) vi.stubGlobal('navigator', { serviceWorker: { ...sw.mock, controller: { postMessage: vi.fn() } } })
     store.initSwListener()
     sw.listeners[0](new MessageEvent('message', { data: { type: 'BOOK_CACHE_PROGRESS', bookId: 7, progress: 42 } }))
     expect(store.getStatus(7)).toBe('partial')
@@ -237,8 +246,8 @@ describe('bookCache store', () => {
 
   it('processes BOOK_CACHE_COMPLETE messages', () => {
     const store = useBookCacheStore()
-    const sw = makeSwMock()
-    vi.stubGlobal('navigator', { serviceWorker: sw.mock })
+    const sw = (navigator.serviceWorker as any).listeners ? { mock: navigator.serviceWorker, listeners: (navigator.serviceWorker as any).listeners } : makeSwMock()
+    if (!(navigator.serviceWorker as any).listeners) vi.stubGlobal('navigator', { serviceWorker: { ...sw.mock, controller: { postMessage: vi.fn() } } })
     store.initSwListener()
     sw.listeners[0](new MessageEvent('message', { data: { type: 'BOOK_CACHE_COMPLETE', bookId: 9 } }))
     expect(store.getStatus(9)).toBe('cached')
@@ -247,8 +256,8 @@ describe('bookCache store', () => {
 
   it('clamps progress values to [0, 100]', () => {
     const store = useBookCacheStore()
-    const sw = makeSwMock()
-    vi.stubGlobal('navigator', { serviceWorker: sw.mock })
+    const sw = (navigator.serviceWorker as any).listeners ? { mock: navigator.serviceWorker, listeners: (navigator.serviceWorker as any).listeners } : makeSwMock()
+    if (!(navigator.serviceWorker as any).listeners) vi.stubGlobal('navigator', { serviceWorker: { ...sw.mock, controller: { postMessage: vi.fn() } } })
     store.initSwListener()
     sw.listeners[0](new MessageEvent('message', { data: { type: 'BOOK_CACHE_PROGRESS', bookId: 1, progress: 150 } }))
     expect(store.getProgress(1)).toBe(100)
@@ -258,8 +267,8 @@ describe('bookCache store', () => {
 
   it('ignores unknown message types without throwing', () => {
     const store = useBookCacheStore()
-    const sw = makeSwMock()
-    vi.stubGlobal('navigator', { serviceWorker: sw.mock })
+    const sw = (navigator.serviceWorker as any).listeners ? { mock: navigator.serviceWorker, listeners: (navigator.serviceWorker as any).listeners } : makeSwMock()
+    if (!(navigator.serviceWorker as any).listeners) vi.stubGlobal('navigator', { serviceWorker: { ...sw.mock, controller: { postMessage: vi.fn() } } })
     store.initSwListener()
     expect(() =>
       sw.listeners[0](new MessageEvent('message', { data: { type: 'UNKNOWN', bookId: 1 } })),
@@ -274,8 +283,8 @@ describe('bookCache store', () => {
 
   it('returns a cleanup function that removes the listener', () => {
     const store = useBookCacheStore()
-    const sw = makeSwMock()
-    vi.stubGlobal('navigator', { serviceWorker: sw.mock })
+    const sw = (navigator.serviceWorker as any).listeners ? { mock: navigator.serviceWorker, listeners: (navigator.serviceWorker as any).listeners } : makeSwMock()
+    if (!(navigator.serviceWorker as any).listeners) vi.stubGlobal('navigator', { serviceWorker: { ...sw.mock, controller: { postMessage: vi.fn() } } })
     const cleanup = store.initSwListener()
     cleanup()
     expect(sw.mock.removeEventListener).toHaveBeenCalledOnce()
