@@ -63,8 +63,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function register(credentials: RegisterCredentials) {
-    const response = await AuthApi.register(credentials);
-    return response;
+    await AuthApi.register(credentials);
+    // Automatically log in after registration to create a session
+    await login({
+      email: credentials.email,
+      password: credentials.password,
+    });
   }
 
   function setToken(newToken: string | null) {
