@@ -11,7 +11,7 @@
           required
           type="text"
           placeholder="The Great Gatsby"
-          class="mt-3 w-full rounded-[2rem] bg-surface-variant/10 px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 outline-none transition focus:bg-surface-variant/20 focus:ring-2 focus:ring-primary/20"
+          class="mt-3 w-full rounded-[2rem] bg-surface-variant/20 px-4 py-3 text-on-surface placeholder:text-on-surface-variant outline-none transition focus:bg-surface-variant/30 focus:ring-2 focus:ring-primary/20"
         />
       </label>
 
@@ -22,7 +22,7 @@
           required
           type="text"
           placeholder="F. Scott Fitzgerald"
-          class="mt-3 w-full rounded-[2rem] bg-surface-variant/10 px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 outline-none transition focus:bg-surface-variant/20 focus:ring-2 focus:ring-primary/20"
+          class="mt-3 w-full rounded-[2rem] bg-surface-variant/20 px-4 py-3 text-on-surface placeholder:text-on-surface-variant outline-none transition focus:bg-surface-variant/30 focus:ring-2 focus:ring-primary/20"
         />
       </label>
 

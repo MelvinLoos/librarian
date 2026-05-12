@@ -118,6 +118,36 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  input,
+  textarea,
+  select {
+    color: var(--color-on-surface) !important;
+    caret-color: var(--color-primary);
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: transparent;
+  }
+
+  ::placeholder {
+    color: var(--color-on-surface-variant) !important;
+    opacity: 1 !important;
+  }
+
+  /* Neutralize Chrome Autofill */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-on-surface);
+    -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
   /* Editorial Typography Defaults */
   h1,
   h2,
