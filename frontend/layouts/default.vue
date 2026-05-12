@@ -17,7 +17,7 @@
               v-model="searchStore.query"
               type="search"
               placeholder="Search books, authors, series..."
-              class="w-full rounded-2xl border border-outline-variant/10 bg-surface-variant/5 pl-10 pr-4 py-2 text-sm text-on-surface outline-none transition focus:border-primary focus:bg-surface-variant/10 focus:ring-4 focus:ring-primary/10 shadow-inner"
+              class="w-full rounded-2xl border border-outline-variant/10 bg-surface-variant/10 pl-10 pr-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant outline-none transition focus:border-primary focus:bg-surface-variant/20 focus:ring-4 focus:ring-primary/10 shadow-inner"
             />
           </div>
 
@@ -28,8 +28,8 @@
               class="flex h-10 w-10 items-center justify-center rounded-2xl bg-surface-variant/10 text-on-surface-variant border border-outline-variant/20 transition hover:bg-surface-variant/20 hover:text-primary"
               aria-label="Toggle theme"
             >
-              <LucideSun v-if="theme === 'dark'" :size="20" />
-              <LucideMoon v-else :size="20" />
+              <Sun v-if="theme === 'dark'" :size="20" />
+              <Moon v-else :size="20" />
             </button>
 
             <div v-if="authStore.isAuthenticated" class="hidden md:flex flex-col items-end">

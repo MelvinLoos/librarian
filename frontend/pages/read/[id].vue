@@ -19,8 +19,8 @@
           class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-variant/10 text-on-surface-variant transition hover:bg-surface-variant/20 hover:text-primary"
           aria-label="Toggle theme"
         >
-          <LucideSun v-if="theme === 'dark'" :size="20" />
-          <LucideMoon v-else :size="20" />
+          <Sun v-if="theme === 'dark'" :size="20" />
+          <Moon v-else :size="20" />
         </button>
 
         <button 
