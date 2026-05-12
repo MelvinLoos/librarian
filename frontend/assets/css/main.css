@@ -4,6 +4,114 @@
 
 /* 1. Base Nocturnal Environment */
 @layer base {
+  :root {
+    --color-outline-variant: #424855;
+    --color-error-dim: #d73357;
+    --color-surface-container-high: #18202f;
+    --color-on-secondary-fixed-variant: #6b369a;
+    --color-on-tertiary: #6a0a31;
+    --color-error-container: #a70138;
+    --color-tertiary-dim: #f17799;
+    --color-primary-dim: #8a4cfc;
+    --color-primary-fixed: #b28cff;
+    --color-primary: #bd9dff;
+    --color-on-primary: #3c0089;
+    --color-tertiary: #ff97b2;
+    --color-on-tertiary-container: #5a0027;
+    --color-inverse-primary: #742fe5;
+    --color-on-secondary-fixed: #4d137b;
+    --color-on-primary-fixed-variant: #390083;
+    --color-primary-fixed-dim: #a67aff;
+    --color-secondary-container: #612b8f;
+    --color-on-secondary-container: #e5c4ff;
+    --color-on-error-container: #ffb2b9;
+    --color-secondary-dim: #be86ef;
+    --color-primary-container: #b28cff;
+    --color-secondary-fixed-dim: #ddb3ff;
+    --color-secondary: #c38bf5;
+    --color-background: #080e1a;
+    --color-secondary-fixed: #e6c5ff;
+    --color-on-secondary: #3b0065;
+    --color-on-primary-fixed: #000000;
+    --color-tertiary-container: #fe81a4;
+    --color-inverse-on-surface: #4f5563;
+    --color-inverse-surface: #f9f9ff;
+    --color-tertiary-fixed: #ff8eac;
+    --color-surface: #080e1a;
+    --color-surface-variant: #1e2637;
+    --color-surface-container: #131a28;
+    --color-surface-bright: #232c3e;
+    --color-on-error: #490013;
+    --color-surface-tint: #bd9dff;
+    --color-on-background: #e0e5f6;
+    --color-surface-dim: #080e1a;
+    --color-error: #ff6e84;
+    --color-surface-container-lowest: #000000;
+    --color-on-surface-variant: #a6abbb;
+    --color-outline: #707584;
+    --color-tertiary-fixed-dim: #f77c9e;
+    --color-surface-container-low: #0d1320;
+    --color-surface-container-highest: #1e2637;
+    --color-on-tertiary-fixed-variant: #711036;
+    --color-on-tertiary-fixed: #380016;
+    --color-on-primary-container: #2e006c;
+    --color-on-surface: #e0e5f6;
+  }
+
+  [data-theme="light"] {
+    --color-surface: #fefbff;
+    --color-background: #fefbff;
+    --color-surface-dim: #fefbff;
+    --color-surface-bright: #ffffff;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low: #f7f2fa;
+    --color-surface-container: #f1ecf4;
+    --color-surface-container-high: #ebe6ee;
+    --color-surface-container-highest: #e6e0e9;
+    --color-on-surface: #1c1b1f;
+    --color-on-background: #1c1b1f;
+    --color-on-surface-variant: #49454f;
+    --color-surface-variant: #e7e0ec;
+    --color-outline: #79747e;
+    --color-outline-variant: #cac4d0;
+    --color-inverse-surface: #313033;
+    --color-inverse-on-surface: #f4eff4;
+    --color-primary: #6750a4;
+    --color-on-primary: #ffffff;
+    --color-primary-container: #eaddff;
+    --color-on-primary-container: #21005d;
+    --color-primary-dim: #7f67be;
+    --color-primary-fixed: #eaddff;
+    --color-primary-fixed-dim: #d0bcff;
+    --color-on-primary-fixed: #21005d;
+    --color-on-primary-fixed-variant: #4f378b;
+    --color-inverse-primary: #d0bcff;
+    --color-surface-tint: #6750a4;
+    --color-secondary: #625b71;
+    --color-on-secondary: #ffffff;
+    --color-secondary-container: #e8def8;
+    --color-on-secondary-container: #1d192b;
+    --color-secondary-dim: #7a7289;
+    --color-secondary-fixed: #e8def8;
+    --color-secondary-fixed-dim: #ccc2dc;
+    --color-on-secondary-fixed: #1d192b;
+    --color-on-secondary-fixed-variant: #4a4458;
+    --color-tertiary: #7d5260;
+    --color-on-tertiary: #ffffff;
+    --color-tertiary-container: #ffd8e4;
+    --color-on-tertiary-container: #31111d;
+    --color-tertiary-dim: #986977;
+    --color-tertiary-fixed: #ffd8e4;
+    --color-tertiary-fixed-dim: #efb8c8;
+    --color-on-tertiary-fixed: #31111d;
+    --color-on-tertiary-fixed-variant: #633b48;
+    --color-error: #b3261e;
+    --color-on-error: #ffffff;
+    --color-error-container: #f9dedc;
+    --color-on-error-container: #410e0b;
+    --color-error-dim: #dc362e;
+  }
+
   body {
     @apply bg-surface text-on-surface font-sans;
     min-height: max(884px, 100dvh);
@@ -45,7 +153,7 @@
   }
 
   .glass-panel {
-    @apply bg-gray-900/50 backdrop-blur-md;
+    @apply bg-surface-container-high/50 backdrop-blur-md;
     border: none !important;
   }
 
