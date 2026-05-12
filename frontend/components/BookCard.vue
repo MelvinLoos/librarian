@@ -1,69 +1,50 @@
 <template>
-  <NuxtLink :to="`/book/${book.id}`" class="group space-y-4">
-    <div class="relative overflow-hidden rounded-[1.8rem] bg-gray-950 shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_25px_50px_rgba(74,20,140,0.25)]">
-      <div class="aspect-[2/3] w-full overflow-hidden">
-        <img
-          :src="imageSrc"
-          :alt="book?.title"
-          @error="onImageError"
-          loading="lazy"
-          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
+  <NuxtLink :to="`/book/${book.id}`" class="group block h-full">
+    <div class="relative overflow-hidden rounded-[1.8rem] bg-surface-container shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+      <!-- Cover Container -->
+      <div class="aspect-[2/3] w-full overflow-hidden bg-surface-variant/10">
+        <template v-if="book.hasCover">
+          <img
+            :src="`/api/assets/covers/${book.id}`"
+            :alt="book.title"
+            loading="lazy"
+            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </template>
+        <div v-else class="flex h-full w-full items-center justify-center text-on-surface-variant/40">
+          <span class="material-symbols-outlined text-4xl">book</span>
+        </div>
       </div>
-      <div class="absolute inset-0 bg-white/0 transition-colors duration-300 group-hover:bg-violet-600/10"></div>
-      <div class="absolute top-3 right-3 rounded-full bg-black/50 p-2 text-white shadow-lg">
-        <span class="material-symbols-outlined text-[16px]">favorite</span>
-      </div>
-    </div>
 
-    <div class="space-y-1 px-1">
-      <h4 class="truncate text-sm font-semibold text-white group-hover:text-violet-300 transition-colors">{{ book.title }}</h4>
-      <p class="truncate text-[11px] uppercase tracking-[0.18em] text-gray-400">
-        {{ book.authors?.map(a => a.name).join(', ') || 'Unknown Author' }}
-      </p>
-      <div class="flex items-center gap-1 text-yellow-300">
-        <span class="material-symbols-outlined text-[14px]">star</span>
-        <span class="material-symbols-outlined text-[14px]">star</span>
-        <span class="material-symbols-outlined text-[14px]">star</span>
-        <span class="material-symbols-outlined text-[14px]">star</span>
-        <span class="material-symbols-outlined text-[14px] text-gray-500">star</span>
-        <span class="ml-1 text-[10px] uppercase tracking-[0.24em] text-gray-400">4.2</span>
+      <!-- Book Info Overlay -->
+      <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-5 pt-12">
+        <p class="truncate text-[10px] uppercase tracking-[0.18em] font-bold text-white/90">
+          {{ book.author || book.authors?.[0]?.name || 'Unknown Author' }}
+        </p>
+        <h4 class="mt-1 truncate text-sm font-semibold text-white group-hover:text-primary-dim transition-colors">{{ book.title }}</h4>
+        
+        <div class="mt-3 flex items-center justify-between">
+          <div class="flex items-center">
+            <span class="material-symbols-outlined text-[14px] text-primary">star</span>
+            <span class="ml-1 text-[10px] uppercase tracking-[0.24em] font-bold text-white/80">4.2</span>
+          </div>
+          <div class="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white/80 backdrop-blur-sm">
+            {{ book.formats?.[0]?.format || 'EPUB' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar (if reading) -->
+      <div v-if="readingProgress !== undefined" class="absolute bottom-0 left-0 h-1 bg-primary/30" :style="{ width: '100%' }">
+        <div class="h-full bg-primary shadow-[0_0_8px_rgba(var(--color-primary),0.8)]" :style="{ width: `${readingProgress}%` }"></div>
       </div>
     </div>
   </NuxtLink>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-
-interface Author {
-  id: number
-  name: string
-}
-
-interface Book {
-  id: number
-  title: string
-  hasCover?: boolean
-  sortTitle?: string
-  pubdate?: string
-  authors?: Author[]
-}
-
-const props = defineProps<{ book: Book }>()
-
-const placeholder = '/placeholder-cover.png'
-const imageSrc = ref(placeholder)
-
-watch(() => props.book, (newBook) => {
-  if (newBook?.hasCover) {
-    imageSrc.value = `/api/assets/covers/${newBook.id}`
-  } else {
-    imageSrc.value = placeholder
-  }
-}, { immediate: true })
-
-const onImageError = () => {
-  imageSrc.value = placeholder
-}
+defineProps<{
+  book: any
+  readingProgress?: number
+}>()
 </script>

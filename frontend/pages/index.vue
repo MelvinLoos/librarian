@@ -1,227 +1,201 @@
 <template>
-  <main class="mx-auto max-w-7xl px-4 pb-28 pt-2 sm:px-6 lg:px-8">
-    <!-- Currently Reading Section -->
-    <section 
-      v-if="currentReading"
-      id="currently-reading" 
-      class="rounded-[2.5rem] border border-white/10 bg-[#0a0a0a]/80 p-5 shadow-2xl backdrop-blur-xl sm:p-6 lg:p-8"
-    >
-      <div class="flex flex-col gap-6 md:flex-row md:items-center">
-        <NuxtLink :to="`/book/${currentReading.bookId}`" class="block relative mx-auto w-full max-w-[18rem] overflow-hidden rounded-[2rem] shadow-2xl md:mx-0 transition hover:scale-[1.02]">
+  <div class="px-4 py-8 sm:px-6 lg:px-8">
+    <!-- Hero / Currently Reading (Visual Anchor) -->
+    <section v-if="currentReading" class="relative mb-16 overflow-hidden rounded-[3rem] bg-surface-container-high/65 p-6 shadow-2xl backdrop-blur-xl sm:p-10 lg:p-12">
+      <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl"></div>
+      <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-secondary/10 blur-3xl"></div>
+
+      <div class="relative flex flex-col gap-8 md:flex-row md:items-center">
+        <NuxtLink :to="`/book/${currentReading.bookId}`" class="block shrink-0 w-40 md:w-44 rounded-[1.8rem] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-1 bg-surface-variant/10 backdrop-blur-sm">
           <img
-            v-if="currentReading"
-            :src="heroImageSrc"
-            :alt="currentReading?.book?.title"
-            @error="onHeroError"
-            loading="lazy"
+            v-if="currentReading.book?.hasCover"
+            :src="`/api/assets/covers/${currentReading.bookId}`"
             class="aspect-[2/3] w-full object-cover"
+            alt="Current reading cover"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+          <div v-else class="aspect-[2/3] w-full flex items-center justify-center text-on-surface-variant/40">
+            <span class="material-symbols-outlined text-4xl">book</span>
+          </div>
         </NuxtLink>
 
-        <div class="flex-1 space-y-5 text-center md:text-left">
-          <div v-if="currentReading" class="space-y-2">
-            <span class="inline-flex rounded-full bg-violet-600/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-violet-300">Currently Reading</span>
-            <h2 class="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{{ currentReading.book?.title }}</h2>
-            <p class="text-sm italic text-gray-300 sm:text-base">{{ currentReading.book?.authorSort }}</p>
+        <div class="flex-1 space-y-4">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.4em] text-primary">Resume Reading</p>
+            <h2 class="mt-2 text-4xl font-serif font-semibold tracking-tight text-on-surface sm:text-5xl">{{ currentReading.book?.title }}</h2>
+            <p class="mt-2 text-sm italic text-secondary sm:text-base">{{ currentReading.book?.authorSort }}</p>
           </div>
 
-          <div class="space-y-4 rounded-[2rem] bg-gray-950/70 p-5 text-left">
-            <div class="flex items-center justify-between text-sm uppercase tracking-[0.25em] text-gray-500">
+          <div class="max-w-md space-y-2">
+            <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant">
               <span>Progress</span>
-              <span class="text-violet-300">{{ progressPercent }}%</span>
+              <span>{{ Math.round(currentReading.percentage || 0) }}%</span>
             </div>
-            <div class="h-2.5 rounded-full bg-white/5">
-              <div 
-                class="h-full rounded-full bg-gradient-to-r from-violet-500 to-violet-300 shadow-[0_0_18px_rgba(168,85,247,0.35)] transition-all duration-1000"
-                :style="{ width: `${progressPercent}%` }"
-              ></div>
+            <div class="h-2.5 rounded-full bg-surface-variant/20 overflow-hidden">
+               <div class="h-full bg-primary-gradient shadow-[0_0_15px_rgba(var(--color-primary),0.5)] transition-all duration-500" :style="{ width: `${currentReading.percentage}%` }"></div>
             </div>
-            <p class="text-xs uppercase tracking-[0.24em] text-gray-400">
-              Last read {{ lastReadDate }} • {{ progressPercent }}% Completed
-            </p>
           </div>
 
-          <NuxtLink 
-          :to="`/read/${currentReading.bookId}`"
-          class="inline-flex justify-center w-full rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-lg transition hover:brightness-[1.05] md:w-auto"
-        >
-          Continue Reading
-        </NuxtLink>
+          <NuxtLink
+            :to="`/read/${currentReading.bookId}`"
+            class="mt-4 inline-flex justify-center w-full rounded-full bg-primary-gradient px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-on-primary shadow-lg shadow-primary/20 transition hover:brightness-[1.05] md:w-auto"
+          >
+            Continue Journey
+          </NuxtLink>
         </div>
       </div>
     </section>
 
-    <section id="recent-additions" class="mt-10 space-y-6">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <h3 class="text-3xl font-semibold tracking-tight text-white">Recent Additions</h3>
-        <NuxtLink to="/" class="text-sm uppercase tracking-[0.3em] text-violet-300 transition hover:text-white">View All</NuxtLink>
+    <!-- Recent Additions (Nocturnal Carousel Style) -->
+    <section class="mb-16">
+      <div class="mb-8 flex items-end justify-between">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Newly Acquired</p>
+          <h3 class="mt-2 text-3xl font-serif font-semibold tracking-tight text-on-surface">Recent Additions</h3>
+        </div>
+        <NuxtLink to="/" class="mb-1 text-xs font-bold uppercase tracking-[0.3em] text-primary transition hover:text-primary-dim">View All</NuxtLink>
       </div>
 
-      <div class="flex gap-4 overflow-x-auto pb-3 hide-scrollbar">
-        <template v-if="pendingRecent">
-          <div v-for="i in 5" :key="i" class="shrink-0 w-40 md:w-44 animate-pulse">
-            <div class="aspect-[2/3] w-full rounded-[1.8rem] bg-white/5"></div>
-            <div class="mt-2 h-3 w-3/4 rounded bg-white/5"></div>
-            <div class="mt-1 h-2 w-1/2 rounded bg-white/5"></div>
-          </div>
-        </template>
-        <template v-else>
-          <NuxtLink 
-            v-for="book in recentBooks" 
-            :key="book.id"
-            :to="`/book/${book.id}`"
-            class="block shrink-0 w-40 md:w-44 rounded-[1.8rem] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-1 bg-gray-950/50 backdrop-blur-sm"
+      <div class="hide-scrollbar -mx-4 flex gap-6 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0">
+        <div v-for="book in recentBooks" :key="book.id" class="w-40 shrink-0 sm:w-48">
+          <BookCard :book="book" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Library Grid -->
+    <section>
+      <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">The Collection</p>
+          <h3 class="mt-2 text-3xl font-serif font-semibold tracking-tight text-on-surface">Your Library</h3>
+        </div>
+
+        <!-- Tag Filter (Editorial Style) -->
+        <div class="flex flex-wrap gap-2">
+          <button
+            @click="selectedTag = null"
+            class="rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all duration-300"
+            :class="!selectedTag ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' : 'bg-surface-variant/10 text-on-surface-variant hover:bg-surface-variant/20 hover:text-on-surface'"
           >
-            <div class="aspect-[2/3] w-full overflow-hidden">
-              <img
-                :src="getBookCover(book)"
-                :alt="book?.title"
-                @error="onCarouselError(book.id)"
-                loading="lazy"
-                class="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
-              />
-            </div>
-            <div class="space-y-1 px-1.5 py-2.5">
-              <h4 class="truncate text-sm font-semibold text-white">{{ book.title }}</h4>
-              <p class="truncate text-[10px] uppercase tracking-[0.22em] text-gray-400">
-                {{ book.authors?.map(a => a.name).join(', ') || 'Unknown Author' }}
-              </p>
-            </div>
-          </NuxtLink>
-        </template>
+            All
+          </button>
+          <button
+            v-for="tag in topTags"
+            :key="tag.name"
+            @click="selectedTag = tag.name"
+            class="rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all duration-300"
+            :class="selectedTag === tag.name ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' : 'bg-surface-variant/10 text-on-surface-variant hover:bg-surface-variant/20 hover:text-on-surface'"
+          >
+            {{ tag.name }}
+          </button>
+        </div>
+      </div>
+
+      <div v-if="pending" class="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div v-for="i in 10" :key="i" class="space-y-4">
+          <div class="aspect-[2/3] w-full rounded-[1.8rem] bg-surface-variant/10 animate-pulse"></div>
+          <div class="h-3 w-3/4 rounded bg-surface-variant/10 animate-pulse"></div>
+          <div class="h-2 w-1/2 rounded bg-surface-variant/10 animate-pulse"></div>
+        </div>
+      </div>
+
+      <div v-else class="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <BookCard
+          v-for="book in filteredBooks"
+          :key="book.id"
+          :book="book"
+          :reading-progress="getReadingProgress(book.id)"
+        />
+      </div>
+
+      <div v-if="!pending && filteredBooks.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
+        <span class="material-symbols-outlined text-6xl text-on-surface-variant/20">search_off</span>
+        <p class="mt-4 text-on-surface-variant">No books found in this niche.</p>
       </div>
     </section>
 
-    <section class="mt-10 space-y-6 text-center md:text-left">
-      <h3 class="text-3xl font-semibold tracking-tight text-white">Your Library</h3>
-
-      <div id="tags" class="mt-8 flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
-        <button 
-          @click="selectedTag = null"
-          class="whitespace-nowrap rounded-full border px-5 py-2 text-xs uppercase tracking-[0.28em] transition"
-          :class="!selectedTag ? 'border-violet-500 bg-violet-600/10 text-violet-300 shadow-[0_0_15px_rgba(139,92,246,0.1)]' : 'border-white/10 bg-white/5 text-gray-400 hover:border-violet-400/40 hover:text-white'"
-        >
-          All
-        </button>
-        <button 
-          v-for="tag in topTags" 
-          :key="tag.id"
-          @click="selectedTag = tag.name"
-          class="whitespace-nowrap rounded-full border px-5 py-2 text-xs uppercase tracking-[0.28em] transition"
-          :class="selectedTag === tag.name ? 'border-violet-500 bg-violet-600/10 text-violet-300 shadow-[0_0_15px_rgba(139,92,246,0.1)]' : 'border-white/10 bg-white/5 text-gray-400 hover:border-violet-400/40 hover:text-white'"
-        >
-          {{ tag.name }}
-        </button>
-      </div>
-
-      <div v-if="isOnline" class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        <template v-if="pending">
-          <BookSkeleton v-for="index in 10" :key="index" />
-        </template>
-        <template v-else>
-          <BookCard
-            v-for="book in library"
-            :key="book.id || book.title"
-            :book="book"
-          />
-        </template>
-      </div>
-      <div v-else class="flex flex-col items-center justify-center py-20 text-center">
-        <h2 class="text-display-lg text-white">You are offline.</h2>
-        <NuxtLink to="/downloads" class="mt-8 rounded-full border border-gray-600/50 bg-gray-900/50 px-8 py-3 text-lg font-semibold text-white shadow-lg backdrop-blur-md transition hover:bg-gray-800/60">
-          Go to Downloads
-        </NuxtLink>
-      </div>
-    </section>
-  </main>
+    <!-- Offline State Placeholder -->
+    <div v-if="isOffline && filteredBooks.length === 0" class="flex min-h-[60vh] flex-col items-center justify-center text-center">
+      <div class="material-symbols-outlined text-8xl text-primary animate-pulse">cloud_off</div>
+      <h2 class="mt-8 text-4xl font-serif font-semibold text-on-surface">You are offline.</h2>
+      <p class="mt-4 max-w-md text-on-surface-variant">Access your downloaded books even without an internet connection.</p>
+      <NuxtLink to="/downloads" class="mt-8 rounded-full border border-outline-variant/20 bg-surface-variant/10 px-8 py-3 text-sm font-bold uppercase tracking-widest text-on-surface shadow-lg backdrop-blur-md transition hover:bg-surface-variant/20 hover:text-primary">
+        View Downloads
+      </NuxtLink>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch, onMounted } from 'vue'
-import BookCard from '~/components/BookCard.vue'
-import BookSkeleton from '~/components/BookSkeleton.vue'
+import { ref, computed } from 'vue'
+import { useApiBase } from '~/composables/useApiBase'
 import { useSearchStore } from '~/stores/search'
+import { useOnlineStatus } from '~/composables/useOnlineStatus'
+import BookCard from '~/components/BookCard.vue'
 
-// Inject the online status from the plugin
-const { $onlineStatus } = useNuxtApp()
-const { isOnline } = $onlineStatus
-
-// 1. Initialize Stores
+const apiBase = useApiBase()
 const searchStore = useSearchStore()
-
-// 2. State Mapping (Reactive getters from store)
-const recentBooks = computed(() => searchStore.recentBooks)
-const pendingRecent = computed(() => searchStore.pendingRecent)
-const books = computed(() => searchStore.books)
-const pending = computed(() => searchStore.pending)
-const topTags = computed(() => searchStore.topTags)
-const currentReading = computed(() => searchStore.currentReading)
-
-// 3. Component UI State
+const { isOffline } = useOnlineStatus()
 const selectedTag = ref<string | null>(null)
-const placeholder = '/placeholder-cover.png'
-const brokenImages = ref<Set<number>>(new Set())
 
-// 4. Initialization & Reaction
-onMounted(() => {
-  // Initial fetch for background data
-  searchStore.fetchRecentBooks()
-  searchStore.fetchTopTags()
-  searchStore.fetchReadingStates()
+const { data: books, pending } = useApiFetch('/books', {
+  baseURL: apiBase,
+  transform: (res: any) => res || []
 })
 
-// Watch search query and selected tag to re-fetch books
-watch([() => searchStore.query, selectedTag], ([newQuery, newTag]) => {
-  // Only fetch if online
-  if (isOnline.value) {
-    searchStore.fetchBooks({
-      search: newQuery || undefined,
-      tag: newTag || undefined
+const { data: readingStatus } = useApiFetch('/users/me/reading-states', {
+  baseURL: apiBase,
+  transform: (res: any) => res || []
+})
+
+const currentReading = computed(() => {
+  if (!readingStatus.value?.length || !books.value?.length) return null
+  const latest = readingStatus.value[0]
+  const book = books.value.find((b: any) => b.id === latest.bookId)
+  return book ? { ...latest, book } : null
+})
+
+const recentBooks = computed(() => {
+  if (!books.value) return []
+  return [...books.value].sort((a: any, b: any) => b.id - a.id).slice(0, 10)
+})
+
+const topTags = computed(() => {
+  if (!books.value) return []
+  const tags: Record<string, number> = {}
+  books.value.forEach((b: any) => {
+    b.tags?.forEach((t: string) => {
+      tags[t] = (tags[t] || 0) + 1
     })
-  }
-}, { immediate: true })
-
-// Safe get cover image helper
-const getBookCover = (book: any) => {
-  if (!book?.hasCover || (book.id && brokenImages.value.has(book.id))) {
-    return placeholder
-  }
-  return `/api/assets/covers/${book.id}`
-}
-
-const onCarouselError = (bookId: number) => {
-  brokenImages.value = new Set(brokenImages.value).add(bookId)
-}
-
-// Hero Image logic
-const heroImageSrc = computed(() => {
-  if (currentReading.value?.book?.hasCover) {
-    return `/api/assets/covers/${currentReading.value.bookId}`
-  }
-  return placeholder
-})
-
-const onHeroError = () => {
-  // Since it's a computed, we handle error by returning placeholder
-}
-
-// Stats & Helpers
-const progressPercent = computed(() => {
-  if (!currentReading.value) return 0
-  return Math.round(currentReading.value.percentage || 0)
-})
-
-const lastReadDate = computed(() => {
-  if (!currentReading.value?.updatedAt) return ''
-  const date = new Date(currentReading.value.updatedAt)
-  return date.toLocaleDateString(undefined, { 
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
   })
+  return Object.entries(tags)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8)
 })
 
-const library = computed(() => books.value || [])
+const filteredBooks = computed(() => {
+  if (!books.value) return []
+  let result = books.value
+
+  if (searchStore.query) {
+    const q = searchStore.query.toLowerCase()
+    result = result.filter((b: any) =>
+      b.title.toLowerCase().includes(q) ||
+      b.author?.toLowerCase().includes(q) ||
+      b.series?.toLowerCase().includes(q)
+    )
+  }
+
+  if (selectedTag.value) {
+    result = result.filter((b: any) => b.tags?.includes(selectedTag.value))
+  }
+
+  return result
+})
+
+const getReadingProgress = (bookId: number) => {
+  const state = readingStatus.value?.find((s: any) => s.bookId === bookId)
+  return state?.percentage
+}
 </script>

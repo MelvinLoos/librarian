@@ -1,13 +1,16 @@
 <template>
   <main class="mx-auto max-w-7xl px-4 pb-28 pt-2 sm:px-6 lg:px-8">
     <section class="mt-10 space-y-6 text-center md:text-left">
-      <h3 class="text-3xl font-semibold tracking-tight text-white">Your Downloads</h3>
+      <div class="mb-8">
+        <p class="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Local Storage</p>
+        <h3 class="mt-2 text-3xl font-serif font-semibold tracking-tight text-on-surface">Your Downloads</h3>
+      </div>
 
-      <div v-if="isLoading" class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div v-if="isLoading" class="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         <BookSkeleton v-for="index in 10" :key="index" />
       </div>
 
-      <div v-else-if="cachedBookDetails.length > 0" class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div v-else-if="cachedBookDetails.length > 0" class="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         <BookCard
           v-for="book in cachedBookDetails"
           :key="book.id || book.title"
@@ -16,8 +19,10 @@
       </div>
 
       <div v-else class="flex flex-col items-center justify-center py-20 text-center">
-        <h2 class="text-display-lg text-white">No downloads yet.</h2>
-        <NuxtLink to="/" class="mt-8 rounded-full border border-gray-600/50 bg-gray-900/50 px-8 py-3 text-lg font-semibold text-white shadow-lg backdrop-blur-md transition hover:bg-gray-800/60">
+        <div class="material-symbols-outlined text-8xl text-on-surface-variant/20 mb-4">download_for_offline</div>
+        <h2 class="text-2xl font-serif font-semibold text-on-surface">No downloads yet.</h2>
+        <p class="mt-2 text-on-surface-variant">Books you make available offline will appear here.</p>
+        <NuxtLink to="/" class="mt-8 rounded-full border border-outline-variant/20 bg-surface-variant/10 px-8 py-3 text-sm font-bold uppercase tracking-widest text-on-surface shadow-lg backdrop-blur-md transition hover:bg-surface-variant/20 hover:text-primary">
           Go to Library
         </NuxtLink>
       </div>
@@ -51,11 +56,6 @@ onMounted(async () => {
   await bookCacheStore.refreshCacheStatus()
 
   // Ensure all books metadata is available to cross-reference
-  // If no books are fetched, it means the user was likely offline
-  // before visiting other pages, and we'll fallback to an empty state.
-  // This call does *not* make a network request if data is already fetched.
-  // The searchStore.books are typically populated when the app first loads or
-  // by navigating to the index page while online.
   if (searchStore.books.length === 0) {
     // Attempt to fetch books. If offline, this will resolve to empty.
     await searchStore.fetchBooks()
@@ -90,7 +90,3 @@ function updateCachedBookDetails() {
   )
 }
 </script>
-
-<style scoped>
-/* Add any component-specific styles here if necessary */
-</style>

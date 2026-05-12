@@ -1,5 +1,5 @@
 <template>
-  <section class="relative min-h-screen overflow-hidden bg-[#080e1a] text-gray-200">
+  <section class="relative min-h-screen overflow-hidden bg-surface text-on-surface">
     <div class="absolute inset-0">
       <img
         v-if="coverUrl"
@@ -7,20 +7,20 @@
         alt="Cover background"
         class="absolute inset-0 h-full w-full object-cover blur-3xl saturate-150 opacity-20"
       />
-      <div class="absolute inset-0 bg-gradient-to-b from-gray-950/40 to-gray-950" />
+      <div class="absolute inset-0 bg-gradient-to-b from-surface/40 to-surface" />
     </div>
 
     <div class="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-8">
       <button
         @click="goBack"
-        class="group inline-flex w-fit items-center gap-2 rounded-full bg-white/5 px-5 py-2.5 text-sm font-semibold text-gray-200 shadow-lg backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:text-white hover:shadow-[0_0_20px_rgba(138,76,252,0.2)]"
+        class="group inline-flex w-fit items-center gap-2 rounded-full bg-surface-variant/10 px-5 py-2.5 text-sm font-semibold text-on-surface shadow-lg backdrop-blur-md transition-all duration-300 hover:bg-surface-variant/20 hover:text-primary hover:shadow-[0_0_20px_rgba(var(--color-primary),0.2)]"
         type="button"
       >
         <LucideArrowLeft class="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
         Back to overview
       </button>
 
-      <div class="rounded-[2.5rem] bg-gray-950/75 p-8 shadow-[0_20px_40px_rgba(15,23,42,0.45)] backdrop-blur-xl">
+      <div class="rounded-[2.5rem] bg-surface-container-high/75 p-8 shadow-[0_20px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl">
         <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div class="flex flex-col md:flex-row gap-8 items-start md:items-center">
             <!-- Actual Cover Image -->
@@ -29,75 +29,75 @@
             </div>
             
             <div class="flex-1">
-              <p class="text-sm uppercase tracking-[0.3em] text-violet-400">Book details</p>
-              <h1 class="mt-4 text-3xl font-serif font-semibold tracking-tight text-white md:text-5xl">{{ book?.title || 'Loading…' }}</h1>
-              <p class="mt-4 text-lg text-violet-300">{{ book?.author || book?.authors?.map(a => a.name).join(', ') || 'Unknown author' }}</p>
+              <p class="text-sm uppercase tracking-[0.3em] text-primary">Book details</p>
+              <h1 class="mt-4 text-3xl font-serif font-semibold tracking-tight text-on-surface md:text-5xl">{{ book?.title || 'Loading…' }}</h1>
+              <p class="mt-4 text-lg text-secondary">{{ book?.author || book?.authors?.map(a => a.name).join(', ') || 'Unknown author' }}</p>
             </div>
           </div>
 
-          <div class="space-y-4 rounded-[2rem] bg-gray-900/65 p-6">
-            <div class="text-sm uppercase tracking-[0.3em] text-gray-500">Series</div>
-            <div class="text-base text-gray-200">{{ book?.series || 'Standalone' }}</div>
+          <div class="space-y-4 rounded-[2rem] bg-surface-variant/10 p-6">
+            <div class="text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">Series</div>
+            <div class="text-base text-on-surface">{{ book?.series || 'Standalone' }}</div>
             
-            <div class="text-sm uppercase tracking-[0.3em] text-gray-500">Tags</div>
+            <div class="text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">Tags</div>
             <div class="flex flex-wrap gap-2">
               <span
                 v-for="tag in book?.tags || []"
                 :key="tag"
-                class="rounded-full bg-violet-600/10 px-3 py-1 text-xs font-semibold text-violet-300"
+                class="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
               >
                 {{ tag }}
               </span>
-              <span v-if="!(book?.tags?.length)" class="text-sm text-gray-400">No tags available</span>
+              <span v-if="!(book?.tags?.length)" class="text-sm text-on-surface-variant">No tags available</span>
             </div>
           </div>
         </div>
 
         <div class="mt-10 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div 
-            class="max-w-3xl text-sm leading-relaxed text-gray-300 opacity-90 prose prose-invert prose-p:mb-4 prose-a:text-violet-400"
+            class="max-w-3xl text-sm leading-relaxed text-on-surface-variant opacity-90 prose prose-p:mb-4 prose-a:text-primary"
             v-html="book?.description || 'No description available for this title.'"
           ></div>
 
           <div class="flex w-full shrink-0 flex-col gap-3 sm:w-48">
             <NuxtLink
               :to="`/read/${route.params.id}`"
-              class="inline-flex w-full items-center justify-center rounded-[2rem] bg-gradient-to-br from-violet-600 to-fuchsia-500 px-8 py-3 text-sm font-semibold tracking-wide text-white shadow-[0_0_20px_rgba(138,76,252,0.3)] transition-all hover:scale-[1.02] hover:brightness-[1.1]"
+              class="inline-flex w-full items-center justify-center rounded-[2rem] bg-primary-gradient px-8 py-3 text-sm font-semibold tracking-wide text-on-primary shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] hover:brightness-[1.1]"
             >
               Read Now
             </NuxtLink>
 
             <a
               :href="downloadUrl"
-              class="inline-flex w-full items-center justify-center rounded-[2rem] border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-gray-300 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white"
+              class="inline-flex w-full items-center justify-center rounded-[2rem] border border-outline-variant/10 bg-surface-variant/10 px-6 py-3 text-sm font-semibold text-on-surface backdrop-blur-md transition-all hover:bg-surface-variant/20"
               download
             >
               Download
             </a>
 
             <!-- ── Offline / Cache Section ─────────────────────────────── -->
-            <div class="rounded-[2rem] border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md">
+            <div class="rounded-[2rem] border border-outline-variant/10 bg-surface-variant/5 px-5 py-4 backdrop-blur-md">
               <!-- Header row: label + toggle -->
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <span
                     v-if="isOfflineReady"
-                    class="material-symbols-outlined text-[18px] text-emerald-400"
+                    class="material-symbols-outlined text-[18px] text-emerald-500"
                     title="Available offline"
                     aria-label="Available offline"
                   >offline_pin</span>
                   <span
                     v-else-if="isDownloading"
-                    class="material-symbols-outlined text-[18px] animate-spin text-violet-400"
+                    class="material-symbols-outlined text-[18px] animate-spin text-primary"
                     aria-label="Downloading…"
                   >sync</span>
                   <span
                     v-else
-                    class="material-symbols-outlined text-[18px] text-gray-500"
+                    class="material-symbols-outlined text-[18px] text-on-surface-variant/50"
                     aria-label="Not available offline"
                   >cloud_off</span>
 
-                  <span class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-300">
+                  <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
                     Offline
                   </span>
                 </div>
@@ -108,8 +108,8 @@
                   :aria-pressed="isOfflineReady || isDownloading"
                   :disabled="!cacheApiAvailable"
                   :title="toggleLabel"
-                  class="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 disabled:cursor-not-allowed disabled:opacity-40"
-                  :class="(isOfflineReady || isDownloading) ? 'bg-violet-600' : 'bg-gray-700'"
+                  class="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-40"
+                  :class="(isOfflineReady || isDownloading) ? 'bg-primary' : 'bg-surface-variant'"
                   @click="handleOfflineToggle"
                 >
                   <span
@@ -124,9 +124,9 @@
               <p
                 class="mt-2 text-[10px] uppercase tracking-[0.2em]"
                 :class="{
-                  'text-emerald-400': isOfflineReady,
-                  'text-violet-400': isDownloading,
-                  'text-gray-500': !isOfflineReady && !isDownloading,
+                  'text-emerald-500': isOfflineReady,
+                  'text-primary': isDownloading,
+                  'text-on-surface-variant/50': !isOfflineReady && !isDownloading,
                 }"
               >
                 <template v-if="isOfflineReady">Available offline</template>
@@ -137,14 +137,14 @@
               <!-- Progress bar (visible only while downloading) -->
               <div
                 v-if="isDownloading"
-                class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-700"
+                class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-variant/20"
                 role="progressbar"
                 :aria-valuenow="cacheProgress"
                 aria-valuemin="0"
                 aria-valuemax="100"
               >
                 <div
-                  class="h-full rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 transition-all duration-300"
+                  class="h-full rounded-full bg-primary-gradient transition-all duration-300"
                   :style="{ width: `${cacheProgress}%` }"
                 />
               </div>

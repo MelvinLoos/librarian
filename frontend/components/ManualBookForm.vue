@@ -1,34 +1,38 @@
 <template>
-  <div class="rounded-[2rem] bg-gray-950/70 p-8 shadow-[0_20px_40px_rgba(15,23,42,0.35)] backdrop-blur-xl">
-    <h2 class="text-2xl font-serif font-semibold text-white">Quick add a book</h2>
-    <p class="mt-2 text-sm text-gray-400">Add a book manually while ingestion completes in the background.</p>
+  <div class="rounded-[2rem] bg-surface-container-high/70 p-8 shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop-blur-xl">
+    <h2 class="text-2xl font-serif font-semibold text-on-surface">Quick add a book</h2>
+    <p class="mt-2 text-sm text-on-surface-variant">Add a book manually while ingestion completes in the background.</p>
 
-    <form @submit.prevent="submitBook" class="mt-6 space-y-5">
-      <label class="block text-sm text-gray-300">
-        Title
+    <form @submit.prevent="handleSubmit" class="mt-8 space-y-6">
+      <label class="block text-sm text-on-surface-variant leading-relaxed">
+        <span class="font-bold uppercase tracking-wider text-[10px]">Title</span>
         <input
-          v-model="title"
-          type="text"
+          v-model="form.title"
           required
-          class="mt-3 w-full rounded-[2rem] bg-gray-900/55 px-4 py-3 text-gray-100 placeholder:text-gray-500 outline-none transition focus:bg-gray-900/80 focus:ring-2 focus:ring-violet-500/20"
+          type="text"
+          placeholder="The Great Gatsby"
+          class="mt-3 w-full rounded-[2rem] bg-surface-variant/10 px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 outline-none transition focus:bg-surface-variant/20 focus:ring-2 focus:ring-primary/20"
         />
       </label>
 
-      <label class="block text-sm text-gray-300">
-        Author
+      <label class="block text-sm text-on-surface-variant leading-relaxed">
+        <span class="font-bold uppercase tracking-wider text-[10px]">Author</span>
         <input
-          v-model="author"
-          type="text"
+          v-model="form.author"
           required
-          class="mt-3 w-full rounded-[2rem] bg-gray-900/55 px-4 py-3 text-gray-100 placeholder:text-gray-500 outline-none transition focus:bg-gray-900/80 focus:ring-2 focus:ring-violet-500/20"
+          type="text"
+          placeholder="F. Scott Fitzgerald"
+          class="mt-3 w-full rounded-[2rem] bg-surface-variant/10 px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 outline-none transition focus:bg-surface-variant/20 focus:ring-2 focus:ring-primary/20"
         />
       </label>
 
       <button
         type="submit"
-        class="inline-flex items-center justify-center rounded-[2rem] bg-gradient-to-br from-[#bd9dff] via-[#a77bff] to-[#8a4cfc] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+        :disabled="isLoading"
+        class="inline-flex items-center justify-center rounded-[2rem] bg-primary-gradient px-6 py-3 text-sm font-semibold text-on-primary transition hover:opacity-95 shadow-lg shadow-primary/20"
       >
-        Add book
+        <span v-if="isLoading">Adding…</span>
+        <span v-else>Finish ingestion</span>
       </button>
     </form>
   </div>
@@ -37,26 +41,31 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
-import { useApiFetch } from '~/composables/useApiFetch';
+import { useApiBase } from '~/composables/useApiBase'
 
-const title = ref('')
-const author = ref('')
 const apiBase = useApiBase()
+const isLoading = ref(false)
 
-const submitBook = async () => {
-  const response = await useApiFetch(`/books`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: title.value, author: author.value }),
-  })
+const form = ref({
+  title: '',
+  author: '',
+})
 
-  if (!response.ok) {
-    toast.error('Unable to add book. Please try again.')
-    return
+const handleSubmit = async () => {
+  isLoading.value = true
+  try {
+    await useApiFetch('/books/manual', {
+      baseURL: apiBase,
+      method: 'POST',
+      body: form.value,
+    })
+    toast.success('Book information added successfully!')
+    form.value = { title: '', author: '' }
+  } catch (error) {
+    console.error(error)
+    toast.error('Failed to add book information.')
+  } finally {
+    isLoading.value = false
   }
-
-  toast.success('Book added successfully')
-  title.value = ''
-  author.value = ''
 }
 </script>

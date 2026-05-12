@@ -1,55 +1,55 @@
 <template>
-  <div class="min-h-screen bg-[#080e1a] px-4 py-16 text-gray-200">
+  <div class="min-h-screen bg-surface px-4 py-16 text-on-surface">
     <div class="mx-auto max-w-3xl space-y-8">
-      <div class="rounded-[2.5rem] bg-gray-950/65 p-8 shadow-[0_20px_40px_rgba(15,23,42,0.45)] backdrop-blur-xl">
+      <div class="rounded-[2.5rem] bg-surface-container-high/65 p-8 shadow-[0_20px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl">
         <div class="mb-8">
-          <h1 class="text-4xl font-serif font-semibold text-white">Settings</h1>
-          <p class="text-sm text-gray-400">Manage your profile and OPDS access.</p>
+          <h1 class="text-4xl font-serif font-semibold text-on-surface">Settings</h1>
+          <p class="text-sm text-on-surface-variant">Manage your profile and OPDS access.</p>
         </div>
 
         <div class="grid gap-6 md:grid-cols-2">
-          <div class="rounded-[2rem] bg-gray-900/55 p-6">
+          <div class="rounded-[2rem] bg-surface-variant/10 p-6">
             <div class="flex items-center justify-between gap-4">
-              <h2 class="text-lg font-semibold text-white">Profile</h2>
+              <h2 class="text-lg font-semibold text-on-surface">Profile</h2>
               <button
                 type="button"
                 @click="handleLogout"
-                class="rounded-full border border-violet-500/50 bg-violet-500/10 px-4 py-2 text-sm text-violet-200 transition hover:bg-violet-500/20"
+                class="rounded-full border border-primary/50 bg-primary/10 px-4 py-2 text-sm text-primary transition hover:bg-primary/20"
               >
                 Logout
               </button>
             </div>
 
-            <div class="mt-4 space-y-3 text-sm text-gray-300">
+            <div class="mt-4 space-y-3 text-sm text-on-surface-variant">
               <div>
-                <p class="text-xs uppercase tracking-[0.3em] text-gray-500">Email</p>
-                <p class="mt-2 text-base text-gray-100">{{ email }}</p>
+                <p class="text-xs uppercase tracking-[0.3em] font-bold">Email</p>
+                <p class="mt-2 text-base text-on-surface">{{ email }}</p>
               </div>
               <div>
-                <p class="text-xs uppercase tracking-[0.3em] text-gray-500">Role</p>
-                <p class="mt-2 text-base text-violet-300">{{ role }}</p>
+                <p class="text-xs uppercase tracking-[0.3em] font-bold">Role</p>
+                <p class="mt-2 text-base text-primary">{{ role }}</p>
               </div>
             </div>
           </div>
 
-          <div class="rounded-[2rem] bg-gray-900/55 p-6">
-            <h2 class="text-lg font-semibold text-white">Personal OPDS Feed</h2>
-            <p class="mt-4 text-sm text-gray-300">Your personal feed URL is available here once your account is configured.</p>
-            <div class="mt-6 rounded-[2rem] bg-gray-950/70 p-4 text-sm text-gray-300">
+          <div class="rounded-[2rem] bg-surface-variant/10 p-6">
+            <h2 class="text-lg font-semibold text-on-surface">Personal OPDS Feed</h2>
+            <p class="mt-4 text-sm text-on-surface-variant">Your personal feed URL is available here once your account is configured.</p>
+            <div class="mt-6 rounded-[2rem] bg-surface-container-low/70 p-4 text-sm text-on-surface">
               <p class="break-all">{{ feedUrl }}</p>
             </div>
           </div>
         </div>
 
-        <div class="rounded-[2rem] bg-gray-900/55 p-6 mt-6">
-          <h2 class="text-lg font-semibold text-white">System Information</h2>
+        <div class="rounded-[2rem] bg-surface-variant/10 p-6 mt-6">
+          <h2 class="text-lg font-semibold text-on-surface">System Information</h2>
           <div class="mt-4 space-y-4">
             <div>
-              <p class="text-xs uppercase tracking-[0.3em] text-gray-500">Library Path</p>
-              <div class="mt-2 rounded-[1.5rem] bg-gray-950/70 p-4">
-                <code class="text-sm text-violet-300">{{ config?.libraryPath || 'Loading...' }}</code>
+              <p class="text-xs uppercase tracking-[0.3em] font-bold text-on-surface-variant">Library Path</p>
+              <div class="mt-2 rounded-[1.5rem] bg-surface-container-low/70 p-4">
+                <code class="text-sm text-primary">{{ config?.libraryPath || 'Loading...' }}</code>
               </div>
-              <p class="mt-2 text-xs text-gray-500 italic">This is the directory on the server where the application scans for metadata.db and book files.</p>
+              <p class="mt-2 text-xs text-on-surface-variant italic">This is the directory on the server where the application scans for metadata.db and book files.</p>
             </div>
           </div>
         </div>

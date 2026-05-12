@@ -1,18 +1,52 @@
 <template>
   <div
-    class="rounded-[2rem] bg-gray-950/70 p-12 text-center text-gray-200 shadow-[0_20px_40px_rgba(15,23,42,0.35)] transition duration-200 hover:bg-gray-900/80"
-    @dragover.prevent="onDragOver"
-    @drop.prevent="onDrop"
+    class="rounded-[2rem] bg-surface-container-high/70 p-12 text-center text-on-surface shadow-[0_20px_40px_rgba(0,0,0,0.15)] backdrop-blur-xl transition duration-200 hover:bg-surface-variant/10 border-2 border-dashed border-outline-variant/20 hover:border-primary/40"
+    @dragover.prevent="isDragging = true"
+    @dragleave.prevent="isDragging = false"
+    @drop.prevent="handleDrop"
   >
-    <p class="text-lg font-semibold text-white">Drag and drop files here</p>
-    <p class="mt-2 text-sm text-gray-400">Upload EPUB, PDF, or MOBI files to ingest new books.</p>
-    <input ref="fileInput" type="file" class="sr-only" multiple @change="onFileChange" />
+    <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-secondary/10 text-secondary">
+      <span class="material-symbols-outlined text-4xl">cloud_upload</span>
+    </div>
+    
+    <p class="text-lg font-serif font-semibold text-on-surface">Drag and drop files here</p>
+    <p class="mt-2 text-sm text-on-surface-variant">Upload EPUB, PDF, or MOBI files up to 100MB.</p>
+
+    <div v-if="files.length > 0" class="mt-8 space-y-3">
+      <div v-for="file in files" :key="file.name" class="flex items-center justify-between rounded-2xl bg-surface-variant/10 px-4 py-3">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <span class="material-symbols-outlined text-on-surface-variant">description</span>
+          <span class="truncate text-sm font-medium">{{ file.name }}</span>
+        </div>
+        <button @click="removeFile(file)" class="text-on-surface-variant hover:text-error transition-colors">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+    </div>
+
+    <input
+      type="file"
+      ref="fileInput"
+      multiple
+      class="hidden"
+      accept=".epub,.pdf,.mobi"
+      @change="handleFileInput"
+    />
+
     <button
-      type="button"
-      class="mt-6 inline-flex items-center justify-center rounded-[2rem] bg-gradient-to-br from-[#bd9dff] via-[#a77bff] to-[#8a4cfc] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-95"
-      @click="triggerFileInput"
+      @click="fileInput?.click()"
+      class="mt-8 inline-flex items-center justify-center rounded-[2rem] bg-primary-gradient px-6 py-3 text-sm font-semibold text-on-primary shadow-lg shadow-primary/20 transition hover:opacity-95"
     >
-      Select files
+      Browse Files
+    </button>
+
+    <button
+      v-if="files.length > 0"
+      @click="handleUpload"
+      :disabled="isUploading"
+      class="ml-3 mt-8 inline-flex items-center justify-center rounded-[2rem] bg-secondary px-6 py-3 text-sm font-semibold text-on-secondary shadow-lg shadow-secondary/20 transition hover:opacity-95 disabled:opacity-50"
+    >
+      {{ isUploading ? 'Uploading...' : 'Start Upload' }}
     </button>
   </div>
 </template>
@@ -20,57 +54,53 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
-import { useApiFetch } from '~/composables/useApiFetch'
+import { useApiBase } from '~/composables/useApiBase'
 
+const isDragging = ref(false)
+const isUploading = ref(false)
+const files = ref<File[]>([])
 const fileInput = ref<HTMLInputElement | null>(null)
+const apiBase = useApiBase()
 
-const triggerFileInput = () => {
-  fileInput.value?.click()
+const handleDrop = (e: DragEvent) => {
+  isDragging.value = false
+  const droppedFiles = Array.from(e.dataTransfer?.files || [])
+  addFiles(droppedFiles)
 }
 
-const uploadFiles = async (files: FileList | File[]) => {
-  if (!files || files.length === 0) {
-    toast.info('No file selected.')
-    return
-  }
+const handleFileInput = (e: Event) => {
+  const selectedFiles = Array.from((e.target as HTMLInputElement).files || [])
+  addFiles(selectedFiles)
+}
 
+const addFiles = (newFiles: File[]) => {
+  const validFiles = newFiles.filter(f => f.name.match(/\.(epub|pdf|mobi)$/i))
+  files.value = [...files.value, ...validFiles]
+}
+
+const removeFile = (file: File) => {
+  files.value = files.value.filter(f => f !== file)
+}
+
+const handleUpload = async () => {
+  if (files.value.length === 0) return
+  
+  isUploading.value = true
   const formData = new FormData()
-  Array.from(files).forEach((file) => formData.append('files', file))
+  files.value.forEach(file => formData.append('files', file))
 
-  const uploadPromise = useApiFetch(`/assets`, {
-    method: 'POST',
-    body: formData,
-  }).then(async (response) => {
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(body || 'Upload failed')
-    }
-    return response.json()
-  })
-
-  toast.promise(uploadPromise, {
-    loading: 'Uploading files...',
-    success: 'Files uploaded successfully. Metadata extraction started.',
-    error: 'Upload failed. Please try again.',
-  })
-}
-
-const onDragOver = () => {
-  /* intentionally empty to enable drop */
-}
-
-const onDrop = (event: DragEvent) => {
-  if (!event.dataTransfer?.files.length) {
-    toast.info('No files were dropped.')
-    return
-  }
-  uploadFiles(event.dataTransfer.files)
-}
-
-const onFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files?.length) {
-    uploadFiles(target.files)
+  try {
+    const response = await $fetch('/api/books/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    toast.success('Files uploaded successfully. Processing started.')
+    files.value = []
+  } catch (error) {
+    console.error(error)
+    toast.error('Failed to upload files.')
+  } finally {
+    isUploading.value = false
   }
 }
 </script>

@@ -1,59 +1,59 @@
 <template>
-  <div class="min-h-screen bg-[#080e1a] px-4 py-16 text-gray-200">
-    <div class="mx-auto max-w-md rounded-[2.5rem] bg-gray-950/65 p-8 shadow-[0_20px_40px_rgba(15,23,42,0.45)] backdrop-blur-xl">
-      <h1 class="text-4xl font-serif font-semibold text-white">Create account</h1>
-      <p class="mt-3 text-sm text-gray-400">Register and start building your personal book collection.</p>
+  <div class="min-h-screen bg-surface px-4 py-16 text-on-surface">
+    <div class="mx-auto max-w-md rounded-[2.5rem] bg-surface-container-high/65 p-8 shadow-[0_20px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl">
+      <h1 class="text-4xl font-serif font-semibold text-on-surface">Create account</h1>
+      <p class="mt-3 text-sm text-on-surface-variant">Register and start building your personal book collection.</p>
 
       <form @submit.prevent="handleRegister" class="mt-8 space-y-6">
-        <label class="block text-sm text-gray-300">
-          <span>Email</span>
+        <label class="block text-sm text-on-surface-variant leading-relaxed">
+          <span class="font-bold uppercase tracking-wider text-[10px]">Email</span>
           <input
             v-model="email"
             type="email"
             required
             placeholder="you@example.com"
-            class="mt-3 w-full rounded-[2rem] bg-gray-900/55 px-4 py-3 text-gray-100 placeholder:text-gray-500 outline-none transition focus:bg-gray-900/80 focus:ring-2 focus:ring-violet-500/20"
+            class="mt-3 w-full rounded-[2rem] bg-surface-variant/10 px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 outline-none transition focus:bg-surface-variant/20 focus:ring-2 focus:ring-primary/20"
           />
         </label>
 
-        <label class="block text-sm text-gray-300">
-          <span>Password</span>
+        <label class="block text-sm text-on-surface-variant leading-relaxed">
+          <span class="font-bold uppercase tracking-wider text-[10px]">Password</span>
           <input
             v-model="password"
             type="password"
             required
             placeholder="••••••••"
-            class="mt-3 w-full rounded-[2rem] bg-gray-900/55 px-4 py-3 text-gray-100 placeholder:text-gray-500 outline-none transition focus:bg-gray-900/80 focus:ring-2 focus:ring-violet-500/20"
+            class="mt-3 w-full rounded-[2rem] bg-surface-variant/10 px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 outline-none transition focus:bg-surface-variant/20 focus:ring-2 focus:ring-primary/20"
           />
         </label>
 
-        <label class="block text-sm text-gray-300">
-          <span>Confirm Password</span>
+        <label class="block text-sm text-on-surface-variant leading-relaxed">
+          <span class="font-bold uppercase tracking-wider text-[10px]">Confirm Password</span>
           <input
             v-model="confirmPassword"
             type="password"
             required
             placeholder="••••••••"
-            class="mt-3 w-full rounded-[2rem] bg-gray-900/55 px-4 py-3 text-gray-100 placeholder:text-gray-500 outline-none transition focus:bg-gray-900/80 focus:ring-2 focus:ring-violet-500/20"
+            class="mt-3 w-full rounded-[2rem] bg-surface-variant/10 px-4 py-3 text-on-surface placeholder:text-on-surface-variant/40 outline-none transition focus:bg-surface-variant/20 focus:ring-2 focus:ring-primary/20"
           />
         </label>
 
-        <div v-if="errorMessage" class="rounded-[2rem] bg-red-950/70 px-4 py-3 text-sm text-red-300">
+        <div v-if="errorMessage" class="rounded-[2rem] bg-error-container/20 px-4 py-3 text-sm text-error">
           {{ errorMessage }}
         </div>
 
         <button
           type="submit"
           :disabled="isLoading"
-          class="w-full rounded-[2rem] bg-gradient-to-br from-[#bd9dff] via-[#a77bff] to-[#8a4cfc] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+          class="w-full rounded-[2rem] bg-primary-gradient px-5 py-3 text-sm font-semibold text-on-primary transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 shadow-lg shadow-primary/20"
         >
           <span v-if="isLoading">Creating account…</span>
           <span v-else>Register</span>
         </button>
       </form>
 
-      <p class="mt-6 text-center text-sm text-gray-400">
-        Already have an account? <NuxtLink to="/login" class="text-violet-400 transition hover:text-violet-300">Sign in</NuxtLink>
+      <p class="mt-6 text-center text-sm text-on-surface-variant">
+        Already have an account? <NuxtLink to="/login" class="text-primary transition hover:text-primary-dim">Sign in</NuxtLink>
       </p>
     </div>
   </div>

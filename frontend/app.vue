@@ -1,6 +1,6 @@
 <template>
   <VitePwaManifest />
-  <Toaster theme="dark" position="top-right" />
+  <Toaster :theme="theme" position="top-right" />
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
@@ -8,4 +8,7 @@
 
 <script setup lang="ts">
 import { Toaster } from 'vue-sonner'
+import { useTheme } from '~/composables/useTheme'
+
+const { theme } = useTheme()
 </script>

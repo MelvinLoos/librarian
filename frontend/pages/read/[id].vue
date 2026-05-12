@@ -1,38 +1,50 @@
 <template>
-  <div class="fixed inset-0 z-[100] flex flex-col bg-[#080e1a] text-gray-200">
-    <header class="relative z-50 flex shrink-0 items-center justify-between border-b border-white/10 bg-[#080e1a]/95 px-4 py-3 backdrop-blur-md sm:px-6">
+  <div class="fixed inset-0 z-[100] flex flex-col bg-surface text-on-surface">
+    <header class="relative z-50 flex shrink-0 items-center justify-between border-b border-outline-variant/10 bg-surface/95 px-4 py-3 backdrop-blur-md sm:px-6">
       <div class="flex items-center gap-4">
-        <button @click="goBack" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 transition hover:bg-white/10">
+        <button @click="goBack" class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-variant/10 transition hover:bg-surface-variant/20 hover:text-primary">
           <span class="material-symbols-outlined">arrow_back</span>
         </button>
         <div v-if="bookMetadata" class="hidden sm:block">
-          <h1 class="text-sm font-semibold text-white sm:text-base">{{ bookMetadata.title }}</h1>
-          <p v-if="activeFormat === 'EPUB'" class="text-xs text-gray-400">{{ progressPercent }}% Read</p>
-          <p v-else class="text-xs text-gray-400">PDF Document</p>
+          <h1 class="text-sm font-semibold text-on-surface sm:text-base">{{ bookMetadata.title }}</h1>
+          <p v-if="activeFormat === 'EPUB'" class="text-xs text-on-surface-variant">{{ progressPercent }}% Read</p>
+          <p v-else class="text-xs text-on-surface-variant">PDF Document</p>
         </div>
       </div>
       
-      <button 
-        v-if="activeFormat === 'EPUB' && toc.length > 0" 
-        @click="isTocOpen = !isTocOpen"
-        class="flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium transition"
-        :class="isTocOpen ? 'bg-violet-600/20 text-violet-300' : 'bg-white/5 hover:bg-white/10'"
-      >
-        <span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
-        <span class="hidden sm:inline">Chapters</span>
-      </button>
+      <div class="flex items-center gap-3">
+        <!-- Reader Theme Toggle -->
+        <button
+          @click="toggleTheme"
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-variant/10 text-on-surface-variant transition hover:bg-surface-variant/20 hover:text-primary"
+          aria-label="Toggle theme"
+        >
+          <LucideSun v-if="theme === 'dark'" :size="20" />
+          <LucideMoon v-else :size="20" />
+        </button>
+
+        <button 
+          v-if="activeFormat === 'EPUB' && toc.length > 0" 
+          @click="isTocOpen = !isTocOpen"
+          class="flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium transition"
+          :class="isTocOpen ? 'bg-primary/20 text-primary' : 'bg-surface-variant/10 hover:bg-surface-variant/20'"
+        >
+          <span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
+          <span class="hidden sm:inline">Chapters</span>
+        </button>
+      </div>
     </header>
 
     <div 
       v-if="isTocOpen"
-      class="absolute right-0 top-[65px] z-50 h-[calc(100vh-65px)] w-full max-w-sm overflow-y-auto border-l border-white/10 bg-[#0a0f1d]/95 p-4 shadow-2xl backdrop-blur-2xl transition-transform"
+      class="absolute right-0 top-[65px] z-50 h-[calc(100vh-65px)] w-full max-w-sm overflow-y-auto border-l border-outline-variant/10 bg-surface-container-high/95 p-4 shadow-2xl backdrop-blur-2xl transition-transform"
     >
-      <h2 class="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Document Outline</h2>
+      <h2 class="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant">Document Outline</h2>
       <ul class="space-y-1">
         <li v-for="item in toc" :key="item.id">
           <button 
             @click="goToChapter(item.href)"
-            class="w-full rounded-lg px-3 py-2 text-left text-sm text-gray-300 transition hover:bg-white/5 hover:text-violet-300"
+            class="w-full rounded-lg px-3 py-2 text-left text-sm text-on-surface-variant transition hover:bg-primary/10 hover:text-primary"
           >
             {{ item.label }}
           </button>
@@ -46,31 +58,31 @@
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
     >
-      <div v-if="isLoading" class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-[#080e1a]">
-        <div class="h-8 w-8 animate-spin rounded-full border-4 border-violet-500 border-t-transparent"></div>
-        <p class="text-sm uppercase tracking-widest text-violet-300">Loading Content...</p>
+      <div v-if="isLoading" class="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-surface">
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        <p class="text-sm uppercase tracking-widest text-primary">Loading Content...</p>
       </div>
 
       <div 
         v-if="activeFormat === 'EPUB'" 
         @click.stop="prevPage"
-        class="group absolute inset-y-0 left-0 z-40 flex w-1/4 cursor-pointer items-center justify-start transition-all duration-500 hover:bg-gradient-to-r hover:from-black/60 hover:to-transparent sm:w-24"
+        class="group absolute inset-y-0 left-0 z-40 flex w-1/4 cursor-pointer items-center justify-start transition-all duration-500 hover:bg-gradient-to-r hover:from-surface/60 hover:to-transparent sm:w-24"
       >
-        <div class="flex h-full w-1.5 bg-violet-500/0 transition-colors duration-500 group-hover:bg-violet-500/50 group-hover:shadow-[0_0_15px_rgba(138,76,252,0.8)]"></div>
-        <div class="ml-2 flex h-16 w-16 -translate-x-4 items-center justify-center rounded-full bg-[#080e1a]/90 text-white opacity-0 shadow-[0_0_30px_rgba(138,76,252,0.4)] backdrop-blur-md transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:ml-4">
-          <span class="material-symbols-outlined text-3xl text-violet-300">chevron_left</span>
+        <div class="flex h-full w-1.5 bg-primary/0 transition-colors duration-500 group-hover:bg-primary/50 group-hover:shadow-[0_0_15px_rgba(var(--color-primary),0.8)]"></div>
+        <div class="ml-2 flex h-16 w-16 -translate-x-4 items-center justify-center rounded-full bg-surface/90 text-on-surface opacity-0 shadow-xl backdrop-blur-md transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:ml-4">
+          <span class="material-symbols-outlined text-3xl text-primary">chevron_left</span>
         </div>
       </div>
 
       <div 
         v-if="activeFormat === 'EPUB'" 
         @click.stop="nextPage"
-        class="group absolute inset-y-0 right-0 z-40 flex w-1/4 cursor-pointer items-center justify-end transition-all duration-500 hover:bg-gradient-to-l hover:from-black/60 hover:to-transparent sm:w-24"
+        class="group absolute inset-y-0 right-0 z-40 flex w-1/4 cursor-pointer items-center justify-end transition-all duration-500 hover:bg-gradient-to-l hover:from-surface/60 hover:to-transparent sm:w-24"
       >
-        <div class="mr-2 flex h-16 w-16 translate-x-4 items-center justify-center rounded-full bg-[#080e1a]/90 text-white opacity-0 shadow-[0_0_30px_rgba(138,76,252,0.4)] backdrop-blur-md transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:mr-4">
-          <span class="material-symbols-outlined text-3xl text-violet-300">chevron_right</span>
+        <div class="mr-2 flex h-16 w-16 translate-x-4 items-center justify-center rounded-full bg-surface/90 text-on-surface opacity-0 shadow-xl backdrop-blur-md transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 sm:mr-4">
+          <span class="material-symbols-outlined text-3xl text-primary">chevron_right</span>
         </div>
-        <div class="flex h-full w-1.5 bg-violet-500/0 transition-colors duration-500 group-hover:bg-violet-500/50 group-hover:shadow-[0_0_15px_rgba(138,76,252,0.8)]"></div>
+        <div class="flex h-full w-1.5 bg-primary/0 transition-colors duration-500 group-hover:bg-primary/50 group-hover:shadow-[0_0_15px_rgba(var(--color-primary),0.8)]"></div>
       </div>
       
       <div 
@@ -95,16 +107,17 @@
       ></iframe>
       
       <div v-if="!isLoading && !activeFormat" class="absolute inset-0 flex flex-col items-center justify-center">
-        <p class="text-gray-400">No readable format found for this book.</p>
+        <p class="text-on-surface-variant">No readable format found for this book.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi } from '~/composables/useApi'
+import { useTheme } from '~/composables/useTheme'
 import ePub from 'epubjs'
 
 definePageMeta({ layout: false })
@@ -113,6 +126,7 @@ const route = useRoute()
 const router = useRouter()
 const $api = useApi()
 const bookId = route.params.id as string
+const { theme, toggleTheme } = useTheme()
 
 const isLoading = ref(true)
 const bookMetadata = ref<any>(null)
@@ -171,6 +185,28 @@ const handleKeyboard = (e: KeyboardEvent) => {
   }
 };
 
+const updateRenditionTheme = () => {
+  if (!rendition) return
+  
+  const isDark = theme.value === 'dark'
+  const bgColor = isDark ? '#080e1a' : '#fefbff'
+  const textColor = isDark ? '#e0e5f6' : '#1c1b1f'
+  const primaryColor = isDark ? '#bd9dff' : '#6750a4'
+  const secondaryColor = isDark ? '#c38bf5' : '#625b71'
+
+  rendition.themes.default({
+    body: { background: bgColor, color: textColor },
+    p: { 'font-family': 'Manrope, sans-serif', 'font-size': '1.1rem', 'line-height': '1.6' },
+    h1: { 'font-family': 'Newsreader, serif', color: primaryColor },
+    h2: { 'font-family': 'Newsreader, serif', color: primaryColor },
+    a: { color: secondaryColor }
+  })
+}
+
+watch(theme, () => {
+  updateRenditionTheme()
+})
+
 // --- Lifecycle ---
 onMounted(async () => {
   window.addEventListener('keyup', handleKeyboard);
@@ -212,13 +248,7 @@ const loadEpub = async () => {
       flow: 'paginated', 
     })
 
-    rendition.themes.default({
-      body: { background: '#080e1a', color: '#e0e5f6' },
-      p: { 'font-family': 'Manrope, sans-serif', 'font-size': '1.1rem', 'line-height': '1.6' },
-      h1: { 'font-family': 'Newsreader, serif', color: '#bd9dff' },
-      h2: { 'font-family': 'Newsreader, serif', color: '#bd9dff' },
-      a: { color: '#c38bf5' }
-    })
+    updateRenditionTheme()
 
     // Listen for inputs inside the iframe
     rendition.on('keyup', handleKeyboard);
@@ -261,7 +291,6 @@ const loadEpub = async () => {
   }
 }
 
-// --- Actions ---
 // --- Actions ---
 const goToChapter = (href: string) => {
   if (rendition && transitionState.value === 'idle') {
