@@ -90,7 +90,7 @@ const handleUpload = async () => {
   files.value.forEach(file => formData.append('files', file))
 
   try {
-    const response = await $fetch('/api/books/upload', {
+    const response = await fetch('/api/books/upload', {
       method: 'POST',
       body: formData,
     })

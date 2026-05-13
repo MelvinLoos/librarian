@@ -23,6 +23,10 @@ describe('UploadDropzone', () => {
       },
     })
 
+    // Click upload button
+    const uploadBtn = wrapper.findAll('button').find(b => b.text() === 'Start Upload')
+    await uploadBtn?.trigger('click')
+
     expect(global.fetch).toHaveBeenCalled()
   })
 })
