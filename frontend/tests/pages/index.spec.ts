@@ -5,7 +5,6 @@ import { ref } from 'vue'
 import IndexPage from '../../pages/index.vue'
 
 vi.mock('~/stores/search', () => {
-  const { ref } = require('vue')
   return {
     useSearchStore: () => ({
       query: '',
@@ -25,6 +24,19 @@ vi.mock('~/stores/search', () => {
     })
   }
 })
+
+// Mock useApiFetch to prevent real network calls
+vi.stubGlobal('useApiFetch', (url: string) => {
+  if (url === '/books') {
+    return { data: ref([]), pending: ref(true) }
+  }
+  return { data: ref([]), pending: ref(false) }
+})
+
+// Mock useOnlineStatus
+vi.mock('~/composables/useOnlineStatus', () => ({
+  useOnlineStatus: () => ({ isOffline: ref(false) })
+}))
 vi.mock('~/composables/useApiBase', () => ({ useApiBase: () => 'http://localhost:3000' }))
 
 describe('Index page loading state', () => {
