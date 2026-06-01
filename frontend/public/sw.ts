@@ -85,6 +85,8 @@ registerRoute(
       // A 206 Partial Content from the origin would be an incomplete body;
       // storing it would break offline range-request reconstruction.
       new CacheableResponsePlugin({ statuses: [200] }),
+      // Prevent passive caching so we don't accidentally cache streams
+      { cacheWillUpdate: async () => null },
 
       // When a request with a Range header is served from cache, this plugin
       // slices the correct byte range from the complete cached body and returns
