@@ -14,10 +14,8 @@ export class UpdateReadingProgressUseCase {
     this.logger.debug(`Updating reading progress: User ${userId}, Book ${bookId}, Page ${locator}/${percentage}`);
     try {
       await this.progressRepository.upsertProgress(userId, bookId, locator, percentage);
-      this.logger.log(`Successfully updated reading progress for User ${userId}, Book ${bookId}`);
     } catch (error: any) {
       this.logger.error(`Failed to update reading progress for User ${userId}, Book ${bookId}`, error.stack);
-      // Prisma throws P2003 when foreign key constraint fails
       if (error?.code === 'P2003' || error?.message?.includes('foreign key')) {
         throw new NotFoundException(`Book not found`);
       }
@@ -25,3 +23,4 @@ export class UpdateReadingProgressUseCase {
     }
   }
 }
+
