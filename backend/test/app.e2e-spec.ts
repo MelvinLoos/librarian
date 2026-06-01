@@ -1,8 +1,10 @@
+import 'dotenv/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { MetadataExtractionPoolAdapter } from '../src/storage/infrastructure/metadata-extraction-pool.adapter';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -10,7 +12,13 @@ describe('AppController (e2e)', () => {
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(MetadataExtractionPoolAdapter)
+      .useValue({
+        extractMetadata: jest.fn(),
+        onModuleDestroy: jest.fn(),
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -27,3 +35,4 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 });
+
