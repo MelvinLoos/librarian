@@ -3,7 +3,8 @@ import { IsString, IsNumber, Min, Max, IsNotEmpty } from 'class-validator';
 
 export class UpdateProgressDto {
   @ApiProperty({
-    description: 'Format-agnostic reading position (EPUB CFI string or PDF page identifier)',
+    description:
+      'Format-agnostic reading position (EPUB CFI string or PDF page identifier)',
     example: 'epubcfi(/6/4!/4/2/1:0)',
   })
   @IsString()
