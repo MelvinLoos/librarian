@@ -46,10 +46,8 @@ export class DownloadAssetUseCase {
         // 4. Create a full stream (no start/end range needed)
         const stream = this.fileStorage.createReadStreamWithRange(absolutePath);
 
-        // 5. Construct a clean filename for the user
-        // e.g., "Clean_Code.epub"
-        const extension = info.format.toLowerCase();
-        const downloadName = `${info.fileName}.${extension}`;
+        // 5. Construct and sanitize a clean filename for the user
+        const downloadName = this.sanitizeFileName(info.fileName, info.format);
 
         return {
             stream,
@@ -57,6 +55,23 @@ export class DownloadAssetUseCase {
             mimeType: this.getMimeType(info.format),
             fileName: downloadName,
         };
+    }
+
+    private sanitizeFileName(fileName: string, format: string): string {
+        // Replace slashes/backslashes with underscores
+        let cleaned = fileName.replace(/[/\\]+/g, '_');
+        
+        // Remove characters that are unsafe or special in content-disposition filenames
+        cleaned = cleaned.replace(/[^a-zA-Z0-9_\-\s]/g, '');
+        
+        // Replace sequences of spaces and underscores with a single underscore
+        cleaned = cleaned.replace(/[\s_]+/g, '_');
+        
+        // Trim leading and trailing underscores
+        cleaned = cleaned.replace(/^_+|_+$/g, '');
+
+        const extension = format.toLowerCase();
+        return `${cleaned}.${extension}`;
     }
 
     private getMimeType(format: string): string {
@@ -69,3 +84,4 @@ export class DownloadAssetUseCase {
         return types[format.toUpperCase()] || 'application/octet-stream';
     }
 }
+
