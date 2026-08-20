@@ -22,6 +22,8 @@ const mockCacheBook = vi.fn()
 const mockClearCachedBook = vi.fn()
 const mockRefreshCacheStatus = vi.fn()
 const mockInitSwListener = vi.fn(() => () => {})
+const mockSetBookMeta = vi.fn()
+const mockClearBookMeta = vi.fn()
 
 vi.mock('~/stores/bookCache', () => ({
   useBookCacheStore: () => ({
@@ -32,6 +34,8 @@ vi.mock('~/stores/bookCache', () => ({
     cacheBook:          mockCacheBook,
     clearCachedBook:    mockClearCachedBook,
     initSwListener:     mockInitSwListener,
+    setBookMeta:        mockSetBookMeta,
+    clearBookMeta:      mockClearBookMeta,
   }),
 }))
 

@@ -193,9 +193,20 @@ async function handleOfflineToggle() {
   if (!cacheApiAvailable.value) return
   if (isOfflineReady.value || isDownloading.value) {
     await bookCacheStore.clearCachedBook(bookId.value)
+    bookCacheStore.clearBookMeta(bookId.value)
   } else {
+    // Optimistically set metadata for the Downloads page.
+    // We strip extraneous fields like 'comments' or 'description' to save LS space.
+    bookCacheStore.setBookMeta(bookId.value, {
+      id: bookId.value,
+      title: book.value?.title ?? 'Unknown Title',
+      authors: book.value?.authors ?? [],
+      hasCover: book.value?.hasCover ?? false,
+    })
+
     bookCacheStore.cacheBook(bookId.value).catch(() => {
-      // error already logged inside the store
+      // If download fails completely, remove meta
+      bookCacheStore.clearBookMeta(bookId.value)
     })
   }
 }

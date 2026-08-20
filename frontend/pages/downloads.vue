@@ -31,17 +31,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
 import BookCard from '~/components/BookCard.vue'
 import BookSkeleton from '~/components/BookSkeleton.vue'
 import { useBookCacheStore } from '~/stores/bookCache'
-import { useSearchStore } from '~/stores/search'
 import type { Book } from '~/domain/catalog/Catalog.types'
 
 const bookCacheStore = useBookCacheStore()
-const searchStore = useSearchStore()
-const router = useRouter()
 
 const isLoading = ref(true)
 const cachedBookDetails = ref<Book[]>([])
@@ -54,12 +50,6 @@ onMounted(async () => {
 
   // Refresh cache status from the service worker
   await bookCacheStore.refreshCacheStatus()
-
-  // Ensure all books metadata is available to cross-reference
-  if (searchStore.books.length === 0) {
-    // Attempt to fetch books. If offline, this will resolve to empty.
-    await searchStore.fetchBooks()
-  }
 
   // Populate cachedBookDetails based on current cache status and available book data
   updateCachedBookDetails()
@@ -74,19 +64,18 @@ onBeforeUnmount(() => {
   }
 })
 
-// Watch for changes in the cache status map or search store's books
-watch([() => bookCacheStore.cacheStatusMap, () => searchStore.books], () => {
+// Watch for changes in the cache status map or stored book metadata
+watch([() => bookCacheStore.cacheStatusMap, () => bookCacheStore.cachedBookMeta], () => {
   updateCachedBookDetails()
-}, { deep: true }) // Deep watch for cacheStatusMap changes inside
+}, { deep: true })
 
 function updateCachedBookDetails() {
-  const allBooks = searchStore.books
   const currentlyCachedBookIds = Object.keys(bookCacheStore.cacheStatusMap)
     .map(Number)
     .filter(bookId => bookCacheStore.isCached(bookId))
 
-  cachedBookDetails.value = allBooks.filter(book =>
+  cachedBookDetails.value = Object.values(bookCacheStore.cachedBookMeta).filter(book =>
     currentlyCachedBookIds.includes(book.id)
-  )
+  ) as Book[]
 }
 </script>

@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useBookCacheStore, BOOK_STREAM_CACHE, LS_CACHED_BOOK_IDS_KEY, bookStreamUrl } from './bookCache'
+import { useBookCacheStore, BOOK_STREAM_CACHE, LS_CACHED_BOOK_IDS_KEY, LS_CACHED_BOOK_META_KEY, bookStreamUrl } from './bookCache'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test helpers
@@ -138,6 +138,20 @@ describe('bookCache store', () => {
     store.cacheStatusMap[5] = { status: 'cached', progress: 100 }
     await store.refreshCacheStatus([5])
     expect(store.getStatus(5)).toBe('not-cached')
+  })
+
+  it('refreshCacheStatus() no-args removes stale entries from cacheStatusMap', async () => {
+    const store = useBookCacheStore()
+    // Seed store with a "cached" book
+    store.cacheStatusMap[123] = { status: 'cached', progress: 100 }
+    
+    // Mock Cache Storage as empty
+    cacheMock.keys.mockResolvedValue([])
+    
+    await store.refreshCacheStatus()
+    
+    expect(store.getStatus(123)).toBe('not-cached')
+    expect(lsMock.setItem).toHaveBeenCalled()
   })
 
   it('does not overwrite an active partial download', async () => {
@@ -379,6 +393,19 @@ describe('bookCache store', () => {
     expect(store.getStatus(7)).toBe('cached')
     expect(store.getStatus(13)).toBe('cached')
     expect(store.getProgress(7)).toBe(100)
+  })
+
+  it('setBookMeta and clearBookMeta persist to localStorage correctly', () => {
+    const store = useBookCacheStore()
+    const meta = { id: 1, title: 'Test' }
+    
+    store.setBookMeta(1, meta)
+    expect(store.cachedBookMeta[1]).toEqual(meta)
+    expect(lsMock.setItem).toHaveBeenCalledWith(LS_CACHED_BOOK_META_KEY, JSON.stringify({ 1: meta }))
+    
+    store.clearBookMeta(1)
+    expect(store.cachedBookMeta[1]).toBeUndefined()
+    expect(lsMock.setItem).toHaveBeenCalledWith(LS_CACHED_BOOK_META_KEY, JSON.stringify({}))
   })
 
   it('handles corrupt localStorage data gracefully', () => {

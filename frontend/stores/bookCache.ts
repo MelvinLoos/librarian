@@ -42,6 +42,12 @@ export const BOOK_STREAM_CACHE = 'book-streams-v1'
  */
 export const LS_CACHED_BOOK_IDS_KEY = 'librarian:cachedBookIds'
 
+/**
+ * localStorage key for book metadata (title, author, cover info) so the Downloads
+ * page can render offline-ready books without querying the catalog API.
+ */
+export const LS_CACHED_BOOK_META_KEY = 'librarian:cachedBookMeta'
+
 /** Build the stream URL for a given book ID (matches the SW route pattern). */
 export function bookStreamUrl(bookId: number | string): string {
   return `/api/assets/books/${bookId}/stream`
@@ -75,6 +81,27 @@ function _lsWrite(ids: Set<number>): void {
   }
 }
 
+/** Read the persisted book metadata map from localStorage. */
+function _lsReadMeta(): Record<number, any> {
+  if (typeof localStorage === 'undefined') return {}
+  try {
+    const raw = localStorage.getItem(LS_CACHED_BOOK_META_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+/** Persist the book metadata map to localStorage. */
+function _lsWriteMeta(meta: Record<number, any>): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(LS_CACHED_BOOK_META_KEY, JSON.stringify(meta))
+  } catch {
+    // Quota exceeded — silently ignore.
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Store
 // ─────────────────────────────────────────────────────────────────────────────
@@ -93,6 +120,9 @@ export const useBookCacheStore = defineStore('bookCache', () => {
 
   /** Map of bookId → BookCacheEntry. */
   const cacheStatusMap = ref<Record<number, BookCacheEntry>>(_initialMap)
+
+  /** Persistent metadata for cached books. */
+  const cachedBookMeta = ref<Record<number, any>>(_lsReadMeta())
 
   /** Whether the Cache Storage API is available in this environment. */
   const cacheApiAvailable = computed(
@@ -160,6 +190,15 @@ export const useBookCacheStore = defineStore('bookCache', () => {
       }
 
       if (!bookIds) {
+        // Clean up stale entries in memory/localStorage that are no longer in Cache Storage.
+        // This ensures the toggle resets correctly if Cache Storage and localStorage got out of sync.
+        for (const [idStr, entry] of Object.entries(cacheStatusMap.value)) {
+          const id = Number(idStr)
+          if (!cachedIds.has(id) && entry.status === 'cached') {
+            _setStatus(id, 'not-cached', 0)
+          }
+        }
+
         for (const id of cachedIds) {
           if (!(id in cacheStatusMap.value)) _setStatus(id, 'cached', 100)
         }
@@ -270,7 +309,10 @@ export const useBookCacheStore = defineStore('bookCache', () => {
     if (!cacheApiAvailable.value) return
     try {
       const cache = await caches.open(BOOK_STREAM_CACHE)
-      await cache.delete(bookStreamUrl(bookId))
+      const deleted = await cache.delete(bookStreamUrl(bookId))
+      if (!deleted) {
+        console.warn(`[bookCache] clearCachedBook: no cache entry deleted for book ${bookId}. It may have already been removed.`)
+      }
     } catch (err) {
       console.warn('[bookCache] clearCachedBook failed:', err)
     } finally {
@@ -301,6 +343,18 @@ export const useBookCacheStore = defineStore('bookCache', () => {
    */
   function unmarkBookCached(bookId: number): void {
     _setStatus(bookId, 'not-cached', 0)
+  }
+
+  /** Store metadata for a cached book so it can be rendered offline in the Downloads list. */
+  function setBookMeta(bookId: number, meta: any): void {
+    cachedBookMeta.value[bookId] = meta
+    _lsWriteMeta(cachedBookMeta.value)
+  }
+
+  /** Remove metadata for a book. */
+  function clearBookMeta(bookId: number): void {
+    delete cachedBookMeta.value[bookId]
+    _lsWriteMeta(cachedBookMeta.value)
   }
 
   /**
@@ -375,6 +429,7 @@ export const useBookCacheStore = defineStore('bookCache', () => {
   // ── 5. RETURN ─────────────────────────────────────────────────────────────
   return {
     cacheStatusMap,
+    cachedBookMeta,
     cacheApiAvailable,
     getEntry,
     getStatus,
@@ -382,6 +437,8 @@ export const useBookCacheStore = defineStore('bookCache', () => {
     refreshCacheStatus,
     markBookCached,
     unmarkBookCached,
+    setBookMeta,
+    clearBookMeta,
     isCached,
     cacheBook,
     clearCachedBook,
