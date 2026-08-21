@@ -5,7 +5,7 @@ import { SharedModule } from '../shared/shared.module';
 
 @Module({
   // Import SharedModule to ensure PrismaService is available for injection
-  imports: [SharedModule], 
+  imports: [SharedModule],
   controllers: [AssetController],
   providers: [AssetService],
 })

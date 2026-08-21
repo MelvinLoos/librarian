@@ -17,8 +17,12 @@ describe('MimeType', () => {
   });
 
   it('should throw an error for invalid formats', () => {
-    expect(() => new MimeType('invalid-mime-type')).toThrow('Invalid MimeType format');
-    expect(() => new MimeType('application/')).toThrow('Invalid MimeType format');
+    expect(() => new MimeType('invalid-mime-type')).toThrow(
+      'Invalid MimeType format',
+    );
+    expect(() => new MimeType('application/')).toThrow(
+      'Invalid MimeType format',
+    );
     expect(() => new MimeType('/jpeg')).toThrow('Invalid MimeType format');
   });
 

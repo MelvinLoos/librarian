@@ -41,4 +41,4 @@ import { GetAssetStatusUseCase } from './application/use-cases/get-asset-status.
   ],
   exports: [UploadAssetUseCase, StreamAssetUseCase, DownloadAssetUseCase],
 })
-export class StorageModule { }
+export class StorageModule {}

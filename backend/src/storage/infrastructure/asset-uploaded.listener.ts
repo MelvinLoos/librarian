@@ -16,7 +16,9 @@ export class AssetUploadedListener {
 
   @OnEvent('AssetUploadedEvent')
   async handleAssetUploadedEvent(event: AssetUploadedEvent) {
-    this.logger.log(`Handling AssetUploadedEvent for asset ID: ${event.assetId}`);
+    this.logger.log(
+      `Handling AssetUploadedEvent for asset ID: ${event.assetId}`,
+    );
 
     let asset = await this.assetRepository.findById(event.assetId);
 
@@ -35,16 +37,22 @@ export class AssetUploadedListener {
 
       asset = await this.assetRepository.findById(event.assetId); // Re-fetch to ensure latest state
       if (!asset) {
-        this.logger.error(`Asset with ID ${event.assetId} not found after processing.`);
+        this.logger.error(
+          `Asset with ID ${event.assetId} not found after processing.`,
+        );
         return;
       }
 
       asset.markAsReady();
       await this.assetRepository.save(asset);
 
-      this.logger.log(`Metadata extracted and asset marked as READY for asset ID: ${event.assetId}`);
+      this.logger.log(
+        `Metadata extracted and asset marked as READY for asset ID: ${event.assetId}`,
+      );
     } catch (error: any) {
-      this.logger.error(`Error processing asset ${event.assetId}: ${error.message}`);
+      this.logger.error(
+        `Error processing asset ${event.assetId}: ${error.message}`,
+      );
       asset = await this.assetRepository.findById(event.assetId); // Re-fetch to ensure latest state
       if (asset) {
         asset.markAsFailed(error.message);

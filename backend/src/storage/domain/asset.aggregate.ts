@@ -21,7 +21,7 @@ export class Asset {
     private _state: AssetProcessingState,
     private _bookId?: number,
     private _failureReason?: string,
-  ) { }
+  ) {}
 
   public static upload(
     id: string,
@@ -30,7 +30,14 @@ export class Asset {
     mimeType: MimeType,
     byteSize: ByteSize,
   ): Asset {
-    const asset = new Asset(id, type, filePath, mimeType, byteSize, AssetProcessingState.UPLOADED);
+    const asset = new Asset(
+      id,
+      type,
+      filePath,
+      mimeType,
+      byteSize,
+      AssetProcessingState.UPLOADED,
+    );
     asset.addDomainEvent(
       new AssetUploadedEvent(
         id,
@@ -53,7 +60,16 @@ export class Asset {
     bookId?: number,
     failureReason?: string,
   ): Asset {
-    return new Asset(id, type, filePath, mimeType, byteSize, state, bookId, failureReason);
+    return new Asset(
+      id,
+      type,
+      filePath,
+      mimeType,
+      byteSize,
+      state,
+      bookId,
+      failureReason,
+    );
   }
 
   get id(): string {
@@ -97,15 +113,21 @@ export class Asset {
 
   public markAsReady(): void {
     if (this._state !== AssetProcessingState.PROCESSING) {
-      throw new Error('Asset must be in PROCESSING state to be marked as ready');
+      throw new Error(
+        'Asset must be in PROCESSING state to be marked as ready',
+      );
     }
     this._state = AssetProcessingState.READY;
-    this.addDomainEvent(new MetadataExtractedEvent(this._id, AssetProcessingState.READY));
+    this.addDomainEvent(
+      new MetadataExtractedEvent(this._id, AssetProcessingState.READY),
+    );
   }
 
   public markAsFailed(reason: string): void {
     if (this._state === AssetProcessingState.READY) {
-      throw new Error('Asset cannot be marked as failed if it is already READY');
+      throw new Error(
+        'Asset cannot be marked as failed if it is already READY',
+      );
     }
     this._state = AssetProcessingState.FAILED;
     this._failureReason = reason;
@@ -123,9 +145,13 @@ export class Asset {
       throw new Error('Can only request format conversion for FORMAT assets');
     }
     if (this._state !== AssetProcessingState.READY) {
-      throw new Error('Asset must be in READY state to request format conversion');
+      throw new Error(
+        'Asset must be in READY state to request format conversion',
+      );
     }
-    this.addDomainEvent(new FormatConversionRequestedEvent(this._id, targetMimeType.value));
+    this.addDomainEvent(
+      new FormatConversionRequestedEvent(this._id, targetMimeType.value),
+    );
   }
 
   get domainEvents(): DomainEvent[] {

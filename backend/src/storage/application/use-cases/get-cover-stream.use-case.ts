@@ -18,15 +18,24 @@ export class GetCoverStreamUseCase {
     const bookPath = await this.bookRepository.getBookPath(bookId);
 
     if (!bookPath) {
-      this.logger.warn(`Cover stream requested for non-existent book ID: ${bookId}`);
-      throw new NotFoundException(`Book with ID ${bookId} not found in the database.`);
+      this.logger.warn(
+        `Cover stream requested for non-existent book ID: ${bookId}`,
+      );
+      throw new NotFoundException(
+        `Book with ID ${bookId} not found in the database.`,
+      );
     }
 
     try {
       return await this.fileStorage.getCoverStream(bookPath);
     } catch (error) {
-      this.logger.error(`Failed to get cover stream for book ID: ${bookId} from path: ${bookPath}`, error instanceof Error ? error.stack : undefined);
-      throw new NotFoundException(`Cover image for book ID ${bookId} not found on disk.`);
+      this.logger.error(
+        `Failed to get cover stream for book ID: ${bookId} from path: ${bookPath}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new NotFoundException(
+        `Cover image for book ID ${bookId} not found on disk.`,
+      );
     }
   }
 }

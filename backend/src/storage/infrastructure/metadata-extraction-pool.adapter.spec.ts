@@ -13,7 +13,9 @@ describe('MetadataExtractionPoolAdapter', () => {
       destroy: jest.fn(),
     };
 
-    (Piscina as jest.MockedClass<typeof Piscina>).mockImplementation(() => mockPiscinaInstance as any);
+    (Piscina as jest.MockedClass<typeof Piscina>).mockImplementation(
+      () => mockPiscinaInstance as any,
+    );
 
     adapter = new MetadataExtractionPoolAdapter();
   });
@@ -26,13 +28,19 @@ describe('MetadataExtractionPoolAdapter', () => {
     const filePath = '/path/to/test-book.epub';
     mockPiscinaInstance.run.mockResolvedValue({
       success: true,
-      metadata: { title: 'Mock Title for test-book.epub', author: 'Mock Author for test-book.epub' },
+      metadata: {
+        title: 'Mock Title for test-book.epub',
+        author: 'Mock Author for test-book.epub',
+      },
     });
 
     const result = await adapter.extractMetadata(filePath);
 
     expect(mockPiscinaInstance.run).toHaveBeenCalledWith(filePath);
-    expect(result).toEqual({ title: 'Mock Title for test-book.epub', author: 'Mock Author for test-book.epub' });
+    expect(result).toEqual({
+      title: 'Mock Title for test-book.epub',
+      author: 'Mock Author for test-book.epub',
+    });
   });
 
   it('should throw an error if worker returns a failure', async () => {
@@ -42,7 +50,9 @@ describe('MetadataExtractionPoolAdapter', () => {
       reason: 'Simulated worker error',
     });
 
-    await expect(adapter.extractMetadata(filePath)).rejects.toThrow('Simulated worker error');
+    await expect(adapter.extractMetadata(filePath)).rejects.toThrow(
+      'Simulated worker error',
+    );
     expect(mockPiscinaInstance.run).toHaveBeenCalledWith(filePath);
   });
 

@@ -14,7 +14,9 @@ export class AssetService {
     });
 
     if (!book || !book.path) {
-      throw new NotFoundException(`Book with ID ${bookId} not found in the database.`);
+      throw new NotFoundException(
+        `Book with ID ${bookId} not found in the database.`,
+      );
     }
 
     // Construct the absolute path
@@ -24,7 +26,9 @@ export class AssetService {
 
     // Verify file exists on disk
     if (!fs.existsSync(coverPath)) {
-      throw new NotFoundException(`Cover image for book ID ${bookId} not found on disk.`);
+      throw new NotFoundException(
+        `Cover image for book ID ${bookId} not found on disk.`,
+      );
     }
 
     return fs.createReadStream(coverPath);

@@ -41,15 +41,15 @@ describe('AssetController Contract (e2e)', () => {
           const fileSize = mockFileContent.length;
 
           if (input.rangeHeader) {
-            const parts = input.rangeHeader.replace(/bytes=/, "").split("-");
+            const parts = input.rangeHeader.replace(/bytes=/, '').split('-');
             const start = parseInt(parts[0], 10);
             const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
             const contentLength = end - start + 1;
-            
+
             // Slice the buffer to provide exactly the requested range size
             const slicedContent = mockFileContent.subarray(start, end + 1);
             const stream = Readable.from(slicedContent);
-            
+
             return {
               stream,
               fileSize,
@@ -87,7 +87,11 @@ describe('AssetController Contract (e2e)', () => {
 
     // Generate signed token
     const jwtService = app.get(JwtService);
-    authToken = jwtService.sign({ sub: 'user-123', email: 'test@example.com', role: 'ADMIN' });
+    authToken = jwtService.sign({
+      sub: 'user-123',
+      email: 'test@example.com',
+      role: 'ADMIN',
+    });
   });
 
   afterAll(async () => {
@@ -147,12 +151,14 @@ expect.extend({
     const pass = argument.includes(received);
     if (pass) {
       return {
-        message: () => `expected ${received} not to be one of [${argument.join(', ')}]`,
+        message: () =>
+          `expected ${received} not to be one of [${argument.join(', ')}]`,
         pass: true,
       };
     } else {
       return {
-        message: () => `expected ${received} to be one of [${argument.join(', ')}]`,
+        message: () =>
+          `expected ${received} to be one of [${argument.join(', ')}]`,
         pass: false,
       };
     }
@@ -166,8 +172,3 @@ declare global {
     }
   }
 }
-
-
-
-
-

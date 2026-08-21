@@ -23,7 +23,10 @@ describe('LocalFileStorage', () => {
       mimeType: 'application/epub+zip',
     });
 
-    expect(mkdir).toHaveBeenCalledWith(expect.stringContaining(join('.librarian', 'assets')), { recursive: true });
+    expect(mkdir).toHaveBeenCalledWith(
+      expect.stringContaining(join('.librarian', 'assets')),
+      { recursive: true },
+    );
     expect(writeFile).toHaveBeenCalledWith(expect.any(String), buffer);
     expect(result).toBe(join('.librarian', 'assets', 'test.epub'));
   });
@@ -38,6 +41,9 @@ describe('LocalFileStorage', () => {
     });
 
     expect(result).toBe(join('.librarian', 'assets', 'test.epub'));
-    expect(writeFile).toHaveBeenCalledWith(expect.stringContaining(join('.librarian', 'assets', 'test.epub')), buffer);
+    expect(writeFile).toHaveBeenCalledWith(
+      expect.stringContaining(join('.librarian', 'assets', 'test.epub')),
+      buffer,
+    );
   });
 });

@@ -15,11 +15,20 @@ import {
   NotFoundException,
   ParseIntPipe,
   StreamableFile,
-  Header
+  Header,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiConsumes, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiConsumes,
+  ApiBody,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { UploadAssetUseCase } from '../application/use-cases/upload-asset.use-case';
 import { StreamAssetUseCase } from '../application/use-cases/stream-asset.use-case';
 import { DownloadAssetUseCase } from '../application/use-cases/download-asset.use-case';
@@ -37,14 +46,15 @@ export class AssetController {
     private readonly streamAssetUseCase: StreamAssetUseCase,
     private readonly downloadAssetUseCase: DownloadAssetUseCase,
     private readonly getAssetStatusUseCase: GetAssetStatusUseCase,
-  ) { }
+  ) {}
 
   @Post('upload')
   @HttpCode(HttpStatus.ACCEPTED)
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({
     summary: 'Upload an asset',
-    description: 'Uploads a file (e.g., EPUB, PDF, MOBI, image) to the storage and initiates metadata extraction asynchronously.'
+    description:
+      'Uploads a file (e.g., EPUB, PDF, MOBI, image) to the storage and initiates metadata extraction asynchronously.',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -59,10 +69,13 @@ export class AssetController {
       },
     },
   })
-  @ApiResponse({ status: 202, description: 'Asset upload initiated successfully.' })
+  @ApiResponse({
+    status: 202,
+    description: 'Asset upload initiated successfully.',
+  })
   @ApiResponse({ status: 400, description: 'File is required or invalid.' })
   async uploadFile(@UploadedFile() file: any) {
-    // Note: 'any' is used here because Multer.File is not strictly available 
+    // Note: 'any' is used here because Multer.File is not strictly available
     // without @types/multer which might not be global, but Nest uses it.
 
     if (!file) {
@@ -70,7 +83,9 @@ export class AssetController {
       throw new BadRequestException('File is required');
     }
 
-    this.logger.log(`Initiating upload for file: ${file.originalname} (size: ${file.size} bytes)`);
+    this.logger.log(
+      `Initiating upload for file: ${file.originalname} (size: ${file.size} bytes)`,
+    );
 
     const assetId = await this.uploadAssetUseCase.execute({
       file: {
@@ -90,10 +105,15 @@ export class AssetController {
   @Get('books/:id/stream')
   @ApiOperation({
     summary: 'Stream a book file',
-    description: 'Streams a book file with HTTP 206 Partial Content support for chunked delivery.',
+    description:
+      'Streams a book file with HTTP 206 Partial Content support for chunked delivery.',
   })
   @ApiParam({ name: 'id', type: 'number', description: 'Book ID' })
-  @ApiQuery({ name: 'format', required: false, description: 'Preferred format (e.g. EPUB, PDF)' })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    description: 'Preferred format (e.g. EPUB, PDF)',
+  })
   @ApiResponse({ status: 200, description: 'Full file stream.' })
   @ApiResponse({ status: 206, description: 'Partial content stream.' })
   @Header('Accept-Ranges', 'bytes')
@@ -106,7 +126,7 @@ export class AssetController {
     const result = await this.streamAssetUseCase.execute({
       bookId: id,
       format,
-      rangeHeader
+      rangeHeader,
     });
 
     if (rangeHeader) {
@@ -133,14 +153,21 @@ export class AssetController {
     description: 'Downloads the full book file as an attachment.',
   })
   @ApiParam({ name: 'id', type: 'number', description: 'Book ID' })
-  @ApiQuery({ name: 'format', required: false, description: 'Preferred format (e.g. EPUB, PDF)' })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    description: 'Preferred format (e.g. EPUB, PDF)',
+  })
   @ApiResponse({ status: 200, description: 'File download.' })
   async downloadBook(
     @Param('id', ParseIntPipe) id: number,
     @Query('format') format: string | undefined,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const result = await this.downloadAssetUseCase.execute({ bookId: id, format });
+    const result = await this.downloadAssetUseCase.execute({
+      bookId: id,
+      format,
+    });
 
     res.set({
       'Content-Type': result.mimeType,
@@ -154,12 +181,19 @@ export class AssetController {
   @Get(':id/status')
   @ApiOperation({
     summary: 'Get asset processing status',
-    description: 'Retrieves the current processing status of an asset by its ID.',
+    description:
+      'Retrieves the current processing status of an asset by its ID.',
   })
   @ApiParam({ name: 'id', type: 'string', description: 'Asset ID' })
-  @ApiResponse({ status: 200, description: 'Asset status retrieved successfully.', type: Object })
+  @ApiResponse({
+    status: 200,
+    description: 'Asset status retrieved successfully.',
+    type: Object,
+  })
   @ApiResponse({ status: 404, description: 'Asset not found.' })
-  async getAssetStatus(@Param('id') assetId: string): Promise<AssetStatusResult> {
+  async getAssetStatus(
+    @Param('id') assetId: string,
+  ): Promise<AssetStatusResult> {
     this.logger.log(`Received request for asset status: ${assetId}`);
 
     const status = await this.getAssetStatusUseCase.execute({ assetId });

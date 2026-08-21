@@ -35,7 +35,9 @@ export class PrismaAssetRepository implements IAssetRepository {
       bookId: number;
     };
 
-    const data = (await this.prisma.data.findFirst({ where: { name: id } })) as DataRecord | null;
+    const data = (await this.prisma.data.findFirst({
+      where: { name: id },
+    })) as DataRecord | null;
     if (!data) return null;
 
     const parsed = JSON.parse(data.format) as {
