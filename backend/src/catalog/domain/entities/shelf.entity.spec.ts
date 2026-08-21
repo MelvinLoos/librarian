@@ -9,10 +9,14 @@ describe('Shelf Entity', () => {
   });
 
   it('should throw an error if name is empty', () => {
-    expect(() => new Shelf({ name: '', userId: 'user-1' })).toThrow('Shelf name cannot be empty');
+    expect(() => new Shelf({ name: '', userId: 'user-1' })).toThrow(
+      'Shelf name cannot be empty',
+    );
   });
 
   it('should throw an error if userId is empty', () => {
-    expect(() => new Shelf({ name: 'Fav', userId: '' })).toThrow('Shelf userId cannot be empty');
+    expect(() => new Shelf({ name: 'Fav', userId: '' })).toThrow(
+      'Shelf userId cannot be empty',
+    );
   });
 });

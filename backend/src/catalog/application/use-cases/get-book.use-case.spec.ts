@@ -12,6 +12,7 @@ describe('GetBookUseCase', () => {
       save: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      update: jest.fn(),
     };
     useCase = new GetBookUseCase(repository);
   });
@@ -29,8 +30,9 @@ describe('GetBookUseCase', () => {
   it('should throw NotFoundException if book does not exist', async () => {
     repository.findById.mockResolvedValue(null);
 
-    await expect(useCase.execute('non-existent'))
-      .rejects.toThrow(NotFoundException);
+    await expect(useCase.execute('non-existent')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should return all books', async () => {

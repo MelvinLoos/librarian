@@ -14,6 +14,8 @@ describe('CustomColumn Entity', () => {
   });
 
   it('should throw an error if name is empty', () => {
-    expect(() => new CustomColumn({ name: '', value: 'Read' })).toThrow('CustomColumn name cannot be empty');
+    expect(() => new CustomColumn({ name: '', value: 'Read' })).toThrow(
+      'CustomColumn name cannot be empty',
+    );
   });
 });

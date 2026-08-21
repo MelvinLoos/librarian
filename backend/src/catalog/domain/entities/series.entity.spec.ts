@@ -9,7 +9,9 @@ describe('Series Entity', () => {
   });
 
   it('should throw an error if name is empty', () => {
-    expect(() => new Series({ name: '', index: 1 })).toThrow('Series name cannot be empty');
+    expect(() => new Series({ name: '', index: 1 })).toThrow(
+      'Series name cannot be empty',
+    );
   });
 
   it('should default to index 1 if not provided', () => {

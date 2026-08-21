@@ -6,7 +6,9 @@ import { ITagRepository } from '../application/ports/tag.repository.interface';
 export class PrismaTagRepository implements ITagRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getTopTags(limit: number): Promise<{ id: number; name: string; count: number }[]> {
+  async getTopTags(
+    limit: number,
+  ): Promise<{ id: number; name: string; count: number }[]> {
     const tags = await this.prisma.tag.findMany({
       take: limit,
       include: {

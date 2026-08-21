@@ -11,6 +11,7 @@ describe('CreateBookUseCase', () => {
       save: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      update: jest.fn(),
     };
     useCase = new CreateBookUseCase(repository);
   });
@@ -34,7 +35,7 @@ describe('CreateBookUseCase', () => {
   it('should create a book with minimal info', async () => {
     const command = { title: 'Minimal Book' };
     const result = await useCase.execute(command);
-    
+
     expect(result.props.title).toBe('Minimal Book');
     expect(repository.save).toHaveBeenCalledTimes(1);
   });
