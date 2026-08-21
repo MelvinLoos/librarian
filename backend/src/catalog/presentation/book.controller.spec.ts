@@ -1,0 +1,107 @@
+/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment */
+
+import { Test, TestingModule } from '@nestjs/testing';
+import { BookController } from './book.controller';
+import { GetBookUseCase } from '../application/use-cases/get-book.use-case';
+import { UpdateBookMetadataUseCase } from '../application/use-cases/update-book-metadata.use-case';
+import { CreateBookUseCase } from '../application/use-cases/create-book.use-case';
+import { UpdateBookMetadataDto } from './dto/update-book-metadata.dto';
+import { Book } from '../domain/book.aggregate';
+import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
+
+describe('BookController & UpdateBookMetadataDto', () => {
+  describe('UpdateBookMetadataDto Validation', () => {
+    it('should accept a fully valid payload', async () => {
+      const dto = plainToInstance(UpdateBookMetadataDto, {
+        title: 'The Way of Kings',
+        publisher: 'Tor Books',
+        rating: 4.5,
+        authors: [{ name: 'Brandon Sanderson' }],
+        tags: [{ name: 'Fantasy' }],
+        series: { name: 'The Stormlight Archive', index: 1 },
+        identifiers: [{ type: 'isbn', value: '9780765326355' }],
+        description: 'Epic fantasy',
+      });
+
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should accept a partial payload (all optional)', async () => {
+      const dto = plainToInstance(UpdateBookMetadataDto, {
+        title: 'Only Title',
+      });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should reject a rating outside 0-5', async () => {
+      const dto = plainToInstance(UpdateBookMetadataDto, { rating: 6 });
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].property).toBe('rating');
+
+      const dto2 = plainToInstance(UpdateBookMetadataDto, { rating: -1 });
+      const errors2 = await validate(dto2);
+      expect(errors2).toHaveLength(1);
+      expect(errors2[0].property).toBe('rating');
+    });
+
+    it('should reject an empty title', async () => {
+      const dto = plainToInstance(UpdateBookMetadataDto, { title: '' });
+      const errors = await validate(dto);
+      expect(errors.some((e) => e.property === 'title')).toBe(true);
+    });
+  });
+
+  describe('BookController.updateMetadata', () => {
+    let controller: BookController;
+    let updateUseCase: jest.Mocked<UpdateBookMetadataUseCase>;
+    let getUseCase: jest.Mocked<GetBookUseCase>;
+
+    beforeEach(async () => {
+      updateUseCase = { execute: jest.fn() } as any;
+      getUseCase = { execute: jest.fn() } as any;
+
+      const module: TestingModule = await Test.createTestingModule({
+        controllers: [BookController],
+        providers: [
+          { provide: UpdateBookMetadataUseCase, useValue: updateUseCase },
+          { provide: GetBookUseCase, useValue: getUseCase },
+          { provide: CreateBookUseCase, useValue: { execute: jest.fn() } },
+        ],
+      }).compile();
+
+      controller = module.get<BookController>(BookController);
+    });
+
+    it('should delegate to the update use case and return the updated fields', async () => {
+      const book = Book.create({ title: 'New Title' }, '1');
+      updateUseCase.execute.mockResolvedValue(book);
+
+      const dto: UpdateBookMetadataDto = { title: 'New Title' };
+      const result = await controller.updateMetadata('1', dto);
+
+      expect(updateUseCase.execute).toHaveBeenCalledWith('1', dto);
+      expect(result).toEqual({
+        id: '1',
+        title: 'New Title',
+        publisher: undefined,
+        rating: undefined,
+        series: undefined,
+        tags: [],
+        identifiers: [],
+        authors: [],
+      });
+    });
+
+    it('should propagate errors from the use case', async () => {
+      updateUseCase.execute.mockRejectedValue(new Error('DB down'));
+
+      await expect(
+        controller.updateMetadata('1', { title: 'X' }),
+      ).rejects.toThrow('DB down');
+    });
+  });
+});

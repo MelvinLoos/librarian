@@ -12,4 +12,5 @@ export interface IBookRepository {
   save(book: Book): Promise<void>;
   findById(id: string): Promise<Book | null>;
   findAll(params?: FindAllBooksParams): Promise<Book[]>;
+  update(book: Book): Promise<Book>;
 }
