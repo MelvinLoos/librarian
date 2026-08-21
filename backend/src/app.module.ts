@@ -17,7 +17,7 @@ import { HealthModule } from './health/health.module';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../..', 'frontend', '.output', 'public'),
-      exclude: ['/api/(.*)'],
+      exclude: ['/api/*path'],
     }),
     LoggerModule.forRoot({
       pinoHttp: {
