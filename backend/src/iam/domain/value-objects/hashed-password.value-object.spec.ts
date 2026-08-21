@@ -7,8 +7,12 @@ describe('HashedPassword Value Object', () => {
   });
 
   it('should throw an error for empty hashes', () => {
-    expect(() => HashedPassword.create('')).toThrow('Hashed password cannot be empty');
-    expect(() => HashedPassword.create('   ')).toThrow('Hashed password cannot be empty');
+    expect(() => HashedPassword.create('')).toThrow(
+      'Hashed password cannot be empty',
+    );
+    expect(() => HashedPassword.create('   ')).toThrow(
+      'Hashed password cannot be empty',
+    );
   });
 
   it('should not expose hash as public property', () => {
@@ -21,7 +25,7 @@ describe('HashedPassword Value Object', () => {
     const p1 = HashedPassword.create('hash1');
     const p2 = HashedPassword.create('hash1');
     const p3 = HashedPassword.create('hash2');
-    
+
     expect(p1.equals(p2)).toBe(true);
     expect(p1.equals(p3)).toBe(false);
   });

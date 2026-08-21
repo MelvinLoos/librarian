@@ -1,4 +1,10 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { Response, Request } from 'express';
 
 @Catch()
@@ -16,11 +22,12 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse: any = exception.getResponse();
-      
-      title = exceptionResponse.error || exceptionResponse.message || exception.name;
-      detail = Array.isArray(exceptionResponse.message) 
-        ? exceptionResponse.message.join(', ') 
-        : (exceptionResponse.message || exception.message);
+
+      title =
+        exceptionResponse.error || exceptionResponse.message || exception.name;
+      detail = Array.isArray(exceptionResponse.message)
+        ? exceptionResponse.message.join(', ')
+        : exceptionResponse.message || exception.message;
       type = exceptionResponse.type || `https://httpstatuses.com/${status}`;
     } else if (exception instanceof Error) {
       title = exception.name;

@@ -2,7 +2,7 @@ export enum RoleEnum {
   ADMIN = 'ADMIN',
   CONTRIBUTOR = 'CONTRIBUTOR',
   READER = 'READER',
-  CUSTOMER = 'CUSTOMER'
+  CUSTOMER = 'CUSTOMER',
 }
 
 export class Role {
@@ -25,7 +25,7 @@ export class Role {
   }
 
   public static create(roleStr: string): Role {
-    const roleValue = Object.values(RoleEnum).find(r => r === roleStr);
+    const roleValue = Object.values(RoleEnum).find((r) => r === roleStr);
     if (!roleValue) {
       throw new Error(`Invalid role: ${roleStr}`);
     }
@@ -36,4 +36,3 @@ export class Role {
     return this.value === other.value;
   }
 }
-

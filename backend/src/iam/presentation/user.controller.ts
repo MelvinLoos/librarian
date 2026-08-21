@@ -13,20 +13,26 @@ export class UserController {
 
   @Public()
   @Post()
-  @ApiOperation({ 
-    summary: 'Register a new user', 
-    description: 'Registers a new user in the system.' 
+  @ApiOperation({
+    summary: 'Register a new user',
+    description: 'Registers a new user in the system.',
   })
   @ApiResponse({ status: 201, description: 'User successfully registered.' })
-  @ApiResponse({ status: 409, description: 'User already exists with this email.' })
+  @ApiResponse({
+    status: 409,
+    description: 'User already exists with this email.',
+  })
   async register(@Body() registerUserDto: RegisterUserDto) {
     try {
       return await this.registerUserUseCase.execute(registerUserDto);
     } catch (error) {
-      if ((error as any)?.status >= 400 && (error as any)?.status < 500) {
+      if (error?.status >= 400 && error?.status < 500) {
         throw error;
       }
-      this.logger.error('Unexpected error during user registration', error instanceof Error ? error.stack : String(error));
+      this.logger.error(
+        'Unexpected error during user registration',
+        error instanceof Error ? error.stack : String(error),
+      );
       throw error;
     }
   }

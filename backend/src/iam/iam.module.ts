@@ -35,10 +35,7 @@ import { RolesGuard } from './auth/roles.guard';
       signOptions: { expiresIn: '7d' },
     }),
   ],
-  controllers: [
-    UserController,
-    AuthController,
-  ],
+  controllers: [UserController, AuthController],
   providers: [
     // Application Use Cases
     RegisterUserUseCase,

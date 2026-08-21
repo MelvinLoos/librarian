@@ -19,10 +19,10 @@ async function bootstrap() {
 
   // Enable global validation using the class-validator DTOs
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  
+
   // Register RFC 7807 Exception Filter globally
   app.useGlobalFilters(new Rfc7807ExceptionFilter());
-  
+
   // Use cookie parser for HttpOnly Refresh Tokens
   app.use(cookieParser());
 
@@ -37,8 +37,8 @@ async function bootstrap() {
     .setTitle('Librarian API')
     .setDescription(
       'The Next-Gen Calibre REST API for managing eBook collections. ' +
-      'Authenticate with POST /auth/login to receive a JWT access token, then send it as Bearer token in the Authorization header for protected endpoints. ' +
-      'The raw OpenAPI JSON document is also available via a dynamic full URL shown on the docs page.',
+        'Authenticate with POST /auth/login to receive a JWT access token, then send it as Bearer token in the Authorization header for protected endpoints. ' +
+        'The raw OpenAPI JSON document is also available via a dynamic full URL shown on the docs page.',
     )
     .setVersion('1.0')
     .addBearerAuth(
@@ -46,12 +46,13 @@ async function bootstrap() {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        description: 'JWT access token returned by /auth/login. Use: Authorization: Bearer <token>',
+        description:
+          'JWT access token returned by /auth/login. Use: Authorization: Bearer <token>',
       },
       'JWT',
     )
     .build();
-    
+
   const document = SwaggerModule.createDocument(app, config);
 
   // Expose the raw OpenAPI JSON document for direct download and programmatic access.
@@ -96,6 +97,8 @@ async function bootstrap() {
   const PORT = process.env.PORT ?? 3001;
   await app.listen(PORT);
   console.log(`Librarian API is running on: http://localhost:` + PORT);
-  console.log(`OpenAPI Docs available at: http://localhost:` + PORT + `/api/docs`);
+  console.log(
+    `OpenAPI Docs available at: http://localhost:` + PORT + `/api/docs`,
+  );
 }
 bootstrap();

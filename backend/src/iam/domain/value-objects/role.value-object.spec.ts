@@ -21,7 +21,7 @@ describe('Role Value Object', () => {
     const role1 = Role.create('READER');
     const role2 = Role.create('READER');
     const role3 = Role.create('CONTRIBUTOR');
-    
+
     expect(role1.equals(role2)).toBe(true);
     expect(role1.equals(role3)).toBe(false);
   });

@@ -1,5 +1,23 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, Res, Req, UnauthorizedException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiOkResponse, ApiUnauthorizedResponse, ApiBadRequestResponse, ApiExtraModels } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  Res,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
+  ApiExtraModels,
+} from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { AuthenticateUserUseCase } from '../application/use-cases/authenticate-user.use-case';
 import { AuthService } from '../auth/auth.service';
@@ -19,20 +37,33 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
-    summary: 'Login user', 
-    description: 'Authenticates a user using email and password and returns a JWT access token together with authenticated user metadata.',
+  @ApiOperation({
+    summary: 'Login user',
+    description:
+      'Authenticates a user using email and password and returns a JWT access token together with authenticated user metadata.',
   })
-  @ApiBody({ type: LoginDto, description: 'Login payload containing email and password.' })
-  @ApiOkResponse({ type: LoginResponseDto, description: 'User successfully authenticated and JWT returned.' })
+  @ApiBody({
+    type: LoginDto,
+    description: 'Login payload containing email and password.',
+  })
+  @ApiOkResponse({
+    type: LoginResponseDto,
+    description: 'User successfully authenticated and JWT returned.',
+  })
   @ApiUnauthorizedResponse({ description: 'Invalid email or password.' })
-  @ApiBadRequestResponse({ description: 'Validation failed for login payload.' })
+  @ApiBadRequestResponse({
+    description: 'Validation failed for login payload.',
+  })
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ) {
     const user = await this.authenticateUserUseCase.execute(loginDto);
-    const { accessToken, refreshToken, user: userData } = this.authService.login(user);
+    const {
+      accessToken,
+      refreshToken,
+      user: userData,
+    } = this.authService.login(user);
 
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -50,9 +81,10 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
-    summary: 'Refresh access token', 
-    description: 'Uses the refreshToken from HttpOnly cookie to issue a new accessToken and a new refreshToken.',
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'Uses the refreshToken from HttpOnly cookie to issue a new accessToken and a new refreshToken.',
   })
   @ApiOkResponse({ description: 'Tokens successfully refreshed.' })
   @ApiUnauthorizedResponse({ description: 'Invalid or missing refresh token.' })
@@ -67,8 +99,13 @@ export class AuthController {
 
     try {
       const payload = this.authService.verifyRefreshToken(refreshToken);
-      const user = { id: payload.sub, email: payload.email, role: payload.role };
-      const { accessToken, refreshToken: newRefreshToken } = this.authService.login(user as any);
+      const user = {
+        id: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      };
+      const { accessToken, refreshToken: newRefreshToken } =
+        this.authService.login(user as any);
 
       response.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
