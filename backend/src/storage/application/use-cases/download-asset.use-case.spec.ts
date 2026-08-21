@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DownloadAssetUseCase } from './download-asset.use-case';
 import { NotFoundException } from '@nestjs/common';
-import type { IBookFormatRepository, BookFormatInfo } from '../ports/book-format-repository.interface';
+import type {
+  IBookFormatRepository,
+  BookFormatInfo,
+} from '../ports/book-format-repository.interface';
 import type { IFileStorage } from '../ports/file-storage.interface';
 import { ReadStream } from 'fs';
 
@@ -45,7 +48,9 @@ describe('DownloadAssetUseCase', () => {
 
     await expect(
       useCase.execute({ bookId: 1, format: 'EPUB' }),
-    ).rejects.toThrow(new NotFoundException('Format EPUB not found for book 1'));
+    ).rejects.toThrow(
+      new NotFoundException('Format EPUB not found for book 1'),
+    );
   });
 
   it('should flow correctly and return metadata and stream on success', async () => {
@@ -58,7 +63,9 @@ describe('DownloadAssetUseCase', () => {
     const mockStream = {} as ReadStream;
 
     bookFormatRepository.getFormatInfo.mockResolvedValue(mockInfo);
-    fileStorage.getBookFilePath.mockReturnValue('/absolute/path/to/Clean Code - Robert Martin.epub');
+    fileStorage.getBookFilePath.mockReturnValue(
+      '/absolute/path/to/Clean Code - Robert Martin.epub',
+    );
     fileStorage.getFileSize.mockResolvedValue(4096);
     fileStorage.createReadStreamWithRange.mockReturnValue(mockStream);
 
@@ -70,8 +77,12 @@ describe('DownloadAssetUseCase', () => {
       'Clean Code - Robert Martin',
       'EPUB',
     );
-    expect(fileStorage.getFileSize).toHaveBeenCalledWith('/absolute/path/to/Clean Code - Robert Martin.epub');
-    expect(fileStorage.createReadStreamWithRange).toHaveBeenCalledWith('/absolute/path/to/Clean Code - Robert Martin.epub');
+    expect(fileStorage.getFileSize).toHaveBeenCalledWith(
+      '/absolute/path/to/Clean Code - Robert Martin.epub',
+    );
+    expect(fileStorage.createReadStreamWithRange).toHaveBeenCalledWith(
+      '/absolute/path/to/Clean Code - Robert Martin.epub',
+    );
 
     expect(result).toEqual({
       stream: mockStream,
@@ -120,9 +131,21 @@ describe('DownloadAssetUseCase', () => {
     const cases = [
       { fileName: 'SimpleBook', format: 'EPUB', expected: 'SimpleBook.epub' },
       { fileName: 'Clean Code', format: 'EPUB', expected: 'Clean_Code.epub' },
-      { fileName: 'Multiple    Spaces  In   Name', format: 'PDF', expected: 'Multiple_Spaces_In_Name.pdf' },
-      { fileName: 'Unsafe/Path/Characters\\File', format: 'MOBI', expected: 'Unsafe_Path_Characters_File.mobi' },
-      { fileName: 'Book Title: With Special Character?*', format: 'AZW3', expected: 'Book_Title_With_Special_Character.azw3' },
+      {
+        fileName: 'Multiple    Spaces  In   Name',
+        format: 'PDF',
+        expected: 'Multiple_Spaces_In_Name.pdf',
+      },
+      {
+        fileName: 'Unsafe/Path/Characters\\File',
+        format: 'MOBI',
+        expected: 'Unsafe_Path_Characters_File.mobi',
+      },
+      {
+        fileName: 'Book Title: With Special Character?*',
+        format: 'AZW3',
+        expected: 'Book_Title_With_Special_Character.azw3',
+      },
     ];
 
     cases.forEach(({ fileName, format, expected }) => {

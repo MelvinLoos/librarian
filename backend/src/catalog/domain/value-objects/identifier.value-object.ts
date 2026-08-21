@@ -10,7 +10,7 @@ export class Identifier extends ValueObject<IdentifierProps> {
     if (!props.type || props.type.trim() === '') {
       throw new Error('Identifier type cannot be empty');
     }
-    
+
     if (!props.value || props.value.trim() === '') {
       throw new Error('Identifier value cannot be empty');
     }

@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UploadAssetUseCase, UploadAssetCommand } from './upload-asset.use-case';
+import {
+  UploadAssetUseCase,
+  UploadAssetCommand,
+} from './upload-asset.use-case';
 import { IAssetRepository } from '../ports/asset-repository.interface';
 import { IFileStorage } from '../ports/file-storage.interface';
 import { Asset } from '../../domain/asset.aggregate';
@@ -76,14 +79,17 @@ describe('UploadAssetUseCase', () => {
       mimeType: command.file.mimeType,
     });
     expect(assetRepository.save).toHaveBeenCalled();
-    const savedAsset = assetRepository.save.mock.calls[0][0] as Asset;
+    const savedAsset = assetRepository.save.mock.calls[0][0];
     expect(savedAsset.id).toBe(result);
     expect(savedAsset.filePath.value).toBe('books/test.epub');
-    
-    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('AssetUploadedEvent', expect.objectContaining({
-      assetId: result,
-      filePath: 'books/test.epub',
-    }));
+
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+      'AssetUploadedEvent',
+      expect.objectContaining({
+        assetId: result,
+        filePath: 'books/test.epub',
+      }),
+    );
   });
 
   it('should throw if storage fails', async () => {

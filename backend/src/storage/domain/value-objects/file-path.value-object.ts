@@ -5,12 +5,14 @@ export class FilePath {
     if (!value || value.trim() === '') {
       throw new Error('FilePath cannot be empty');
     }
-    
+
     const trimmed = value.trim();
 
     // Directory traversal check
     if (trimmed.includes('..')) {
-      throw new Error('FilePath cannot contain directory traversal characters (..)');
+      throw new Error(
+        'FilePath cannot contain directory traversal characters (..)',
+      );
     }
 
     // Absolute path check (disallow absolute paths for internal storage domain to keep them relative)

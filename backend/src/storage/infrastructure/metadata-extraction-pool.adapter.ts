@@ -9,13 +9,18 @@ export class MetadataExtractionPoolAdapter implements OnModuleDestroy {
 
   constructor() {
     this.piscina = new Piscina({
-      filename: join(__dirname, `metadata-extractor.worker${require('path').extname(__filename)}`),
+      filename: join(
+        __dirname,
+        `metadata-extractor.worker${require('path').extname(__filename)}`,
+      ),
       minThreads: 1,
       maxThreads: 2,
     });
   }
 
-  async extractMetadata(filePath: string): Promise<{ title: string; author: string } | null> {
+  async extractMetadata(
+    filePath: string,
+  ): Promise<{ title: string; author: string } | null> {
     const result: MetadataExtractionResult = await this.piscina.run(filePath);
     if (result.success) {
       return result.metadata!;

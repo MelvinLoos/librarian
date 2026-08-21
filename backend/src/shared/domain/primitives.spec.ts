@@ -7,7 +7,9 @@ class MockEntity extends Entity<{ name: string }> {}
 class MockValueObject extends ValueObject<{ value: string }> {}
 class MockEvent implements DomainEvent {
   occurredOn = new Date();
-  getName() { return 'MockEvent'; }
+  getName() {
+    return 'MockEvent';
+  }
 }
 class MockAggregate extends AggregateRoot<{ name: string }> {}
 
@@ -66,13 +68,13 @@ describe('Shared Domain Primitives', () => {
     it('should manage domain events', () => {
       const aggregate = new MockAggregate({ name: 'Agg' });
       const event = new MockEvent();
-      
+
       // Accessing protected addDomainEvent via hack for testing or just test public interface
       (aggregate as any).addDomainEvent(event);
-      
+
       expect(aggregate.domainEvents).toHaveLength(1);
       expect(aggregate.domainEvents[0]).toBe(event);
-      
+
       aggregate.clearEvents();
       expect(aggregate.domainEvents).toHaveLength(0);
     });

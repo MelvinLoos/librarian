@@ -56,10 +56,12 @@ export class UploadAssetUseCase {
     for (const event of asset.domainEvents) {
       await this.eventEmitter.emitAsync(event.getName(), event);
     }
-    
+
     asset.clearEvents();
 
-    this.logger.log(`Successfully uploaded asset ${assetId} to physical storage and persisted metadata`);
+    this.logger.log(
+      `Successfully uploaded asset ${assetId} to physical storage and persisted metadata`,
+    );
 
     return assetId;
   }

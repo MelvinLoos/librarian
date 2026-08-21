@@ -17,14 +17,20 @@ describe('UpdateReadingProgressUseCase', () => {
   it('should successfully update reading progress', async () => {
     repository.upsertProgress.mockResolvedValue(undefined);
 
-    await expect(useCase.execute('user-123', 42, 'epubcfi(/6/4[chap-2]!/4/2/10/1:0)', 15.5))
-      .resolves.not.toThrow();
+    await expect(
+      useCase.execute(
+        'user-123',
+        42,
+        'epubcfi(/6/4[chap-2]!/4/2/10/1:0)',
+        15.5,
+      ),
+    ).resolves.not.toThrow();
 
     expect(repository.upsertProgress).toHaveBeenCalledWith(
       'user-123',
       42,
       'epubcfi(/6/4[chap-2]!/4/2/10/1:0)',
-      15.5
+      15.5,
     );
   });
 
@@ -33,16 +39,18 @@ describe('UpdateReadingProgressUseCase', () => {
     error.code = 'P2003';
     repository.upsertProgress.mockRejectedValue(error);
 
-    await expect(useCase.execute('user-123', 999, 'loc', 20))
-      .rejects.toThrow(NotFoundException);
+    await expect(useCase.execute('user-123', 999, 'loc', 20)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should throw NotFoundException when IReadingProgressRepository throws a foreign key message error', async () => {
     const error: any = new Error('foreign key constraint failed on SQLite');
     repository.upsertProgress.mockRejectedValue(error);
 
-    await expect(useCase.execute('user-123', 999, 'loc', 20))
-      .rejects.toThrow(NotFoundException);
+    await expect(useCase.execute('user-123', 999, 'loc', 20)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
   it('should propagates other unhandled errors', async () => {
@@ -50,7 +58,8 @@ describe('UpdateReadingProgressUseCase', () => {
     error.code = 'P2001';
     repository.upsertProgress.mockRejectedValue(error);
 
-    await expect(useCase.execute('user-123', 42, 'loc', 20))
-      .rejects.toThrow('Database connection timeout');
+    await expect(useCase.execute('user-123', 42, 'loc', 20)).rejects.toThrow(
+      'Database connection timeout',
+    );
   });
 });

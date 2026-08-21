@@ -13,6 +13,7 @@ import { GetBookUseCase } from './application/use-cases/get-book.use-case';
 import { GetTopTagsUseCase } from './application/use-cases/get-top-tags.use-case';
 import { GetAllAuthorsUseCase } from './application/use-cases/get-all-authors.use-case';
 import { GetAllSeriesUseCase } from './application/use-cases/get-all-series.use-case';
+import { UpdateBookMetadataUseCase } from './application/use-cases/update-book-metadata.use-case';
 
 // Repositories (Adapters)
 import { PrismaBookRepository } from './infrastructure/prisma-book.repository';
@@ -35,7 +36,8 @@ import { PrismaSeriesRepository } from './infrastructure/prisma-series.repositor
     GetTopTagsUseCase,
     GetAllAuthorsUseCase,
     GetAllSeriesUseCase,
-    
+    UpdateBookMetadataUseCase,
+
     // Infrastructure Adapters bound to their Interface Tokens
     {
       provide: 'IBookRepository',
@@ -55,11 +57,12 @@ import { PrismaSeriesRepository } from './infrastructure/prisma-series.repositor
     },
   ],
   exports: [
-    CreateBookUseCase, 
+    CreateBookUseCase,
     GetBookUseCase,
     GetTopTagsUseCase,
     GetAllAuthorsUseCase,
     GetAllSeriesUseCase,
+    UpdateBookMetadataUseCase,
   ],
 })
 export class CatalogModule {}

@@ -1,4 +1,3 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AssetUploadedListener } from './asset-uploaded.listener';
@@ -69,15 +68,26 @@ describe('AssetUploadedListener', () => {
     );
 
     assetRepository.findById.mockResolvedValue(asset);
-    metadataExtractionPool.extractMetadata.mockResolvedValue({ title: 'Test Title', author: 'Test Author' });
+    metadataExtractionPool.extractMetadata.mockResolvedValue({
+      title: 'Test Title',
+      author: 'Test Author',
+    });
 
-    const event = new AssetUploadedEvent(assetId, filePath, mimeType, byteSize, AssetProcessingState.UPLOADED);
+    const event = new AssetUploadedEvent(
+      assetId,
+      filePath,
+      mimeType,
+      byteSize,
+      AssetProcessingState.UPLOADED,
+    );
     await listener.handleAssetUploadedEvent(event);
 
     expect(assetRepository.findById).toHaveBeenCalledWith(assetId);
     expect(asset.state).toBe(AssetProcessingState.READY);
     expect(assetRepository.save).toHaveBeenCalledTimes(2); // startProcessing and markAsReady
-    expect(metadataExtractionPool.extractMetadata).toHaveBeenCalledWith(filePath);
+    expect(metadataExtractionPool.extractMetadata).toHaveBeenCalledWith(
+      filePath,
+    );
   });
 
   it('should mark asset as FAILED if metadata extraction fails', async () => {
@@ -91,9 +101,17 @@ describe('AssetUploadedListener', () => {
     );
 
     assetRepository.findById.mockResolvedValue(asset);
-    metadataExtractionPool.extractMetadata.mockRejectedValue(new Error('Extraction failed'));
+    metadataExtractionPool.extractMetadata.mockRejectedValue(
+      new Error('Extraction failed'),
+    );
 
-    const event = new AssetUploadedEvent(assetId, filePath, mimeType, byteSize, AssetProcessingState.UPLOADED);
+    const event = new AssetUploadedEvent(
+      assetId,
+      filePath,
+      mimeType,
+      byteSize,
+      AssetProcessingState.UPLOADED,
+    );
     await listener.handleAssetUploadedEvent(event);
 
     expect(assetRepository.findById).toHaveBeenCalledWith(assetId);
@@ -105,7 +123,13 @@ describe('AssetUploadedListener', () => {
   it('should not process if asset not found', async () => {
     assetRepository.findById.mockResolvedValue(null);
 
-    const event = new AssetUploadedEvent(assetId, filePath, mimeType, byteSize, AssetProcessingState.UPLOADED);
+    const event = new AssetUploadedEvent(
+      assetId,
+      filePath,
+      mimeType,
+      byteSize,
+      AssetProcessingState.UPLOADED,
+    );
     await listener.handleAssetUploadedEvent(event);
 
     expect(assetRepository.findById).toHaveBeenCalledWith(assetId);

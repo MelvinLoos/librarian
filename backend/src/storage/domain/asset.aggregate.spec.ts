@@ -39,7 +39,15 @@ describe('Asset Aggregate Root', () => {
 
   describe('reconstruct', () => {
     it('should reconstruct an asset without appending events', () => {
-      const asset = Asset.reconstruct(id, 'COVER', filePath, mimeType, byteSize, AssetProcessingState.READY, 100);
+      const asset = Asset.reconstruct(
+        id,
+        'COVER',
+        filePath,
+        mimeType,
+        byteSize,
+        AssetProcessingState.READY,
+        100,
+      );
 
       expect(asset.id).toBe(id);
       expect(asset.type).toBe('COVER');
@@ -58,14 +66,30 @@ describe('Asset Aggregate Root', () => {
     });
 
     it('should throw an error if not in UPLOADED state', () => {
-      const asset = Asset.reconstruct(id, 'FORMAT', filePath, mimeType, byteSize, AssetProcessingState.PROCESSING);
-      expect(() => asset.startProcessing()).toThrow('Asset must be in UPLOADED state to start processing');
+      const asset = Asset.reconstruct(
+        id,
+        'FORMAT',
+        filePath,
+        mimeType,
+        byteSize,
+        AssetProcessingState.PROCESSING,
+      );
+      expect(() => asset.startProcessing()).toThrow(
+        'Asset must be in UPLOADED state to start processing',
+      );
     });
   });
 
   describe('markAsReady', () => {
     it('should transition state from PROCESSING to READY and append MetadataExtractedEvent', () => {
-      const asset = Asset.reconstruct(id, 'FORMAT', filePath, mimeType, byteSize, AssetProcessingState.PROCESSING);
+      const asset = Asset.reconstruct(
+        id,
+        'FORMAT',
+        filePath,
+        mimeType,
+        byteSize,
+        AssetProcessingState.PROCESSING,
+      );
       asset.clearEvents();
       asset.markAsReady();
       expect(asset.state).toBe(AssetProcessingState.READY);
@@ -81,21 +105,39 @@ describe('Asset Aggregate Root', () => {
 
     it('should throw an error if not in PROCESSING state', () => {
       const asset = Asset.upload(id, 'FORMAT', filePath, mimeType, byteSize);
-      expect(() => asset.markAsReady()).toThrow('Asset must be in PROCESSING state to be marked as ready');
+      expect(() => asset.markAsReady()).toThrow(
+        'Asset must be in PROCESSING state to be marked as ready',
+      );
     });
   });
 
   describe('markAsFailed', () => {
     it('should transition state to FAILED and set failure reason', () => {
-      const asset = Asset.reconstruct(id, 'FORMAT', filePath, mimeType, byteSize, AssetProcessingState.PROCESSING);
+      const asset = Asset.reconstruct(
+        id,
+        'FORMAT',
+        filePath,
+        mimeType,
+        byteSize,
+        AssetProcessingState.PROCESSING,
+      );
       asset.markAsFailed('Corrupt file');
       expect(asset.state).toBe(AssetProcessingState.FAILED);
       expect(asset.failureReason).toBe('Corrupt file');
     });
 
     it('should throw an error if already in READY state', () => {
-      const asset = Asset.reconstruct(id, 'FORMAT', filePath, mimeType, byteSize, AssetProcessingState.READY);
-      expect(() => asset.markAsFailed('Some error')).toThrow('Asset cannot be marked as failed if it is already READY');
+      const asset = Asset.reconstruct(
+        id,
+        'FORMAT',
+        filePath,
+        mimeType,
+        byteSize,
+        AssetProcessingState.READY,
+      );
+      expect(() => asset.markAsFailed('Some error')).toThrow(
+        'Asset cannot be marked as failed if it is already READY',
+      );
     });
   });
 
@@ -116,13 +158,22 @@ describe('Asset Aggregate Root', () => {
     it('should throw an error if already linked to a different bookId', () => {
       const asset = Asset.upload(id, 'FORMAT', filePath, mimeType, byteSize);
       asset.linkToBook(42);
-      expect(() => asset.linkToBook(99)).toThrow('Asset is already linked to a different book');
+      expect(() => asset.linkToBook(99)).toThrow(
+        'Asset is already linked to a different book',
+      );
     });
   });
 
   describe('requestFormatConversion', () => {
     it('should request format conversion and append FormatConversionRequestedEvent if in READY state', () => {
-      const asset = Asset.reconstruct(id, 'FORMAT', filePath, mimeType, byteSize, AssetProcessingState.READY);
+      const asset = Asset.reconstruct(
+        id,
+        'FORMAT',
+        filePath,
+        mimeType,
+        byteSize,
+        AssetProcessingState.READY,
+      );
       asset.clearEvents();
 
       const targetMimeType = new MimeType('application/pdf');
@@ -138,16 +189,27 @@ describe('Asset Aggregate Root', () => {
     });
 
     it('should throw an error if asset type is COVER', () => {
-      const asset = Asset.reconstruct(id, 'COVER', filePath, mimeType, byteSize, AssetProcessingState.READY);
+      const asset = Asset.reconstruct(
+        id,
+        'COVER',
+        filePath,
+        mimeType,
+        byteSize,
+        AssetProcessingState.READY,
+      );
       const targetMimeType = new MimeType('application/pdf');
-      expect(() => asset.requestFormatConversion(targetMimeType)).toThrow('Can only request format conversion for FORMAT assets');
+      expect(() => asset.requestFormatConversion(targetMimeType)).toThrow(
+        'Can only request format conversion for FORMAT assets',
+      );
     });
 
     it('should throw an error if not in READY state', () => {
       const asset = Asset.upload(id, 'FORMAT', filePath, mimeType, byteSize);
       asset.clearEvents();
       const targetMimeType = new MimeType('application/pdf');
-      expect(() => asset.requestFormatConversion(targetMimeType)).toThrow('Asset must be in READY state to request format conversion');
+      expect(() => asset.requestFormatConversion(targetMimeType)).toThrow(
+        'Asset must be in READY state to request format conversion',
+      );
     });
   });
 

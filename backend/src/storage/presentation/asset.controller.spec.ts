@@ -76,7 +76,9 @@ describe('AssetController', () => {
       const assetId = 'non-existent-asset-id';
       getAssetStatusUseCase.execute.mockResolvedValue(null);
 
-      await expect(controller.getAssetStatus(assetId)).rejects.toThrow(NotFoundException);
+      await expect(controller.getAssetStatus(assetId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(getAssetStatusUseCase.execute).toHaveBeenCalledWith({ assetId });
     });
   });

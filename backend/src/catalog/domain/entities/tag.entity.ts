@@ -9,8 +9,11 @@ export class Tag extends Entity<TagProps> {
     if (!props.name || props.name.trim() === '') {
       throw new Error('Tag name cannot be empty');
     }
-    super({
-      name: props.name.trim(),
-    }, id);
+    super(
+      {
+        name: props.name.trim(),
+      },
+      id,
+    );
   }
 }

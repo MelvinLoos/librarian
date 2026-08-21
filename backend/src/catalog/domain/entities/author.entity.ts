@@ -11,9 +11,12 @@ export class Author extends Entity<AuthorProps> {
     if (!props.name || props.name.trim() === '') {
       throw new Error('Author name cannot be empty');
     }
-    super({
-      ...props,
-      name: props.name.trim(),
-    }, id);
+    super(
+      {
+        ...props,
+        name: props.name.trim(),
+      },
+      id,
+    );
   }
 }

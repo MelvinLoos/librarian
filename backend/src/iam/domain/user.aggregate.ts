@@ -12,16 +12,26 @@ export class User {
     private readonly _id: string,
     private _email: EmailAddress,
     private _password: HashedPassword,
-    private _role: Role
-  ) { }
+    private _role: Role,
+  ) {}
 
-  public static create(id: string, email: EmailAddress, password: HashedPassword, role: Role): User {
+  public static create(
+    id: string,
+    email: EmailAddress,
+    password: HashedPassword,
+    role: Role,
+  ): User {
     const user = new User(id, email, password, role);
     user.addDomainEvent(new UserRegisteredEvent(id, email.value, role.value));
     return user;
   }
 
-  public static reconstruct(id: string, email: EmailAddress, password: HashedPassword, role: Role): User {
+  public static reconstruct(
+    id: string,
+    email: EmailAddress,
+    password: HashedPassword,
+    role: Role,
+  ): User {
     // Used by repositories / ACL to reconstruct without firing events
     return new User(id, email, password, role);
   }
@@ -46,7 +56,9 @@ export class User {
     if (!this._role.equals(newRole)) {
       const oldRole = this._role;
       this._role = newRole;
-      this.addDomainEvent(new UserRoleChangedEvent(this._id, oldRole.value, newRole.value));
+      this.addDomainEvent(
+        new UserRoleChangedEvent(this._id, oldRole.value, newRole.value),
+      );
     }
   }
 

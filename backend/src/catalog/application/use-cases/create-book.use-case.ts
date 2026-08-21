@@ -15,7 +15,7 @@ export class CreateBookUseCase {
 
   constructor(
     @Inject('IBookRepository')
-    private readonly bookRepository: IBookRepository
+    private readonly bookRepository: IBookRepository,
   ) {}
 
   async execute(command: CreateBookCommand): Promise<Book> {
@@ -27,8 +27,10 @@ export class CreateBookUseCase {
     });
 
     await this.bookRepository.save(book);
-    
-    this.logger.log(`Successfully created and saved book aggregate: ${book.id}`);
+
+    this.logger.log(
+      `Successfully created and saved book aggregate: ${book.id}`,
+    );
 
     return book;
   }

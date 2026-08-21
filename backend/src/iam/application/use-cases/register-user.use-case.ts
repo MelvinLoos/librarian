@@ -29,7 +29,7 @@ export class RegisterUserUseCase {
 
   async execute(request: RegisterUserRequest): Promise<RegisterUserResponse> {
     const email = EmailAddress.create(request.email);
-    
+
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('User already exists');
@@ -41,7 +41,7 @@ export class RegisterUserUseCase {
     const role = Role.reader();
 
     const user = User.create(id, email, hashedPassword, role);
-    
+
     await this.userRepository.save(user);
 
     return {

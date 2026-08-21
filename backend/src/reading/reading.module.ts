@@ -13,13 +13,8 @@ import { GetReadingStatesUseCase } from './application/use-cases/get-reading-sta
 import { PrismaReadingProgressRepository } from './infrastructure/prisma-reading-progress.repository';
 
 @Module({
-  imports: [
-    SharedModule,
-    IamModule,
-  ],
-  controllers: [
-    ProgressController,
-  ],
+  imports: [SharedModule, IamModule],
+  controllers: [ProgressController],
   providers: [
     // Application Use Cases
     UpdateReadingProgressUseCase,
@@ -31,9 +26,6 @@ import { PrismaReadingProgressRepository } from './infrastructure/prisma-reading
       useClass: PrismaReadingProgressRepository,
     },
   ],
-  exports: [
-    UpdateReadingProgressUseCase,
-    GetReadingStatesUseCase,
-  ],
+  exports: [UpdateReadingProgressUseCase, GetReadingStatesUseCase],
 })
 export class ReadingModule {}

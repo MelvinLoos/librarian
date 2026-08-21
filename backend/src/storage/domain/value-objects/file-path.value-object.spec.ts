@@ -12,11 +12,15 @@ describe('FilePath', () => {
   });
 
   it('should throw an error for paths containing directory traversal', () => {
-    expect(() => new FilePath('books/../book.epub')).toThrow('FilePath cannot contain directory traversal characters (..)');
+    expect(() => new FilePath('books/../book.epub')).toThrow(
+      'FilePath cannot contain directory traversal characters (..)',
+    );
   });
 
   it('should throw an error for absolute paths', () => {
-    expect(() => new FilePath('/books/1/book.epub')).toThrow('FilePath must be a relative path');
+    expect(() => new FilePath('/books/1/book.epub')).toThrow(
+      'FilePath must be a relative path',
+    );
   });
 
   it('should trim the input string', () => {

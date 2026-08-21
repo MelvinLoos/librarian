@@ -40,6 +40,14 @@ export default defineNuxtConfig({
         // sw.ts; they must NOT be listed here because their URLs are dynamic.
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff,woff2}'],
 
+        // Nuxt SSG emits `404.html` and `200.html` error/fallback pages. The
+        // PWA manifest transform rewrites them into the clean `404` / `200`
+        // URLs, but serving those URLs returns a non-200 status. Workbox treats
+        // a non-200 precache response as `bad-precaching-response`, which aborts
+        // service-worker installation (see the browser console error). Exclude
+        // these fallback pages from precaching entirely.
+        globIgnores: ['**/404.html', '**/200.html'],
+
         // Prevent Workbox from silently skipping assets that are legitimately
         // large (e.g. font subsets).  The build will throw with a clear message
         // instead of silently omitting files.

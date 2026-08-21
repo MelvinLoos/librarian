@@ -13,9 +13,12 @@ export class Shelf extends Entity<ShelfProps> {
     if (!props.userId || props.userId.trim() === '') {
       throw new Error('Shelf userId cannot be empty');
     }
-    super({
-      name: props.name.trim(),
-      userId: props.userId.trim(),
-    }, id);
+    super(
+      {
+        name: props.name.trim(),
+        userId: props.userId.trim(),
+      },
+      id,
+    );
   }
 }

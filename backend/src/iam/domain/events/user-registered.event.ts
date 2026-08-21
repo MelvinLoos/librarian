@@ -6,7 +6,7 @@ export class UserRegisteredEvent implements DomainEvent {
   constructor(
     public readonly userId: string,
     public readonly email: string,
-    public readonly role: string
+    public readonly role: string,
   ) {
     this.occurredOn = new Date();
   }

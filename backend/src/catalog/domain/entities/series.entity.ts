@@ -10,9 +10,12 @@ export class Series extends Entity<SeriesProps> {
     if (!props.name || props.name.trim() === '') {
       throw new Error('Series name cannot be empty');
     }
-    super({
-      name: props.name.trim(),
-      index: props.index ?? 1,
-    }, id);
+    super(
+      {
+        name: props.name.trim(),
+        index: props.index ?? 1,
+      },
+      id,
+    );
   }
 }

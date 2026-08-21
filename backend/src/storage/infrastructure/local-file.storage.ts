@@ -10,7 +10,15 @@ export class LocalFileStorage implements IFileStorage {
   private readonly logger = new Logger(LocalFileStorage.name);
   private readonly assetsDir = join('.librarian', 'assets');
 
-  async upload({ buffer, originalName, mimeType }: { buffer: Buffer; originalName: string; mimeType: string }): Promise<string> {
+  async upload({
+    buffer,
+    originalName,
+    mimeType,
+  }: {
+    buffer: Buffer;
+    originalName: string;
+    mimeType: string;
+  }): Promise<string> {
     const safeFileName = basename(originalName);
     const relativePath = join(this.assetsDir, safeFileName);
     const absolutePath = resolve(process.cwd(), relativePath);
@@ -38,10 +46,18 @@ export class LocalFileStorage implements IFileStorage {
   /**
    * Resolves the absolute path to a book file using the Calibre library structure.
    */
-  getBookFilePath(bookFolderPath: string, fileName: string, format: string): string {
+  getBookFilePath(
+    bookFolderPath: string,
+    fileName: string,
+    format: string,
+  ): string {
     const libraryPath = process.env.CALIBRE_LIBRARY_PATH || '';
     // Calibre stores files as: {Library}/{Author}/{Title}/{Name}.{extension}
-    return path.join(libraryPath, bookFolderPath, `${fileName}.${format.toLowerCase()}`);
+    return path.join(
+      libraryPath,
+      bookFolderPath,
+      `${fileName}.${format.toLowerCase()}`,
+    );
   }
 
   /**
@@ -59,7 +75,11 @@ export class LocalFileStorage implements IFileStorage {
   /**
    * Creates a ReadStream. If start/end are provided, it only reads that byte range.
    */
-  createReadStreamWithRange(absolutePath: string, start?: number, end?: number): fs.ReadStream {
+  createReadStreamWithRange(
+    absolutePath: string,
+    start?: number,
+    end?: number,
+  ): fs.ReadStream {
     const options: any = {};
     if (start !== undefined) options.start = start;
     if (end !== undefined) options.end = end;

@@ -23,9 +23,11 @@ export class AuthenticateUserUseCase {
     private readonly passwordHasher: IPasswordHasher,
   ) {}
 
-  async execute(request: AuthenticateUserRequest): Promise<AuthenticateUserResponse> {
+  async execute(
+    request: AuthenticateUserRequest,
+  ): Promise<AuthenticateUserResponse> {
     const email = EmailAddress.create(request.email);
-    
+
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');

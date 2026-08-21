@@ -6,7 +6,7 @@ export class UserRoleChangedEvent implements DomainEvent {
   constructor(
     public readonly userId: string,
     public readonly oldRole: string,
-    public readonly newRole: string
+    public readonly newRole: string,
   ) {
     this.occurredOn = new Date();
   }

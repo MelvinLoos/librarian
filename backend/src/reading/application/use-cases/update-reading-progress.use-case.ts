@@ -8,14 +8,29 @@ export class UpdateReadingProgressUseCase {
   constructor(
     @Inject('IReadingProgressRepository')
     private readonly progressRepository: IReadingProgressRepository,
-  ) { }
+  ) {}
 
-  async execute(userId: string, bookId: number, locator: string, percentage: number): Promise<void> {
-    this.logger.debug(`Updating reading progress: User ${userId}, Book ${bookId}, Page ${locator}/${percentage}`);
+  async execute(
+    userId: string,
+    bookId: number,
+    locator: string,
+    percentage: number,
+  ): Promise<void> {
+    this.logger.debug(
+      `Updating reading progress: User ${userId}, Book ${bookId}, Page ${locator}/${percentage}`,
+    );
     try {
-      await this.progressRepository.upsertProgress(userId, bookId, locator, percentage);
+      await this.progressRepository.upsertProgress(
+        userId,
+        bookId,
+        locator,
+        percentage,
+      );
     } catch (error: any) {
-      this.logger.error(`Failed to update reading progress for User ${userId}, Book ${bookId}`, error.stack);
+      this.logger.error(
+        `Failed to update reading progress for User ${userId}, Book ${bookId}`,
+        error.stack,
+      );
       if (error?.code === 'P2003' || error?.message?.includes('foreign key')) {
         throw new NotFoundException(`Book not found`);
       }
@@ -23,4 +38,3 @@ export class UpdateReadingProgressUseCase {
     }
   }
 }
-

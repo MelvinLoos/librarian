@@ -65,6 +65,10 @@ model Book {
   series   BookSeriesLink[]
   comments Comment[]
 
+  publishers  BooksPublisherLink[]
+  ratings     BooksRatingLink[]
+  identifiers Identifier[]
+
   readingStates LibrarianReadingProgress[]
 
   @@map("books")
@@ -157,4 +161,68 @@ model Comment {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@map("comments")
+}
+
+// ---------------------------------------------------------------------------
+// 3b. CATALOG CONTEXT (Native Calibre Metadata Tables - FROZEN SCHEMA)
+// ---------------------------------------------------------------------------
+// These map to the native Calibre tables that the legacy schema already owns.
+// They are not managed by Prisma migrations; they are read/written at runtime
+// only. DO NOT alter their structure.
+
+model Publisher {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  sort String?
+  link String @default("")
+
+  books BooksPublisherLink[]
+
+  @@map("publishers")
+}
+
+model BooksPublisherLink {
+  id          Int @id @default(autoincrement())
+  bookId      Int @map("book")
+  publisherId Int @map("publisher")
+
+  book      Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  publisher Publisher @relation(fields: [publisherId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId])
+  @@map("books_publishers_link")
+}
+
+model Rating {
+  id     Int    @id @default(autoincrement())
+  rating Int    @unique
+  link   String @default("")
+
+  books BooksRatingLink[]
+
+  @@map("ratings")
+}
+
+model BooksRatingLink {
+  id       Int @id @default(autoincrement())
+  bookId   Int @map("book")
+  ratingId Int @map("rating")
+
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  rating Rating @relation(fields: [ratingId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, ratingId])
+  @@map("books_ratings_link")
+}
+
+model Identifier {
+  id     Int    @id @default(autoincrement())
+  bookId Int    @map("book")
+  type   String @default("isbn")
+  val    String
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, type])
+  @@map("identifiers")
 }

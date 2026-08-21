@@ -1,28 +1,94 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { CalibreSqliteAdapter } from './calibre-sqlite.adapter';
+import * as fs from 'fs';
 import * as path from 'path';
 
+/**
+ * Resolves the SQLite database location for the Prisma client.
+ *
+ * `CALIBRE_LIBRARY_PATH` is the source of truth: Calibre always stores its
+ * database at `metadata.db` in the root of the library folder.
+ *
+ * `DATABASE_URL` (or `PRISMA_DATABASE_URL`) is an optional override, useful for
+ * tests and non-Calibre deployments.
+ */
+function resolveDatabasePath(): string {
+  const override =
+    process.env.DATABASE_URL?.trim() || process.env.PRISMA_DATABASE_URL?.trim();
+
+  if (override) {
+    // The better-sqlite3 adapter expects a plain filesystem path (not a
+    // `file:` URI) or the literal `:memory:` string.
+    if (override === ':memory:') {
+      return override;
+    }
+    return override.replace(/^file:/, '');
+  }
+
+  const libraryPath = process.env.CALIBRE_LIBRARY_PATH?.trim();
+  if (libraryPath) {
+    return path.join(libraryPath, 'metadata.db');
+  }
+
+  throw new Error(
+    'No database configured. Set CALIBRE_LIBRARY_PATH to your Calibre library folder, ' +
+      'or provide DATABASE_URL as an explicit override.',
+  );
+}
+
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(PrismaService.name);
+  private readonly dbPath: string;
 
   constructor() {
-    const defaultDbPath = path.resolve(process.cwd(), '../library/metadata.db');
-    const dbPath = process.env.DATABASE_URL?.replace('file:', '') || defaultDbPath;
-
-    if (!process.env.DATABASE_URL) {
-      process.env.DATABASE_URL = `file:${dbPath}`;
-    }
-
-    const adapter = new PrismaBetterSqlite3({ url: dbPath });
+    const dbPath = resolveDatabasePath();
+    const adapter = new CalibreSqliteAdapter({ url: dbPath });
     super({ adapter });
+    this.dbPath = dbPath;
   }
 
   async onModuleInit() {
-    this.logger.log('Initializing database connection...');
+    this.assertDatabaseAvailable();
+    this.logger.log(`Initializing database connection at ${this.dbPath}...`);
     await this.$connect();
     await this.autoMigrate();
+  }
+
+  /**
+   * Fails fast with an actionable message when the SQLite database cannot be
+   * opened. Without this, `better-sqlite3` surfaces an opaque native
+   * `TypeError: Cannot open database because the directory does not exist`.
+   */
+  private assertDatabaseAvailable() {
+    if (this.dbPath === ':memory:') {
+      return;
+    }
+
+    const directory = path.dirname(this.dbPath);
+    if (!fs.existsSync(directory)) {
+      throw new Error(
+        `Calibre library directory not found: ${directory}. ` +
+          'Set CALIBRE_LIBRARY_PATH to a valid Calibre library folder.',
+      );
+    }
+
+    if (!fs.existsSync(this.dbPath)) {
+      this.logger.warn(
+        `Calibre metadata.db not found at ${this.dbPath}. ` +
+          'A new empty database will be created, but it will not contain the ' +
+          'legacy Calibre tables expected by the application.',
+      );
+    }
   }
 
   private async autoMigrate() {
@@ -30,7 +96,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       this.logger.log('Checking and synchronizing Librarian tables...');
 
       // We manually initialize Librarian tables instead of using `prisma db push`.
-      // Prisma's `db push` behaves dangerously on unmanaged (legacy) databases by 
+      // Prisma's `db push` behaves dangerously on unmanaged (legacy) databases by
       // attempting to align or drop tables/columns (e.g. Calibre's books_authors_link),
       // which fails in SQLite due to inline UNIQUE constraints.
       // This raw initialization perfectly achieves zero-config without touching legacy tables.

@@ -1,7 +1,9 @@
 import { parentPort } from 'worker_threads';
 import { MetadataExtractionResult } from './metadata-extraction.types';
 
-export default async function extractMetadata(filePath: string): Promise<MetadataExtractionResult> {
+export default async function extractMetadata(
+  filePath: string,
+): Promise<MetadataExtractionResult> {
   try {
     // Mock metadata extraction
     const fileName = filePath.split('/').pop() || 'unknown';
@@ -9,7 +11,7 @@ export default async function extractMetadata(filePath: string): Promise<Metadat
     const author = `Mock Author for ${fileName}`;
 
     // Simulate some asynchronous work
-    await new Promise<void>(resolve => setTimeout(resolve, 100));
+    await new Promise<void>((resolve) => setTimeout(resolve, 100));
 
     return { success: true, metadata: { title, author } };
   } catch (error: any) {
@@ -26,4 +28,3 @@ if (parentPort) {
     }
   });
 }
-

@@ -1,4 +1,4 @@
-import type { Book, Tag, ReadingProgress } from '~/domain/catalog/Catalog.types'
+import type { Book, Tag, ReadingProgress, BookMetadataInput } from '~/domain/catalog/Catalog.types'
 
 export const CatalogApi = {
   async getAllBooks(params?: Record<string, any>): Promise<Book[]> {
@@ -24,6 +24,14 @@ export const CatalogApi = {
   async getBookById(id: number): Promise<Book> {
     const $api = useApi()
     return await $api<Book>(`/api/books/${id}`)
+  },
+
+  async updateBookMetadata(id: number, input: BookMetadataInput): Promise<Book> {
+    const $api = useApi()
+    return await $api<Book>(`/api/books/${id}`, {
+      method: 'PATCH',
+      body: input,
+    })
   },
 
   async getReadingStates(): Promise<ReadingProgress[]> {

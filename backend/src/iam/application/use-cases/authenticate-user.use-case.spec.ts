@@ -35,7 +35,7 @@ describe('AuthenticateUserUseCase', () => {
       'user-id',
       EmailAddress.create(request.email),
       HashedPassword.create('hashed_password123'),
-      Role.customer()
+      Role.customer(),
     );
 
     userRepository.findByEmail.mockResolvedValue(user);
@@ -46,7 +46,10 @@ describe('AuthenticateUserUseCase', () => {
     expect(result.id).toBe('user-id');
     expect(result.email).toBe(request.email);
     expect(result.role).toBe('CUSTOMER');
-    expect(passwordHasher.compare).toHaveBeenCalledWith(request.password, 'hashed_password123');
+    expect(passwordHasher.compare).toHaveBeenCalledWith(
+      request.password,
+      'hashed_password123',
+    );
   });
 
   it('should throw UnauthorizedException if user not found', async () => {
@@ -57,7 +60,9 @@ describe('AuthenticateUserUseCase', () => {
 
     userRepository.findByEmail.mockResolvedValue(null);
 
-    await expect(useCase.execute(request)).rejects.toThrow(UnauthorizedException);
+    await expect(useCase.execute(request)).rejects.toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('should throw UnauthorizedException if password does not match', async () => {
@@ -70,13 +75,18 @@ describe('AuthenticateUserUseCase', () => {
       'user-id',
       EmailAddress.create(request.email),
       HashedPassword.create('hashed_password123'),
-      Role.customer()
+      Role.customer(),
     );
 
     userRepository.findByEmail.mockResolvedValue(user);
     passwordHasher.compare.mockResolvedValue(false);
 
-    await expect(useCase.execute(request)).rejects.toThrow(UnauthorizedException);
-    expect(passwordHasher.compare).toHaveBeenCalledWith(request.password, 'hashed_password123');
+    await expect(useCase.execute(request)).rejects.toThrow(
+      UnauthorizedException,
+    );
+    expect(passwordHasher.compare).toHaveBeenCalledWith(
+      request.password,
+      'hashed_password123',
+    );
   });
 });

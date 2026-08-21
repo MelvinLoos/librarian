@@ -1,8 +1,28 @@
-import { Controller, Get, Post, Body, Param, Query, HttpStatus, HttpCode, Logger } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+  HttpStatus,
+  HttpCode,
+  Logger,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { CreateBookUseCase } from '../application/use-cases/create-book.use-case';
 import { GetBookUseCase } from '../application/use-cases/get-book.use-case';
+import { UpdateBookMetadataUseCase } from '../application/use-cases/update-book-metadata.use-case';
 import { CreateBookDto } from './dto/create-book.dto';
+import { UpdateBookMetadataDto } from './dto/update-book-metadata.dto';
 
 @ApiTags('Books')
 @ApiBearerAuth('JWT')
@@ -12,13 +32,20 @@ export class BookController {
 
   constructor(
     private readonly createBookUseCase: CreateBookUseCase,
-    private readonly getBookUseCase: GetBookUseCase
-  ) { }
+    private readonly getBookUseCase: GetBookUseCase,
+    private readonly updateBookMetadataUseCase: UpdateBookMetadataUseCase,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new book', description: 'Creates a new book record in the catalog.' })
-  @ApiResponse({ status: 201, description: 'The book has been successfully created.' })
+  @ApiOperation({
+    summary: 'Create a new book',
+    description: 'Creates a new book record in the catalog.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'The book has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Bad request payload.' })
   async create(@Body() createBookDto: CreateBookDto) {
     this.logger.log(`Received request to create book: ${createBookDto.title}`);
@@ -33,13 +60,48 @@ export class BookController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all books', description: 'Retrieves a list of all books in the catalog.' })
-  @ApiQuery({ name: 'sort', required: false, description: 'Field to sort by (e.g., "timestamp")', example: 'timestamp' })
-  @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], description: 'Sort order', example: 'desc' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Limit the number of results returned', example: 10 })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search term for title or author', example: 'archive' })
-  @ApiQuery({ name: 'tag', required: false, type: String, description: 'Filter by tag name', example: 'Fiction' })
-  @ApiResponse({ status: 200, description: 'List of books retrieved successfully.' })
+  @ApiOperation({
+    summary: 'Get all books',
+    description: 'Retrieves a list of all books in the catalog.',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: 'Field to sort by (e.g., "timestamp")',
+    example: 'timestamp',
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order',
+    example: 'desc',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Limit the number of results returned',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search term for title or author',
+    example: 'archive',
+  })
+  @ApiQuery({
+    name: 'tag',
+    required: false,
+    type: String,
+    description: 'Filter by tag name',
+    example: 'Fiction',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of books retrieved successfully.',
+  })
   async findAll(
     @Query('sort') sort?: string,
     @Query('order') order?: 'asc' | 'desc',
@@ -47,24 +109,84 @@ export class BookController {
     @Query('search') search?: string,
     @Query('tag') tag?: string,
   ) {
-    this.logger.log(`Received request to find all books (search: ${search}, tag: ${tag}, limit: ${limit})`);
-    const books = await this.getBookUseCase.executeAll({ sort, order, limit, search, tag });
-    return books.map(book => ({
+    this.logger.log(
+      `Received request to find all books (search: ${search}, tag: ${tag}, limit: ${limit})`,
+    );
+    const books = await this.getBookUseCase.executeAll({
+      sort,
+      order,
+      limit,
+      search,
+      tag,
+    });
+    return books.map((book) => ({
       id: book.id,
       title: book.props.title,
       sortTitle: book.props.sortTitle,
       pubdate: book.props.pubdate,
       hasCover: book.props.hasCover,
-      authors: book.props.authors?.map(author => ({
+      authors: book.props.authors?.map((author) => ({
         id: author?.id,
         name: author?.props?.name || 'Unknown Author',
       })),
     }));
   }
 
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Update book metadata',
+    description:
+      'Partially updates the metadata of an existing book (title, authors, series, series index, tags, rating, publisher, and custom identifiers).',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The unique ID of the book',
+    example: '123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Book metadata updated successfully.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request payload.' })
+  @ApiResponse({ status: 404, description: 'Book not found.' })
+  async updateMetadata(
+    @Param('id') id: string,
+    @Body() dto: UpdateBookMetadataDto,
+  ) {
+    this.logger.log(`Received request to update metadata for book ID: ${id}`);
+    const book = await this.updateBookMetadataUseCase.execute(id, dto);
+    return {
+      id: book.id,
+      title: book.props.title,
+      publisher: book.props.publisher,
+      rating: book.props.rating?.props.value,
+      series: book.props.series
+        ? {
+            name: book.props.series.props.name,
+            index: book.props.series.props.index,
+          }
+        : undefined,
+      tags: book.props.tags?.map((tag) => ({ name: tag.props.name })) ?? [],
+      identifiers:
+        book.props.identifiers?.map((i) => ({
+          type: i.props.type,
+          value: i.props.value,
+        })) ?? [],
+      description: book.props.description,
+      authors: book.props.authors?.map((author) => author.props.name) ?? [],
+    };
+  }
+
   @Get(':id')
-  @ApiOperation({ summary: 'Get a book by ID', description: 'Retrieves a specific book by its ID.' })
-  @ApiParam({ name: 'id', description: 'The unique ID of the book', example: '123' })
+  @ApiOperation({
+    summary: 'Get a book by ID',
+    description: 'Retrieves a specific book by its ID.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'The unique ID of the book',
+    example: '123',
+  })
   @ApiResponse({ status: 200, description: 'Book retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Book not found.' })
   async findOne(@Param('id') id: string) {
@@ -80,7 +202,7 @@ export class BookController {
       description: book.props.description,
       series: book.props.series,
       tags: book.props.tags,
-      authors: book.props.authors?.map(author => ({
+      authors: book.props.authors?.map((author) => ({
         id: author?.id,
         name: author?.props?.name || 'Unknown Author',
       })),

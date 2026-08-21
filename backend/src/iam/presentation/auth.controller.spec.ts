@@ -30,7 +30,11 @@ describe('AuthController', () => {
   it('should return a signed JWT and set cookie on successful login', async () => {
     const loginDto = { email: 'user@example.com', password: 'password123' };
     const user = { id: 'user-id', email: loginDto.email, role: 'READER' };
-    const tokenResponse = { accessToken: 'signed.jwt.token', refreshToken: 'refresh.token', user };
+    const tokenResponse = {
+      accessToken: 'signed.jwt.token',
+      refreshToken: 'refresh.token',
+      user,
+    };
     const mockResponse = { cookie: jest.fn() } as any;
 
     authenticateUserUseCase.execute.mockResolvedValue(user);
@@ -40,23 +44,42 @@ describe('AuthController', () => {
 
     expect(authenticateUserUseCase.execute).toHaveBeenCalledWith(loginDto);
     expect(authService.login).toHaveBeenCalledWith(user);
-    expect(mockResponse.cookie).toHaveBeenCalledWith('refreshToken', 'refresh.token', expect.any(Object));
+    expect(mockResponse.cookie).toHaveBeenCalledWith(
+      'refreshToken',
+      'refresh.token',
+      expect.any(Object),
+    );
     expect(result).toEqual({ accessToken: 'signed.jwt.token', user });
   });
 
   it('should refresh tokens when valid refresh token is provided', async () => {
-    const mockRequest = { cookies: { refreshToken: 'valid.refresh.token' } } as any;
+    const mockRequest = {
+      cookies: { refreshToken: 'valid.refresh.token' },
+    } as any;
     const mockResponse = { cookie: jest.fn() } as any;
-    const payload = { sub: 'user-id', email: 'user@example.com', role: 'READER' };
-    const newTokenResponse = { accessToken: 'new.access.token', refreshToken: 'new.refresh.token' };
+    const payload = {
+      sub: 'user-id',
+      email: 'user@example.com',
+      role: 'READER',
+    };
+    const newTokenResponse = {
+      accessToken: 'new.access.token',
+      refreshToken: 'new.refresh.token',
+    };
 
     authService.verifyRefreshToken = jest.fn().mockReturnValue(payload);
     authService.login.mockReturnValue(newTokenResponse as any);
 
     const result = await controller.refresh(mockRequest, mockResponse);
 
-    expect(authService.verifyRefreshToken).toHaveBeenCalledWith('valid.refresh.token');
-    expect(mockResponse.cookie).toHaveBeenCalledWith('refreshToken', 'new.refresh.token', expect.any(Object));
+    expect(authService.verifyRefreshToken).toHaveBeenCalledWith(
+      'valid.refresh.token',
+    );
+    expect(mockResponse.cookie).toHaveBeenCalledWith(
+      'refreshToken',
+      'new.refresh.token',
+      expect.any(Object),
+    );
     expect(result).toEqual({ accessToken: 'new.access.token' });
   });
 
@@ -64,6 +87,8 @@ describe('AuthController', () => {
     const mockRequest = { cookies: {} } as any;
     const mockResponse = {} as any;
 
-    await expect(controller.refresh(mockRequest, mockResponse)).rejects.toThrow('Refresh token missing');
+    await expect(controller.refresh(mockRequest, mockResponse)).rejects.toThrow(
+      'Refresh token missing',
+    );
   });
 });

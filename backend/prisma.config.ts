@@ -7,8 +7,14 @@ import path from "path";
 import Database from "better-sqlite3";
 import { defineConfig } from "prisma/config";
 
+// `CALIBRE_LIBRARY_PATH` is the source of truth: Calibre always stores its
+// database at `metadata.db` in the root of the library folder.
+// `DATABASE_URL` (or `PRISMA_DATABASE_URL`) is an optional override.
 const libraryPath = process.env.CALIBRE_LIBRARY_PATH;
-const rawUrl = process.env["PRISMA_DATABASE_URL"] ?? process.env["DATABASE_URL"] ?? (libraryPath ? `file:${path.join(libraryPath, 'metadata.db')}` : undefined);
+const rawUrl =
+  process.env["PRISMA_DATABASE_URL"] ??
+  process.env["DATABASE_URL"] ??
+  (libraryPath ? `file:${path.join(libraryPath, "metadata.db")}` : undefined);
 
 function sanitizeSqliteUrl(url?: string): string | undefined {
   if (!url || !url.startsWith("file:")) {

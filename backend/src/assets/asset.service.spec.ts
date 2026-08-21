@@ -40,14 +40,18 @@ describe('AssetService', () => {
   });
 
   it('should throw NotFoundException if the file does not exist on disk', async () => {
-    jest.spyOn(prisma.book, 'findUnique').mockResolvedValue({ id: 1, path: 'Test/Path' } as any);
+    jest
+      .spyOn(prisma.book, 'findUnique')
+      .mockResolvedValue({ id: 1, path: 'Test/Path' } as any);
     (fs.existsSync as jest.Mock).mockReturnValue(false);
 
     await expect(service.getCoverStream(1)).rejects.toThrow(NotFoundException);
   });
 
   it('should successfully return a read stream if both exist', async () => {
-    jest.spyOn(prisma.book, 'findUnique').mockResolvedValue({ id: 1, path: 'Test/Path' } as any);
+    jest
+      .spyOn(prisma.book, 'findUnique')
+      .mockResolvedValue({ id: 1, path: 'Test/Path' } as any);
     (fs.existsSync as jest.Mock).mockReturnValue(true);
     const mockStream = {} as fs.ReadStream;
     (fs.createReadStream as jest.Mock).mockReturnValue(mockStream);
