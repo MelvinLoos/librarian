@@ -3,7 +3,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { join } from 'path';
+import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
 import { Rfc7807ExceptionFilter } from './shared/filters/rfc7807-exception.filter';
 
@@ -92,6 +94,20 @@ async function bootstrap() {
       url: '/api/docs-json',
     },
     customJs: ['/api/swagger-custom.js'],
+  });
+
+  // SPA fallback: serve index.html for any non-API, non-asset GET request.
+  // This allows client-side routing (e.g., /book/123) to work on page refresh.
+  // The HTML is read once at startup to avoid path resolution issues at runtime.
+  const indexPath = join(__dirname, '../..', 'frontend', '.output', 'public', 'index.html');
+  const indexHtml = readFileSync(indexPath, 'utf-8');
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.use((req: Request, res: Response, next: NextFunction) => {
+    // Skip API routes and static asset requests (files with extensions)
+    if (req.path.startsWith('/api/') || req.path.includes('.')) {
+      return next();
+    }
+    res.type('html').send(indexHtml);
   });
 
   const PORT = process.env.PORT ?? 3001;
