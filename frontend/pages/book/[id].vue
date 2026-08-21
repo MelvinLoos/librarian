@@ -32,6 +32,14 @@
               <p class="text-sm uppercase tracking-[0.3em] text-primary">Book details</p>
               <h1 class="mt-4 text-3xl font-serif font-semibold tracking-tight text-on-surface md:text-5xl">{{ book?.title || 'Loading…' }}</h1>
               <p class="mt-4 text-lg text-secondary">{{ book?.author || book?.authors?.map(a => a.name).join(', ') || 'Unknown author' }}</p>
+              <button
+                type="button"
+                data-test="edit-metadata"
+                class="mt-4 inline-flex items-center gap-2 rounded-full border border-outline-variant/10 bg-surface-variant/10 px-5 py-2.5 text-sm font-semibold text-on-surface transition hover:bg-surface-variant/20 hover:text-primary"
+                @click="showEditModal = true"
+              >
+                Edit Metadata
+              </button>
             </div>
           </div>
 
@@ -154,15 +162,25 @@
         </div>
       </div>
     </div>
+
+    <EditMetadataModal
+      :open="showEditModal"
+      :book="book"
+      data-test="edit-metadata-modal"
+      @close="showEditModal = false"
+      @saved="onMetadataSaved"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { LucideArrowLeft } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 import { useApiBase } from '~/composables/useApiBase'
 import { useBookCacheStore } from '~/stores/bookCache'
+import EditMetadataModal from '~/components/EditMetadataModal.vue'
+import type { Book } from '~/domain/catalog/Catalog.types'
 
 const route = useRoute()
 const router = useRouter()
@@ -172,6 +190,14 @@ const { data: book } = useApiFetch(`/books/${route.params.id}`, {
 })
 const downloadUrl = computed(() => `/api/assets/books/${route.params.id}/download`)
 const coverUrl = computed(() => book.value?.hasCover ? `/api/assets/covers/${route.params.id}` : null)
+
+// ── Edit metadata ────────────────────────────────────────────────────────────
+const showEditModal = ref(false)
+
+function onMetadataSaved(updated: Book) {
+  book.value = { ...book.value, ...updated }
+  showEditModal.value = false
+}
 
 // ── Offline / cache ──────────────────────────────────────────────────────────
 const bookCacheStore = useBookCacheStore()

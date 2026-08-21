@@ -12,6 +12,12 @@ export interface Tag {
 export interface Series {
   id: number;
   name: string;
+  index?: number;
+}
+
+export interface Identifier {
+  type: string;
+  value: string;
 }
 
 export interface Book {
@@ -22,9 +28,41 @@ export interface Book {
   authors?: Author[];
   tags?: Tag[];
   series?: Series | null;
+  publisher?: string;
+  rating?: number;
+  identifiers?: Identifier[];
   comments?: string;
+  description?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface AuthorInput {
+  name: string;
+  sort?: string;
+  link?: string;
+}
+
+export interface TagInput {
+  name: string;
+}
+
+export interface SeriesInput {
+  name: string;
+  index?: number;
+}
+
+/** Partial metadata payload accepted by `PATCH /catalog/books/:id`. */
+export interface BookMetadataInput {
+  title?: string;
+  authorSort?: string;
+  description?: string;
+  publisher?: string;
+  rating?: number;
+  authors?: AuthorInput[];
+  tags?: TagInput[];
+  series?: SeriesInput;
+  identifiers?: Identifier[];
 }
 
 export interface ReadingProgress {
