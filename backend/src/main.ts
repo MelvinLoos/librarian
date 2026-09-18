@@ -17,7 +17,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Use Pino as the global logger
-  app.useLogger(app.get(Logger));
+  const pinoLogger = app.get(Logger);
+  app.useLogger(pinoLogger);
 
   // Enable global validation using the class-validator DTOs
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -112,9 +113,9 @@ async function bootstrap() {
 
   const PORT = process.env.PORT ?? 3001;
   await app.listen(PORT);
-  console.log(`Librarian API is running on: http://localhost:` + PORT);
-  console.log(
-    `OpenAPI Docs available at: http://localhost:` + PORT + `/api/docs`,
+  pinoLogger.log(`Librarian API is running on: http://localhost:${PORT}`);
+  pinoLogger.log(
+    `OpenAPI Docs available at: http://localhost:${PORT}/api/docs`,
   );
 }
 bootstrap();
