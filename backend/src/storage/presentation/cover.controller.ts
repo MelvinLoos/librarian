@@ -3,18 +3,18 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  StreamableFile,
   Res,
+  StreamableFile,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { AssetService } from './asset.service';
-import { Public } from '../iam/auth/public.decorator';
+import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
+import { GetCoverStreamUseCase } from '../application/use-cases/get-cover-stream.use-case';
+import { Public } from '../../shared/decorators/public.decorator';
 
 @ApiTags('Assets')
 @Controller('assets')
-export class AssetController {
-  constructor(private readonly assetService: AssetService) {}
+export class CoverController {
+  constructor(private readonly getCoverStreamUseCase: GetCoverStreamUseCase) {}
 
   @Public()
   @Get('covers/:bookId')
@@ -38,7 +38,7 @@ export class AssetController {
     @Param('bookId', ParseIntPipe) bookId: number,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const stream = await this.assetService.getCoverStream(bookId);
+    const stream = await this.getCoverStreamUseCase.execute(bookId);
     res.set({
       'Content-Type': 'image/jpeg',
     });

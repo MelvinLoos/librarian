@@ -9,7 +9,6 @@ import { CatalogModule } from './catalog/catalog.module';
 import { IamModule } from './iam/iam.module';
 import { StorageModule } from './storage/storage.module';
 import { SharedModule } from './shared/shared.module';
-import { AssetModule } from './assets/asset.module';
 import { ReadingModule } from './reading/reading.module';
 import { HealthModule } from './health/health.module';
 
@@ -38,7 +37,6 @@ import { HealthModule } from './health/health.module';
     IamModule,
     StorageModule,
     SharedModule,
-    AssetModule,
     ReadingModule,
     HealthModule,
   ],

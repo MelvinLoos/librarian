@@ -2,7 +2,7 @@ import { Body, Controller, Post, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RegisterUserUseCase } from '../application/use-cases/register-user.use-case';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { Public } from '../auth/public.decorator';
+import { Public } from '../../shared/decorators/public.decorator';
 
 @ApiTags('Users')
 @Controller('users')

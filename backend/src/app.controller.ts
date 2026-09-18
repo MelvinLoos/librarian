@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { Public } from './iam/auth/public.decorator';
+import { Public } from './shared/decorators/public.decorator';
 
 @ApiBearerAuth('JWT')
 @Controller()

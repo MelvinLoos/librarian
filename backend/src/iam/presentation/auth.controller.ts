@@ -23,7 +23,7 @@ import { AuthenticateUserUseCase } from '../application/use-cases/authenticate-u
 import { AuthService } from '../auth/auth.service';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { Public } from '../auth/public.decorator';
+import { Public } from '../../shared/decorators/public.decorator';
 
 @ApiTags('Auth')
 @ApiExtraModels(LoginResponseDto)
