@@ -8,6 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "test": "vitest run",
+    "typecheck": "vue-tsc --noEmit",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -29,7 +30,8 @@
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.8.9",
     "lucide-nuxt": "^1.2.2",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "vue-tsc": "^3.3.11"
   },
   "overrides": {
     "@rollup/plugin-terser": {

@@ -66,13 +66,21 @@ export interface BookMetadataInput {
 }
 
 export interface ReadingProgress {
-  id: number;
-  userId: number;
-  bookId: number;
-  currentPage: number;
-  totalPages: number;
-  updatedAt: string;
-  book?: Book;
+  /** Primary key of the reading state row. */
+  id: number
+  /** The user this progress belongs to (String, matches the backend User id). */
+  userId: string
+  /** The book being read (legacy Calibre book id). */
+  bookId: number
+  /**
+   * Format-agnostic reading position.
+   * Examples: EPUB CFI (`epubcfi(/6/4!/4/2/1:0)`) or PDF page (`page=42`).
+   */
+  locator: string
+  /** Reading completion percentage, 0.0 to 100.0. */
+  percentage: number
+  updatedAt: string
+  book?: Book
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

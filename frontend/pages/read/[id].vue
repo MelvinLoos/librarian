@@ -118,6 +118,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi } from '~/composables/useApi'
 import { useTheme } from '~/composables/useTheme'
+import type { ReadingProgress } from '~/domain/catalog/Catalog.types'
 import ePub from 'epubjs'
 
 definePageMeta({ layout: false })
@@ -260,8 +261,8 @@ const loadEpub = async () => {
       toc.value = nav.toc
     })
 
-    const states: any = await $api('/users/me/reading-states')
-    const savedState = states.find((s: any) => s.bookId === parseInt(bookId))
+    const states: ReadingProgress[] = await $api<ReadingProgress[]>('/users/me/reading-states')
+    const savedState = states.find((s) => s.bookId === parseInt(bookId))
     
     if (savedState?.locator) {
       await rendition.display(savedState.locator)
