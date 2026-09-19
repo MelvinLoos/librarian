@@ -7,10 +7,12 @@ import { PrismaAssetRepository } from './prisma-asset.repository';
 describe('PrismaAssetRepository', () => {
   const createMock = jest.fn();
   const findFirstMock = jest.fn();
+  const deleteManyMock = jest.fn();
   const prismaMock = {
     data: {
       create: createMock,
       findFirst: findFirstMock,
+      deleteMany: deleteManyMock,
     },
   } as unknown as any;
 
@@ -32,6 +34,9 @@ describe('PrismaAssetRepository', () => {
 
     await repository.save(asset);
 
+    expect(deleteManyMock).toHaveBeenCalledWith({
+      where: { name: 'asset-123' },
+    });
     expect(createMock).toHaveBeenCalledWith({
       data: {
         bookId: 0,

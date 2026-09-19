@@ -13,4 +13,21 @@ describe('MetadataExtractedEvent', () => {
     expect(event.occurredOn).toBeInstanceOf(Date);
     expect(event.getName()).toBe('MetadataExtractedEvent');
   });
+
+  it('should carry the extracted metadata payload', () => {
+    const payload = {
+      title: 'Dune',
+      authors: ['Frank Herbert'],
+      isbn: '0-441-17242-7',
+    };
+
+    const event = new MetadataExtractedEvent(
+      'asset-123',
+      AssetProcessingState.READY,
+      payload,
+    );
+
+    expect(event.metadata).toEqual(payload);
+    expect(event.metadata?.title).toBe('Dune');
+  });
 });

@@ -9,6 +9,40 @@ import * as path from 'path';
 export class LocalFileStorage implements IFileStorage {
   private readonly logger = new Logger(LocalFileStorage.name);
   private readonly assetsDir = join('.librarian', 'assets');
+  private readonly coversDir = join('.librarian', 'covers');
+
+  async saveCover(
+    buffer: Buffer,
+    assetId: string,
+    mimeType: string,
+  ): Promise<string> {
+    const extension = this.mimeTypeExtension(mimeType);
+    const relativePath = join(this.coversDir, `${assetId}.${extension}`);
+    const absolutePath = resolve(process.cwd(), relativePath);
+
+    await mkdir(resolve(process.cwd(), this.coversDir), { recursive: true });
+    await writeFile(absolutePath, buffer);
+
+    this.logger.log(`Cover saved to disk: ${absolutePath}`);
+
+    return relativePath;
+  }
+
+  private mimeTypeExtension(mimeType: string): string {
+    switch (mimeType.toLowerCase()) {
+      case 'image/jpeg':
+      case 'image/jpg':
+        return 'jpg';
+      case 'image/png':
+        return 'png';
+      case 'image/webp':
+        return 'webp';
+      case 'image/gif':
+        return 'gif';
+      default:
+        return 'img';
+    }
+  }
 
   async upload({
     buffer,

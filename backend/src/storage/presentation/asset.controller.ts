@@ -44,6 +44,7 @@ import { CancelConversionUseCase } from '../application/use-cases/cancel-convers
 import { RequestConversionBody } from './dto/request-conversion.dto';
 import { ConversionStatus } from '../domain/conversion-status.enum';
 import { AssetStatusResult } from '../application/use-cases/get-asset-status.use-case';
+import { AssetProcessingState } from '../domain/asset-processing-state.enum';
 
 @ApiTags('Assets')
 @ApiBearerAuth('JWT')
@@ -111,7 +112,8 @@ export class AssetController {
 
     return {
       id: assetId,
-      message: 'Asset upload initiated',
+      state: AssetProcessingState.UPLOADED,
+      message: 'Asset upload initiated, metadata extraction will follow',
     };
   }
 

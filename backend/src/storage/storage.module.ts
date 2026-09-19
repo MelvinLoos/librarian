@@ -13,6 +13,7 @@ import { GetCoverStreamUseCase } from './application/use-cases/get-cover-stream.
 import { PrismaBookFormatRepository } from './infrastructure/prisma-book-format.repository';
 import { MetadataExtractionPoolAdapter } from './infrastructure/metadata-extraction-pool.adapter';
 import { AssetUploadedListener } from './infrastructure/asset-uploaded.listener';
+import { ExtractMetadataUseCase } from './application/use-cases/extract-metadata.use-case';
 import { GetAssetStatusUseCase } from './application/use-cases/get-asset-status.use-case';
 import { RequestConversionUseCase } from './application/use-cases/request-conversion.use-case';
 import { GetConversionStatusUseCase } from './application/use-cases/get-conversion-status.use-case';
@@ -34,6 +35,7 @@ import { FormatConversionRequestedListener } from './infrastructure/format-conve
     GetConversionStatusUseCase,
     CancelConversionUseCase,
     ExecuteConversionJobUseCase,
+    ExtractMetadataUseCase,
     MetadataExtractionPoolAdapter,
     AssetUploadedListener,
     ConversionPoolAdapter,
@@ -49,6 +51,8 @@ import { FormatConversionRequestedListener } from './infrastructure/format-conve
     {
       provide: 'IConversionExecutor',
       useClass: ConversionPoolAdapter,
+      provide: 'IMetadataExtractor',
+      useExisting: MetadataExtractionPoolAdapter,
     },
     {
       provide: 'ILegacyBookRepository',

@@ -9,6 +9,13 @@ export interface IFileStorage {
     originalName: string;
     mimeType: string;
   }): Promise<string>;
+
+  /**
+   * Saves an extracted cover image into the storage covers directory.
+   * Returns the relative path of the stored cover.
+   */
+  saveCover(buffer: Buffer, assetId: string, mimeType: string): Promise<string>;
+
   getCoverStream(relativePath: string): Promise<ReadStream>;
   getBookFilePath(
     bookFolderPath: string,

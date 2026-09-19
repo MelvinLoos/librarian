@@ -1,17 +1,14 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AssetUploadedEvent } from '../domain/events/asset-uploaded.event';
-import { MetadataExtractionPoolAdapter } from './metadata-extraction-pool.adapter';
-import type { IAssetRepository } from '../application/ports/asset-repository.interface';
+import { ExtractMetadataUseCase } from '../application/use-cases/extract-metadata.use-case';
 
 @Injectable()
 export class AssetUploadedListener {
   private readonly logger = new Logger(AssetUploadedListener.name);
 
   constructor(
-    private readonly metadataExtractionPool: MetadataExtractionPoolAdapter,
-    @Inject('IAssetRepository')
-    private readonly assetRepository: IAssetRepository,
+    private readonly extractMetadataUseCase: ExtractMetadataUseCase,
   ) {}
 
   @OnEvent('AssetUploadedEvent')
@@ -20,44 +17,25 @@ export class AssetUploadedListener {
       `Handling AssetUploadedEvent for asset ID: ${event.assetId}`,
     );
 
-    let asset = await this.assetRepository.findById(event.assetId);
-
-    if (!asset) {
-      this.logger.error(`Asset with ID ${event.assetId} not found.`);
-      return;
-    }
-
     try {
-      asset.startProcessing();
-      await this.assetRepository.save(asset);
+      const metadata = await this.extractMetadataUseCase.execute({
+        assetId: event.assetId,
+        filePath: event.filePath,
+      });
 
-      // We don't use the metadata here, but the worker returns it.
-      // The ruling states to mock the extraction, so we just call the worker.
-      await this.metadataExtractionPool.extractMetadata(event.filePath);
-
-      asset = await this.assetRepository.findById(event.assetId); // Re-fetch to ensure latest state
-      if (!asset) {
-        this.logger.error(
-          `Asset with ID ${event.assetId} not found after processing.`,
+      if (metadata === null) {
+        this.logger.warn(
+          `Asset with ID ${event.assetId} not found; skipping extraction.`,
         );
         return;
       }
 
-      asset.markAsReady();
-      await this.assetRepository.save(asset);
-
-      this.logger.log(
-        `Metadata extracted and asset marked as READY for asset ID: ${event.assetId}`,
-      );
+      this.logger.log(`Metadata extracted for asset ID: ${event.assetId}`);
     } catch (error: any) {
       this.logger.error(
         `Error processing asset ${event.assetId}: ${error.message}`,
+        error instanceof Error ? error.stack : undefined,
       );
-      asset = await this.assetRepository.findById(event.assetId); // Re-fetch to ensure latest state
-      if (asset) {
-        asset.markAsFailed(error.message);
-        await this.assetRepository.save(asset);
-      }
     }
   }
 }
