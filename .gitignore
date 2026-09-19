@@ -53,3 +53,8 @@ library
 metadata.db
 
 node_modules
+
+# Downloaded AI agent skills (regenerable via skills-lock.json, not project source)
+.agents/
+.claude/
+skills-lock.json
