@@ -10,6 +10,8 @@
         <UploadDropzone />
         <ManualBookForm />
       </div>
+
+      <CustomColumnManager />
     </div>
   </div>
 </template>
@@ -17,6 +19,7 @@
 <script setup lang="ts">
 import UploadDropzone from '~/components/UploadDropzone.vue'
 import ManualBookForm from '~/components/ManualBookForm.vue'
+import CustomColumnManager from '~/components/CustomColumnManager.vue'
 
 definePageMeta({ middleware: ['admin'] })
 </script>

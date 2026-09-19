@@ -65,7 +65,35 @@ export interface BookMetadataInput {
   identifiers?: Identifier[];
 }
 
-export interface ReadingProgress {
+export type CustomColumnDataType =
+  | 'text'
+  | 'series'
+  | 'number'
+  | 'rating'
+  | 'date'
+  | 'boolean'
+
+export interface CustomColumn {
+  id: string
+  name: string
+  dataType: CustomColumnDataType
+  displayLabel?: string
+  isMultiple: boolean
+}
+
+export interface CustomColumnInput {
+  name: string
+  dataType?: CustomColumnDataType
+  displayLabel?: string
+  isMultiple?: boolean
+}
+
+/** Payload accepted by `PATCH /catalog/books/bulk`. */
+export interface BulkBookUpdateInput {
+  bookIds: number[]
+  changes: BookMetadataInput
+}
+  export interface ReadingProgress {
   /** Primary key of the reading state row. */
   id: number
   /** The user this progress belongs to (String, matches the backend User id). */

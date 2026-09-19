@@ -21,8 +21,11 @@ import {
 import { CreateBookUseCase } from '../application/use-cases/create-book.use-case';
 import { GetBookUseCase } from '../application/use-cases/get-book.use-case';
 import { UpdateBookMetadataUseCase } from '../application/use-cases/update-book-metadata.use-case';
+import { BulkUpdateBooksUseCase } from '../application/use-cases/bulk-update-books.use-case';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookMetadataDto } from './dto/update-book-metadata.dto';
+import { BulkUpdateBooksDto } from './dto/bulk-update-books.dto';
+import { BulkUpdateCommand } from '../domain/value-objects/bulk-update-command.value-object';
 
 @ApiTags('Books')
 @ApiBearerAuth('JWT')
@@ -34,6 +37,7 @@ export class BookController {
     private readonly createBookUseCase: CreateBookUseCase,
     private readonly getBookUseCase: GetBookUseCase,
     private readonly updateBookMetadataUseCase: UpdateBookMetadataUseCase,
+    private readonly bulkUpdateBooksUseCase: BulkUpdateBooksUseCase,
   ) {}
 
   @Post()
@@ -130,6 +134,30 @@ export class BookController {
         name: author?.props?.name || 'Unknown Author',
       })),
     }));
+  }
+
+  @Patch('bulk')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Bulk update book metadata',
+    description:
+      'Applies the same partial metadata changes to multiple books in one request.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Books updated successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'One of the books was not found.' })
+  @ApiResponse({ status: 400, description: 'Bad request payload.' })
+  async bulkUpdate(@Body() dto: BulkUpdateBooksDto) {
+    this.logger.log(
+      `Received bulk update request for ${dto.bookIds.length} book(s)`,
+    );
+
+    const command = BulkUpdateCommand.fromRaw(dto.bookIds, dto.changes);
+    const books = await this.bulkUpdateBooksUseCase.execute(command);
+
+    return books.map((book) => ({ id: book.id, title: book.props.title }));
   }
 
   @Patch(':id')

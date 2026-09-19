@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 import { PrismaService } from '../../shared/infrastructure/prisma.service';
 import { PrismaBookRepository } from './prisma-book.repository';
 import { Author } from '../domain/entities/author.entity';
@@ -19,9 +17,9 @@ describe('PrismaBookRepository (SQLite integration)', () => {
     await prisma.$executeRawUnsafe(
       `INSERT INTO books (title, sort, pubdate, series_index, author_sort, has_cover, last_modified, path) VALUES ('${title}', NULL, NULL, 1.0, NULL, 0, CURRENT_TIMESTAMP, NULL)`,
     );
-    const rows = (await prisma.$queryRawUnsafe(
+    const rows = await prisma.$queryRawUnsafe(
       `SELECT last_insert_rowid() AS id`,
-    )) as Array<{ id: number | bigint }>;
+    );
     return Number(rows[0].id);
   }
 

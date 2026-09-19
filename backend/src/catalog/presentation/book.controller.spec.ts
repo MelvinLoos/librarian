@@ -5,10 +5,13 @@ import { BookController } from './book.controller';
 import { GetBookUseCase } from '../application/use-cases/get-book.use-case';
 import { UpdateBookMetadataUseCase } from '../application/use-cases/update-book-metadata.use-case';
 import { CreateBookUseCase } from '../application/use-cases/create-book.use-case';
+import { BulkUpdateBooksUseCase } from '../application/use-cases/bulk-update-books.use-case';
 import { UpdateBookMetadataDto } from './dto/update-book-metadata.dto';
+import { BulkUpdateCommand } from '../domain/value-objects/bulk-update-command.value-object';
 import { Book } from '../domain/book.aggregate';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { NotFoundException } from '@nestjs/common';
 
 describe('BookController & UpdateBookMetadataDto', () => {
   describe('UpdateBookMetadataDto Validation', () => {
@@ -70,6 +73,7 @@ describe('BookController & UpdateBookMetadataDto', () => {
           { provide: UpdateBookMetadataUseCase, useValue: updateUseCase },
           { provide: GetBookUseCase, useValue: getUseCase },
           { provide: CreateBookUseCase, useValue: { execute: jest.fn() } },
+          { provide: BulkUpdateBooksUseCase, useValue: { execute: jest.fn() } },
         ],
       }).compile();
 
@@ -102,6 +106,57 @@ describe('BookController & UpdateBookMetadataDto', () => {
       await expect(
         controller.updateMetadata('1', { title: 'X' }),
       ).rejects.toThrow('DB down');
+    });
+  });
+
+  describe('BookController.bulkUpdate', () => {
+    let controller: BookController;
+    let bulkUseCase: jest.Mocked<BulkUpdateBooksUseCase>;
+
+    beforeEach(async () => {
+      bulkUseCase = { execute: jest.fn() } as any;
+
+      const module: TestingModule = await Test.createTestingModule({
+        controllers: [BookController],
+        providers: [
+          {
+            provide: UpdateBookMetadataUseCase,
+            useValue: { execute: jest.fn() },
+          },
+          { provide: GetBookUseCase, useValue: { execute: jest.fn() } },
+          { provide: CreateBookUseCase, useValue: { execute: jest.fn() } },
+          { provide: BulkUpdateBooksUseCase, useValue: bulkUseCase },
+        ],
+      }).compile();
+
+      controller = module.get<BookController>(BookController);
+    });
+
+    it('should apply the bulk command and return the updated books', async () => {
+      bulkUseCase.execute.mockResolvedValue([
+        Book.create({ title: 'Dune', publisher: 'Chilton Books' }, '1'),
+        Book.create({ title: 'Dune', publisher: 'Chilton Books' }, '2'),
+      ]);
+
+      const result = await controller.bulkUpdate({
+        bookIds: [1, 2],
+        changes: { publisher: 'Chilton Books' },
+      } as any);
+
+      expect(bulkUseCase.execute).toHaveBeenCalledWith(
+        expect.any(BulkUpdateCommand),
+      );
+      expect(result).toHaveLength(2);
+    });
+
+    it('should rethrow NotFoundException from the use case', async () => {
+      bulkUseCase.execute.mockRejectedValue(
+        new NotFoundException('Book with ID 9 not found'),
+      );
+
+      await expect(
+        controller.bulkUpdate({ bookIds: [9], changes: {} } as any),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

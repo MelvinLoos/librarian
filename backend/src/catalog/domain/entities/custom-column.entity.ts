@@ -1,11 +1,28 @@
 import { Entity } from '../../../shared/domain/entity';
 
-type CustomColumnDataType = 'string' | 'number' | 'boolean' | 'datetime';
+export type CustomColumnDataType =
+  | 'text'
+  | 'series'
+  | 'number'
+  | 'rating'
+  | 'date'
+  | 'boolean';
+
+const CUSTOM_COLUMN_DATA_TYPES: readonly CustomColumnDataType[] = [
+  'text',
+  'series',
+  'number',
+  'rating',
+  'date',
+  'boolean',
+];
 
 export interface CustomColumnProps {
   name: string;
-  value: any;
+  value: string | number | boolean | Date | null;
   dataType?: CustomColumnDataType;
+  displayLabel?: string;
+  isMultiple?: boolean;
 }
 
 export class CustomColumn extends Entity<CustomColumnProps> {
@@ -14,11 +31,21 @@ export class CustomColumn extends Entity<CustomColumnProps> {
       throw new Error('CustomColumn name cannot be empty');
     }
 
+    if (
+      props.dataType !== undefined &&
+      !CUSTOM_COLUMN_DATA_TYPES.includes(props.dataType)
+    ) {
+      throw new Error(
+        'CustomColumn dataType must be one of: text, series, number, rating, date, boolean',
+      );
+    }
+
     super(
       {
         ...props,
         name: props.name.trim(),
-        dataType: props.dataType ?? 'string',
+        dataType: props.dataType ?? 'text',
+        isMultiple: props.isMultiple ?? false,
       },
       id,
     );
