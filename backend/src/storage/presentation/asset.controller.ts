@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Delete,
   Param,
   Query,
   Headers,
@@ -16,6 +17,7 @@ import {
   ParseIntPipe,
   StreamableFile,
   Header,
+  Body,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -33,6 +35,14 @@ import { UploadAssetUseCase } from '../application/use-cases/upload-asset.use-ca
 import { StreamAssetUseCase } from '../application/use-cases/stream-asset.use-case';
 import { DownloadAssetUseCase } from '../application/use-cases/download-asset.use-case';
 import { GetAssetStatusUseCase } from '../application/use-cases/get-asset-status.use-case';
+import { RequestConversionUseCase } from '../application/use-cases/request-conversion.use-case';
+import {
+  GetConversionStatusUseCase,
+  ConversionStatusResult,
+} from '../application/use-cases/get-conversion-status.use-case';
+import { CancelConversionUseCase } from '../application/use-cases/cancel-conversion.use-case';
+import { RequestConversionBody } from './dto/request-conversion.dto';
+import { ConversionStatus } from '../domain/conversion-status.enum';
 import { AssetStatusResult } from '../application/use-cases/get-asset-status.use-case';
 import { AssetProcessingState } from '../domain/asset-processing-state.enum';
 
@@ -47,6 +57,9 @@ export class AssetController {
     private readonly streamAssetUseCase: StreamAssetUseCase,
     private readonly downloadAssetUseCase: DownloadAssetUseCase,
     private readonly getAssetStatusUseCase: GetAssetStatusUseCase,
+    private readonly requestConversionUseCase: RequestConversionUseCase,
+    private readonly getConversionStatusUseCase: GetConversionStatusUseCase,
+    private readonly cancelConversionUseCase: CancelConversionUseCase,
   ) {}
 
   @Post('upload')
@@ -205,5 +218,99 @@ export class AssetController {
     }
 
     return status;
+  }
+
+  @Post('books/:id/convert')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({
+    summary: 'Request a format conversion',
+    description:
+      'Creates a ConversionJob and triggers the conversion pipeline asynchronously via the piscina worker pool.',
+  })
+  @ApiParam({ name: 'id', type: 'number', description: 'Book ID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['targetFormat'],
+      properties: {
+        targetFormat: {
+          type: 'string',
+          example: 'MOBI',
+          description: 'Target format (EPUB, PDF, MOBI, TXT, ...)',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 202, description: 'Conversion requested.' })
+  @ApiResponse({ status: 404, description: 'Book not found.' })
+  @ApiResponse({ status: 400, description: 'Unsupported conversion pair.' })
+  async requestConversion(
+    @Param('id', ParseIntPipe) bookId: number,
+    @Body() body: RequestConversionBody,
+  ): Promise<{ jobId: string; message: string }> {
+    this.logger.log(
+      `Received conversion request for book ${bookId} -> ${body.targetFormat}`,
+    );
+
+    const jobId = await this.requestConversionUseCase.execute({
+      bookId,
+      targetFormat: body.targetFormat,
+    });
+
+    return { jobId, message: 'Conversion requested' };
+  }
+
+  @Get('conversions/:jobId')
+  @ApiOperation({
+    summary: 'Get conversion status',
+    description: 'Returns the status and progress of a format conversion job.',
+  })
+  @ApiParam({ name: 'jobId', type: 'string', description: 'Conversion job ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Conversion status retrieved successfully.',
+    type: Object,
+  })
+  @ApiResponse({ status: 404, description: 'Conversion job not found.' })
+  async getConversionStatus(
+    @Param('jobId') jobId: string,
+  ): Promise<ConversionStatusResult> {
+    this.logger.log(`Received status request for conversion job ${jobId}`);
+
+    const status = await this.getConversionStatusUseCase.execute({ jobId });
+    if (!status) {
+      throw new NotFoundException(`Conversion job ${jobId} not found`);
+    }
+
+    return status;
+  }
+
+  @Delete('conversions/:jobId')
+  @ApiOperation({
+    summary: 'Cancel a conversion',
+    description:
+      'Cancels a pending or running conversion job and returns its updated status.',
+  })
+  @ApiParam({ name: 'jobId', type: 'string', description: 'Conversion job ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Conversion cancelled successfully.',
+  })
+  @ApiResponse({ status: 404, description: 'Conversion job not found.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Job cannot be cancelled in its current state.',
+  })
+  async cancelConversion(
+    @Param('jobId') jobId: string,
+  ): Promise<{ jobId: string; status: ConversionStatus }> {
+    this.logger.log(`Received cancel request for conversion job ${jobId}`);
+
+    const job = await this.cancelConversionUseCase.execute({ jobId });
+
+    return {
+      jobId: job.props.id,
+      status: job.props.status as ConversionStatus,
+    };
   }
 }

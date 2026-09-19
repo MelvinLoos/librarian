@@ -70,6 +70,7 @@ model Book {
   identifiers Identifier[]
 
   readingStates LibrarianReadingProgress[]
+  conversionJobs LibrarianConversionJob[]
 
   @@map("books")
 }
@@ -225,4 +226,21 @@ model Identifier {
 
   @@unique([bookId, type])
   @@map("identifiers")
+}
+
+model LibrarianConversionJob {
+  id           String   @id
+  bookId       Int
+  sourceFormat String
+  targetFormat String
+  status       String   @default("pending")
+  progress     Float    @default(0)
+  errorMessage String?
+  outputPath   String?
+  requestedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("LibrarianConversionJob")
 }
