@@ -23,7 +23,10 @@ RUN npm run install:all
 COPY . .
 
 # Generate the Prisma Client for the correct architecture (Safety run)
-RUN npx prisma generate --schema=backend/prisma/schema.prisma
+# NOTE: Must run from /app/backend so npx resolves the project's pinned
+# prisma@^7 (backend/node_modules/.bin). Running from /app would make npx
+# download the latest prisma@8 release-candidate, whose CLI removed `generate`.
+RUN cd backend && npx prisma generate
 
 # Build the frontend and backend
 RUN npm run build
