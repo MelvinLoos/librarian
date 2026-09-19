@@ -141,6 +141,8 @@ describe('AssetController', () => {
       });
       expect(result.status).toBe(ConversionStatus.CANCELLED);
     });
+  });
+
   describe('uploadFile', () => {
     it('should return the asset id and the upload state', async () => {
       uploadAssetUseCase.execute.mockResolvedValue('asset-123');
