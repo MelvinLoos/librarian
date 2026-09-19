@@ -13,7 +13,7 @@ export default async function extractMetadata(
     // Simulate some asynchronous work
     await new Promise<void>((resolve) => setTimeout(resolve, 100));
 
-    return { success: true, metadata: { title, author } };
+    return { success: true, metadata: { title, authors: [author] } };
   } catch (error: any) {
     return { success: false, reason: error.message };
   }

@@ -56,6 +56,39 @@ describe('AssetController', () => {
     expect(controller).toBeDefined();
   });
 
+  describe('uploadFile', () => {
+    it('should return the asset id and the upload state', async () => {
+      uploadAssetUseCase.execute.mockResolvedValue('asset-123');
+
+      const file = {
+        originalname: 'book.epub',
+        mimetype: 'application/epub+zip',
+        size: 100,
+        buffer: Buffer.from('content'),
+      };
+
+      const result = await controller.uploadFile(file);
+
+      expect(uploadAssetUseCase.execute).toHaveBeenCalledWith({
+        file: {
+          buffer: file.buffer,
+          originalName: 'book.epub',
+          mimeType: 'application/epub+zip',
+          size: 100,
+        },
+      });
+      expect(result.id).toBe('asset-123');
+      expect(result.state).toBe(AssetProcessingState.UPLOADED);
+      expect(result.message).toBeDefined();
+    });
+
+    it('should throw BadRequestException when no file is provided', async () => {
+      await expect(controller.uploadFile(null)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
   describe('getAssetStatus', () => {
     it('should return asset status', async () => {
       const assetId = 'test-asset-id';

@@ -9,6 +9,15 @@ import * as path from 'path';
 export class LocalFileStorage implements IFileStorage {
   private readonly logger = new Logger(LocalFileStorage.name);
   private readonly assetsDir = join('.librarian', 'assets');
+  private readonly coversDir = join('.librarian', 'covers');
+
+  async saveCover(
+    buffer: Buffer,
+    assetId: string,
+    mimeType: string,
+  ): Promise<string> {
+    throw new Error('Not implemented');
+  }
 
   async upload({
     buffer,
