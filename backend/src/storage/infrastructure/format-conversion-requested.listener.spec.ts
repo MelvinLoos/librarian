@@ -46,7 +46,12 @@ describe('FormatConversionRequestedListener', () => {
         `/library/${bookPath}/${fileName}.${format.toLowerCase()}`,
     );
 
-    const event = new FormatConversionRequestedEvent('job-1', 42, 'EPUB', 'MOBI');
+    const event = new FormatConversionRequestedEvent(
+      'job-1',
+      42,
+      'EPUB',
+      'MOBI',
+    );
 
     await listener.handle(event);
 
@@ -64,10 +69,17 @@ describe('FormatConversionRequestedListener', () => {
       format: 'EPUB',
       size: 100,
     });
-    fileStorage.getBookFilePath.mockReturnValue('/library/Author/Book/Book.epub');
+    fileStorage.getBookFilePath.mockReturnValue(
+      '/library/Author/Book/Book.epub',
+    );
     executeConversionJobUseCase.execute.mockRejectedValue(new Error('Boom'));
 
-    const event = new FormatConversionRequestedEvent('job-1', 42, 'EPUB', 'MOBI');
+    const event = new FormatConversionRequestedEvent(
+      'job-1',
+      42,
+      'EPUB',
+      'MOBI',
+    );
 
     await expect(listener.handle(event)).resolves.toBeUndefined();
   });

@@ -69,9 +69,9 @@ describe('ConversionJob Entity', () => {
 
     it('should throw when completed from the pending state', () => {
       const job = makeJob();
-      expect(() => job.markCompleted('.librarian/conversions/job-1.mobi')).toThrow(
-        'Only running conversions can be completed',
-      );
+      expect(() =>
+        job.markCompleted('.librarian/conversions/job-1.mobi'),
+      ).toThrow('Only running conversions can be completed');
     });
   });
 

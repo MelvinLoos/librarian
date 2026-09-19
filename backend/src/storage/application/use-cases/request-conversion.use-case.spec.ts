@@ -16,7 +16,10 @@ describe('RequestConversionUseCase', () => {
   let eventEmitter: jest.Mocked<EventEmitter2>;
   let savedJobs: unknown[];
 
-  const command: RequestConversionCommand = { bookId: 42, targetFormat: 'MOBI' };
+  const command: RequestConversionCommand = {
+    bookId: 42,
+    targetFormat: 'MOBI',
+  };
 
   beforeEach(async () => {
     savedJobs = [];
@@ -42,12 +45,8 @@ describe('RequestConversionUseCase', () => {
     }).compile();
 
     useCase = module.get(RequestConversionUseCase);
-    bookFormatRepository = module.get(
-      'IBookFormatRepository',
-    ) as jest.Mocked<IBookFormatRepository>;
-    conversionJobRepository = module.get(
-      'IConversionJobRepository',
-    ) as jest.Mocked<ConversionJobRepositoryInterface>;
+    bookFormatRepository = module.get('IBookFormatRepository');
+    conversionJobRepository = module.get('IConversionJobRepository');
     eventEmitter = module.get(EventEmitter2);
   });
 
@@ -64,7 +63,13 @@ describe('RequestConversionUseCase', () => {
     expect(jobId).toBeDefined();
     expect(conversionJobRepository.save).toHaveBeenCalledTimes(1);
     const saved = savedJobs[0] as {
-      props: { id: string; bookId: number; sourceFormat: string; targetFormat: string; status: string };
+      props: {
+        id: string;
+        bookId: number;
+        sourceFormat: string;
+        targetFormat: string;
+        status: string;
+      };
     };
     expect(saved.props.id).toBe(jobId);
     expect(saved.props.bookId).toBe(42);
@@ -76,7 +81,8 @@ describe('RequestConversionUseCase', () => {
       'FormatConversionRequestedEvent',
       expect.any(FormatConversionRequestedEvent),
     );
-    const event = eventEmitter.emitAsync.mock.calls[0][1] as FormatConversionRequestedEvent;
+    const event = eventEmitter.emitAsync.mock
+      .calls[0][1] as FormatConversionRequestedEvent;
     expect(event.bookId).toBe(42);
     expect(event.sourceFormat).toBe('EPUB');
     expect(event.targetFormat).toBe('MOBI');
@@ -99,7 +105,7 @@ describe('RequestConversionUseCase', () => {
     });
 
     await expect(
-      useCase.execute({ bookId: 42, targetFormat: 'TXT' }),
+      useCase.execute({ bookId: 42, targetFormat: 'DOCX' }),
     ).rejects.toThrow(BadRequestException);
     expect(conversionJobRepository.save).not.toHaveBeenCalled();
     expect(eventEmitter.emitAsync).not.toHaveBeenCalled();

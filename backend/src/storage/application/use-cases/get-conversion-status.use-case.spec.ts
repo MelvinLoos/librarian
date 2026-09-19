@@ -25,9 +25,7 @@ describe('GetConversionStatusUseCase', () => {
     }).compile();
 
     useCase = module.get(GetConversionStatusUseCase);
-    conversionJobRepository = module.get(
-      'IConversionJobRepository',
-    ) as jest.Mocked<ConversionJobRepositoryInterface>;
+    conversionJobRepository = module.get('IConversionJobRepository');
   });
 
   it('should map a conversion job into a status DTO', async () => {

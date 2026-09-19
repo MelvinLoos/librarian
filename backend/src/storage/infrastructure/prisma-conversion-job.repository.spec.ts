@@ -42,7 +42,9 @@ describe('PrismaConversionJobRepository (SQLite integration)', () => {
         CONSTRAINT "LibrarianConversionJob_bookId_fkey" FOREIGN KEY ("bookId") REFERENCES "books" ("id") ON DELETE CASCADE ON UPDATE CASCADE
       );
     `);
-    await prisma.$executeRawUnsafe(`INSERT INTO books (id, title) VALUES (42, 'Dune')`);
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO books (id, title) VALUES (42, 'Dune')`,
+    );
 
     repository = new PrismaConversionJobRepository(prisma);
   });

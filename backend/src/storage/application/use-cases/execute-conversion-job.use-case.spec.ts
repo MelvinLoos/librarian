@@ -58,12 +58,8 @@ describe('ExecuteConversionJobUseCase', () => {
     }).compile();
 
     useCase = module.get(ExecuteConversionJobUseCase);
-    conversionJobRepository = module.get(
-      'IConversionJobRepository',
-    ) as jest.Mocked<ConversionJobRepositoryInterface>;
-    conversionExecutor = module.get(
-      'IConversionExecutor',
-    ) as jest.Mocked<IConversionExecutor>;
+    conversionJobRepository = module.get('IConversionJobRepository');
+    conversionExecutor = module.get('IConversionExecutor');
     eventEmitter = module.get(EventEmitter2);
   });
 
@@ -79,10 +75,14 @@ describe('ExecuteConversionJobUseCase', () => {
       targetFormat: 'MOBI',
       outputRelativePath: '.librarian/conversions/job-1.mobi',
     });
-    expect(savedStates).toEqual([ConversionStatus.RUNNING, ConversionStatus.COMPLETED]);
+    expect(savedStates).toEqual([
+      ConversionStatus.RUNNING,
+      ConversionStatus.COMPLETED,
+    ]);
 
     expect(eventEmitter.emitAsync).toHaveBeenCalledTimes(1);
-    const event = eventEmitter.emitAsync.mock.calls[0][1] as FormatConversionCompletedEvent;
+    const event = eventEmitter.emitAsync.mock
+      .calls[0][1] as FormatConversionCompletedEvent;
     expect(event.jobId).toBe('job-1');
     expect(event.success).toBe(true);
     expect(event.outputPath).toBe('.librarian/conversions/job-1.mobi');
@@ -98,11 +98,17 @@ describe('ExecuteConversionJobUseCase', () => {
       'Calibre ebook-convert CLI is not installed',
     );
 
-    expect(savedStates).toEqual([ConversionStatus.RUNNING, ConversionStatus.FAILED]);
+    expect(savedStates).toEqual([
+      ConversionStatus.RUNNING,
+      ConversionStatus.FAILED,
+    ]);
     expect(eventEmitter.emitAsync).toHaveBeenCalledTimes(1);
-    const event = eventEmitter.emitAsync.mock.calls[0][1] as FormatConversionCompletedEvent;
+    const event = eventEmitter.emitAsync.mock
+      .calls[0][1] as FormatConversionCompletedEvent;
     expect(event.success).toBe(false);
-    expect(event.errorMessage).toBe('Calibre ebook-convert CLI is not installed');
+    expect(event.errorMessage).toBe(
+      'Calibre ebook-convert CLI is not installed',
+    );
   });
 
   it('should throw NotFoundException when the job does not exist', async () => {

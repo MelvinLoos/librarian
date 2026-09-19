@@ -34,9 +34,7 @@ describe('CancelConversionUseCase', () => {
     }).compile();
 
     useCase = module.get(CancelConversionUseCase);
-    conversionJobRepository = module.get(
-      'IConversionJobRepository',
-    ) as jest.Mocked<ConversionJobRepositoryInterface>;
+    conversionJobRepository = module.get('IConversionJobRepository');
   });
 
   it('should cancel a pending job and persist it', async () => {

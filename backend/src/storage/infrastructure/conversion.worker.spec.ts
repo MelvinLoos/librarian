@@ -1,6 +1,4 @@
-import convertBook, {
-  ConversionWorkerInput,
-} from './conversion.worker';
+import convertBook, { ConversionWorkerInput } from './conversion.worker';
 import { buildMinimalEpub } from './fixtures/book-fixtures';
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';

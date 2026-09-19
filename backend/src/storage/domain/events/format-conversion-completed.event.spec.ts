@@ -32,6 +32,8 @@ describe('FormatConversionCompletedEvent', () => {
 
     expect(event.success).toBe(false);
     expect(event.outputPath).toBeUndefined();
-    expect(event.errorMessage).toBe('Calibre ebook-convert CLI is not installed');
+    expect(event.errorMessage).toBe(
+      'Calibre ebook-convert CLI is not installed',
+    );
   });
 });

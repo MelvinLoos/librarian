@@ -19,6 +19,44 @@ export class FormatConversionRequestedListener {
 
   @OnEvent('FormatConversionRequestedEvent')
   async handle(event: FormatConversionRequestedEvent): Promise<void> {
-    throw new Error('Not implemented');
+    this.logger.log(
+      `Handling conversion request job ${event.jobId} (${event.sourceFormat} -> ${event.targetFormat})`,
+    );
+
+    try {
+      const info = await this.bookFormatRepository.getFormatInfo(
+        event.bookId,
+        event.sourceFormat,
+      );
+      if (!info) {
+        this.logger.error(
+          `Book ${event.bookId} format ${event.sourceFormat} not found; conversion ${event.jobId} aborted`,
+        );
+        return;
+      }
+
+      const sourceAbsolutePath = this.fileStorage.getBookFilePath(
+        info.bookPath,
+        info.fileName,
+        info.format,
+      );
+      const outputRelativePath = `.librarian/conversions/${event.jobId}.${event.targetFormat.toLowerCase()}`;
+
+      this.logger.log(
+        `Resolved source ${sourceAbsolutePath}; output ${outputRelativePath}`,
+      );
+
+      await this.executeConversionJobUseCase.execute({
+        jobId: event.jobId,
+        sourceAbsolutePath,
+        outputRelativePath,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Conversion request ${event.jobId} failed: ${message}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+    }
   }
 }
