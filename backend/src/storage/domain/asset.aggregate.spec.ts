@@ -6,6 +6,7 @@ import { AssetUploadedEvent } from './events/asset-uploaded.event';
 import { MetadataExtractedEvent } from './events/metadata-extracted.event';
 import { FormatConversionRequestedEvent } from './events/format-conversion-requested.event';
 import { AssetProcessingState } from './asset-processing-state.enum';
+import { ExtractedMetadata } from './value-objects/extracted-metadata.value-object';
 
 describe('Asset Aggregate Root', () => {
   const id = 'asset-1';
@@ -103,6 +104,27 @@ describe('Asset Aggregate Root', () => {
       expect(event.state).toBe(AssetProcessingState.READY);
     });
 
+    it('should attach the extracted metadata payload to the emitted event', () => {
+      const metadata = new ExtractedMetadata({
+        title: 'Dune',
+        authors: ['Frank Herbert'],
+      });
+      const asset = Asset.reconstruct(
+        id,
+        'FORMAT',
+        filePath,
+        mimeType,
+        byteSize,
+        AssetProcessingState.PROCESSING,
+      );
+      asset.clearEvents();
+
+      asset.markAsReady(metadata);
+
+      const event = asset.domainEvents[0] as MetadataExtractedEvent;
+      expect(event.metadata?.title).toBe('Dune');
+      expect(event.metadata?.authors).toEqual(['Frank Herbert']);
+    });
     it('should throw an error if not in PROCESSING state', () => {
       const asset = Asset.upload(id, 'FORMAT', filePath, mimeType, byteSize);
       expect(() => asset.markAsReady()).toThrow(

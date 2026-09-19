@@ -1,6 +1,7 @@
 import { FilePath } from './value-objects/file-path.value-object';
 import { MimeType } from './value-objects/mime-type.value-object';
 import { ByteSize } from './value-objects/byte-size.value-object';
+import { ExtractedMetadata } from './value-objects/extracted-metadata.value-object';
 import { DomainEvent } from '../../shared/domain/domain-event';
 import { AssetUploadedEvent } from './events/asset-uploaded.event';
 import { MetadataExtractedEvent } from './events/metadata-extracted.event';
@@ -111,7 +112,7 @@ export class Asset {
     this._state = AssetProcessingState.PROCESSING;
   }
 
-  public markAsReady(): void {
+  public markAsReady(metadata?: ExtractedMetadata): void {
     if (this._state !== AssetProcessingState.PROCESSING) {
       throw new Error(
         'Asset must be in PROCESSING state to be marked as ready',
@@ -119,7 +120,11 @@ export class Asset {
     }
     this._state = AssetProcessingState.READY;
     this.addDomainEvent(
-      new MetadataExtractedEvent(this._id, AssetProcessingState.READY),
+      new MetadataExtractedEvent(
+        this._id,
+        AssetProcessingState.READY,
+        metadata ? metadata.toPayload() : undefined,
+      ),
     );
   }
 

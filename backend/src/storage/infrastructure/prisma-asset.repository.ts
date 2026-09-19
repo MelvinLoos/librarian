@@ -16,8 +16,15 @@ export class PrismaAssetRepository implements IAssetRepository {
       assetId: asset.id,
       filePath: asset.filePath.value,
       mimeType: asset.mimeType.value,
+      state: asset.state,
+      failureReason: asset.failureReason,
     };
 
+    // Upsert by asset id: replace any prior snapshot so findById always
+    // resolves the most recent state transition.
+    await this.prisma.data.deleteMany({
+      where: { name: asset.id },
+    });
     await this.prisma.data.create({
       data: {
         bookId: asset.bookId ?? 0,
@@ -37,6 +44,7 @@ export class PrismaAssetRepository implements IAssetRepository {
 
     const data = (await this.prisma.data.findFirst({
       where: { name: id },
+      orderBy: { id: 'desc' },
     })) as DataRecord | null;
     if (!data) return null;
 
@@ -44,7 +52,15 @@ export class PrismaAssetRepository implements IAssetRepository {
       assetId: string;
       filePath: string;
       mimeType: string;
+      state?: string;
+      failureReason?: string;
     };
+
+    const validStates = Object.values(AssetProcessingState) as string[];
+    const state =
+      parsed.state !== undefined && validStates.includes(parsed.state)
+        ? (parsed.state as AssetProcessingState)
+        : AssetProcessingState.READY; // Backwards compatible default
 
     return Asset.reconstruct(
       parsed.assetId,
@@ -52,8 +68,9 @@ export class PrismaAssetRepository implements IAssetRepository {
       new FilePath(parsed.filePath),
       new MimeType(parsed.mimeType),
       new ByteSize(data.uncompressedSize),
-      AssetProcessingState.READY, // Default state for reconstructed assets
+      state,
       data.bookId,
+      parsed.failureReason,
     );
   }
 }
