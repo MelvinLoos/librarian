@@ -4,7 +4,7 @@ import { LoggerModule } from 'nestjs-pino';
 import * as crypto from 'crypto';
 import { AppController } from './app.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import { getFrontendPublicDir } from './app.paths';
 import { CatalogModule } from './catalog/catalog.module';
 import { IamModule } from './iam/iam.module';
 import { StorageModule } from './storage/storage.module';
@@ -15,7 +15,7 @@ import { HealthModule } from './health/health.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '../..', 'frontend', '.output', 'public'),
+      rootPath: getFrontendPublicDir(),
       exclude: ['/api/*path'],
     }),
     LoggerModule.forRoot({

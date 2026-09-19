@@ -2,8 +2,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Rfc7807ExceptionFilter } from './shared/filters/rfc7807-exception.filter';
 import cookieParser from 'cookie-parser';
 import { Request, Response, NextFunction } from 'express';
-import { join } from 'path';
 import { readFileSync } from 'fs';
+import { getFrontendIndexPath } from './app.paths';
 
 /**
  * Applies the cross-cutting HTTP configuration that must be identical in the
@@ -36,14 +36,7 @@ export function configureApp(app: INestApplication): void {
   // SPA fallback: serve index.html for any non-API, non-asset GET request.
   // This allows client-side routing (e.g., /book/123) to work on page refresh.
   // The HTML is read once at startup to avoid path resolution issues at runtime.
-  const indexPath = join(
-    __dirname,
-    '../..',
-    'frontend',
-    '.output',
-    'public',
-    'index.html',
-  );
+  const indexPath = getFrontendIndexPath();
   const indexHtml = readFileSync(indexPath, 'utf-8');
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.use((req: Request, res: Response, next: NextFunction) => {
