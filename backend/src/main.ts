@@ -1,39 +1,23 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Request, Response, NextFunction } from 'express';
-import { join } from 'path';
-import { readFileSync } from 'fs';
+import { Request, Response } from 'express';
 import { Logger } from 'nestjs-pino';
-import { Rfc7807ExceptionFilter } from './shared/filters/rfc7807-exception.filter';
-
-import cookieParser from 'cookie-parser';
+import { configureApp } from './app.setup';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
-
-  app.setGlobalPrefix('api');
 
   // Use Pino as the global logger
   const pinoLogger = app.get(Logger);
   app.useLogger(pinoLogger);
 
-  // Enable global validation using the class-validator DTOs
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-
-  // Register RFC 7807 Exception Filter globally
-  app.useGlobalFilters(new Rfc7807ExceptionFilter());
-
-  // Use cookie parser for HttpOnly Refresh Tokens
-  app.use(cookieParser());
-
-  // Enable CORS for the Nuxt 3 frontend with credentials support
-  app.enableCors({
-    origin: true,
-    credentials: true,
-  });
+  // Apply the cross-cutting configuration shared with the e2e test harness:
+  // global validation, RFC 7807 error mapping, cookie parsing, CORS, and the
+  // SPA fallback middleware. Keeping this in one function guarantees that
+  // production and tests boot an identical application topology.
+  configureApp(app);
 
   // Setup OpenAPI / Swagger
   const config = new DocumentBuilder()
@@ -95,20 +79,6 @@ async function bootstrap() {
       url: '/api/docs-json',
     },
     customJs: ['/api/swagger-custom.js'],
-  });
-
-  // SPA fallback: serve index.html for any non-API, non-asset GET request.
-  // This allows client-side routing (e.g., /book/123) to work on page refresh.
-  // The HTML is read once at startup to avoid path resolution issues at runtime.
-  const indexPath = join(__dirname, '../..', 'frontend', '.output', 'public', 'index.html');
-  const indexHtml = readFileSync(indexPath, 'utf-8');
-  const expressApp = app.getHttpAdapter().getInstance();
-  expressApp.use((req: Request, res: Response, next: NextFunction) => {
-    // Skip API routes and static asset requests (files with extensions)
-    if (req.path.startsWith('/api/') || req.path.includes('.')) {
-      return next();
-    }
-    res.type('html').send(indexHtml);
   });
 
   const PORT = process.env.PORT ?? 3001;
