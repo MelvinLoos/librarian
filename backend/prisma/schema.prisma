@@ -226,3 +226,15 @@ model Identifier {
   @@unique([bookId, type])
   @@map("identifiers")
 }
+
+model LibrarianCustomColumn {
+  id           String   @id
+  name         String   @unique
+  dataType     String   @default("text")
+  displayLabel String?
+  isMultiple   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("LibrarianCustomColumn")
+}
