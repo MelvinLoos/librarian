@@ -6,8 +6,8 @@ import {
   Min,
   IsOptional,
   ValidateNested,
-  Type,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { UpdateBookMetadataDto } from './update-book-metadata.dto';
 
 export class BulkUpdateBooksDto {

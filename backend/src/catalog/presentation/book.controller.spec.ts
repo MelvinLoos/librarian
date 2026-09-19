@@ -119,7 +119,10 @@ describe('BookController & UpdateBookMetadataDto', () => {
       const module: TestingModule = await Test.createTestingModule({
         controllers: [BookController],
         providers: [
-          { provide: UpdateBookMetadataUseCase, useValue: { execute: jest.fn() } },
+          {
+            provide: UpdateBookMetadataUseCase,
+            useValue: { execute: jest.fn() },
+          },
           { provide: GetBookUseCase, useValue: { execute: jest.fn() } },
           { provide: CreateBookUseCase, useValue: { execute: jest.fn() } },
           { provide: BulkUpdateBooksUseCase, useValue: bulkUseCase },

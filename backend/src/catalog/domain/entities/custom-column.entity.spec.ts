@@ -32,15 +32,21 @@ describe('CustomColumn Entity', () => {
       'date',
       'boolean',
     ]) {
-      const column = new CustomColumn({ name: `#col_${dataType}`, value: 'x', dataType });
+      const column = new CustomColumn({
+        name: `#col_${dataType}`,
+        value: 'x',
+        dataType,
+      });
       expect(column.props.dataType).toBe(dataType);
     }
   });
 
   it('should reject an unknown datatype', () => {
-    expect(() =>
-      new CustomColumn({ name: '#bad', value: 'x', dataType: 'json' }),
-    ).toThrow('CustomColumn dataType must be one of: text, series, number, rating, date, boolean');
+    expect(
+      () => new CustomColumn({ name: '#bad', value: 'x', dataType: 'json' }),
+    ).toThrow(
+      'CustomColumn dataType must be one of: text, series, number, rating, date, boolean',
+    );
   });
 
   it('should support the isMultiple flag', () => {

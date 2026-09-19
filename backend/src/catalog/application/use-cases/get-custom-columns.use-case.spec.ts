@@ -13,15 +13,17 @@ describe('GetCustomColumnsUseCase', () => {
         GetCustomColumnsUseCase,
         {
           provide: 'ICustomColumnRepository',
-          useValue: { findAll: jest.fn(), upsert: jest.fn(), deleteById: jest.fn() },
+          useValue: {
+            findAll: jest.fn(),
+            upsert: jest.fn(),
+            deleteById: jest.fn(),
+          },
         },
       ],
     }).compile();
 
     useCase = module.get(GetCustomColumnsUseCase);
-    customColumnRepository = module.get(
-      'ICustomColumnRepository',
-    ) as jest.Mocked<CustomColumnRepositoryInterface>;
+    customColumnRepository = module.get('ICustomColumnRepository');
   });
 
   it('should return all custom columns', async () => {

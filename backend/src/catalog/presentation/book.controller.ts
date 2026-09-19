@@ -150,7 +150,14 @@ export class BookController {
   @ApiResponse({ status: 404, description: 'One of the books was not found.' })
   @ApiResponse({ status: 400, description: 'Bad request payload.' })
   async bulkUpdate(@Body() dto: BulkUpdateBooksDto) {
-    throw new Error('Not implemented');
+    this.logger.log(
+      `Received bulk update request for ${dto.bookIds.length} book(s)`,
+    );
+
+    const command = BulkUpdateCommand.fromRaw(dto.bookIds, dto.changes);
+    const books = await this.bulkUpdateBooksUseCase.execute(command);
+
+    return books.map((book) => ({ id: book.id, title: book.props.title }));
   }
 
   @Patch(':id')

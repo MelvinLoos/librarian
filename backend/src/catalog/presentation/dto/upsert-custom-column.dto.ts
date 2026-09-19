@@ -8,7 +8,10 @@ import {
 } from 'class-validator';
 
 export class UpsertCustomColumnDto {
-  @ApiProperty({ description: 'Custom column name (e.g. #read_status)', example: '#read_status' })
+  @ApiProperty({
+    description: 'Custom column name (e.g. #read_status)',
+    example: '#read_status',
+  })
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -22,12 +25,18 @@ export class UpsertCustomColumnDto {
   @IsIn(['text', 'series', 'number', 'rating', 'date', 'boolean'])
   dataType?: string;
 
-  @ApiPropertyOptional({ description: 'Human friendly display label', example: 'Read Status' })
+  @ApiPropertyOptional({
+    description: 'Human friendly display label',
+    example: 'Read Status',
+  })
   @IsOptional()
   @IsString()
   displayLabel?: string;
 
-  @ApiPropertyOptional({ description: 'Whether the column accepts multiple values', default: false })
+  @ApiPropertyOptional({
+    description: 'Whether the column accepts multiple values',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   isMultiple?: boolean;

@@ -9,7 +9,8 @@ describe('BulkUpdateBooksUseCase', () => {
   let useCase: BulkUpdateBooksUseCase;
   let bookRepository: jest.Mocked<IBookRepository>;
 
-  const makeBook = (id: string): Book => Book.create({ title: `Book ${id}` }, id);
+  const makeBook = (id: string): Book =>
+    Book.create({ title: `Book ${id}` }, id);
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,13 +27,13 @@ describe('BulkUpdateBooksUseCase', () => {
     }).compile();
 
     useCase = module.get(BulkUpdateBooksUseCase);
-    bookRepository = module.get('IBookRepository') as jest.Mocked<IBookRepository>;
+    bookRepository = module.get('IBookRepository');
   });
 
   it('should apply the same metadata changes to every requested book', async () => {
     const books = { 1: makeBook('1'), 2: makeBook('2') };
-    bookRepository.findById.mockImplementation(async (id: string) =>
-      books[Number(id)] ?? null,
+    bookRepository.findById.mockImplementation(
+      async (id: string) => books[Number(id)] ?? null,
     );
     bookRepository.update.mockImplementation(async (book: Book) => book);
 
@@ -46,7 +47,9 @@ describe('BulkUpdateBooksUseCase', () => {
     expect(updated).toHaveLength(2);
     expect(bookRepository.findById).toHaveBeenCalledTimes(2);
     expect(bookRepository.update).toHaveBeenCalledTimes(2);
-    expect(updated.every((b) => b.props.publisher === 'Chilton Books')).toBe(true);
+    expect(updated.every((b) => b.props.publisher === 'Chilton Books')).toBe(
+      true,
+    );
     expect(updated.every((b) => b.props.rating !== undefined)).toBe(true);
   });
 

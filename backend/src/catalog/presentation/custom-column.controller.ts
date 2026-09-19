@@ -40,19 +40,22 @@ export class CustomColumnController {
   })
   @ApiResponse({ status: 200, description: 'Custom columns retrieved.' })
   async listColumns() {
-    throw new Error('Not implemented');
+    this.logger.log('Received request to list custom columns');
+    return await this.getCustomColumnsUseCase.execute();
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create or update a custom column',
-    description: 'Creates a new custom column definition or upserts an existing one by name.',
+    description:
+      'Creates a new custom column definition or upserts an existing one by name.',
   })
   @ApiResponse({ status: 201, description: 'Custom column saved.' })
   @ApiResponse({ status: 400, description: 'Invalid payload.' })
   async upsertColumn(@Body() dto: UpsertCustomColumnDto) {
-    throw new Error('Not implemented');
+    this.logger.log(`Received request to upsert custom column: ${dto.name}`);
+    return await this.upsertCustomColumnUseCase.execute(dto);
   }
 
   @Delete(':id')
@@ -64,6 +67,8 @@ export class CustomColumnController {
   @ApiResponse({ status: 200, description: 'Custom column deleted.' })
   @ApiResponse({ status: 404, description: 'Custom column not found.' })
   async deleteColumn(@Param('id') id: string) {
-    throw new Error('Not implemented');
+    this.logger.log(`Received request to delete custom column: ${id}`);
+    const deleted = await this.deleteCustomColumnUseCase.execute({ id });
+    return { id, deleted };
   }
 }
