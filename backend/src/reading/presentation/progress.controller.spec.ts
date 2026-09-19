@@ -7,6 +7,10 @@ import { GetReadingStatesUseCase } from '../application/use-cases/get-reading-st
 import { UpdateProgressDto } from './dto/update-progress.dto';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { ReadingProgress } from '../domain/reading-progress.aggregate';
+import { Locator } from '../domain/value-objects/locator.value-object';
+import { ProgressPercentage } from '../domain/value-objects/progress-percentage.value-object';
+import { CompletionStatus } from '../domain/completion-status.enum';
 
 describe('ProgressController & UpdateProgressDto Presentation Contract', () => {
   describe('UpdateProgressDto Validation', () => {
@@ -139,20 +143,36 @@ describe('ProgressController & UpdateProgressDto Presentation Contract', () => {
       expect(result).toEqual({ message: 'Progress updated' });
     });
 
-    it('should retrieve reading states successfully and delegate to getReadingStatesUseCase', async () => {
+    it('should retrieve reading states and project aggregates into the flat wire contract', async () => {
       const req = { user: { id: 'user-id-999' } };
-      const mockStates = [
-        { bookId: 123, locator: 'epubcfi(1)', percentage: 22.0 },
-      ];
+      const updatedAt = new Date('2026-09-18T10:00:00.000Z');
+      const aggregate = ReadingProgress.reconstruct(
+        '7',
+        'user-id-999',
+        123,
+        Locator.create('epubcfi(1)'),
+        ProgressPercentage.create(22.0),
+        CompletionStatus.IN_PROGRESS,
+        updatedAt,
+      );
 
-      getReadingStatesUseCase.execute.mockResolvedValue(mockStates);
+      getReadingStatesUseCase.execute.mockResolvedValue([aggregate]);
 
       const result = await controller.getStates(req);
 
       expect(getReadingStatesUseCase.execute).toHaveBeenCalledWith(
         'user-id-999',
       );
-      expect(result).toEqual(mockStates);
+      expect(result).toEqual([
+        {
+          id: 7,
+          userId: 'user-id-999',
+          bookId: 123,
+          locator: 'epubcfi(1)',
+          percentage: 22.0,
+          updatedAt,
+        },
+      ]);
     });
 
     it('should propagate errors from use cases', async () => {

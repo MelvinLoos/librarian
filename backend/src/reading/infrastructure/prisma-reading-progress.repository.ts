@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../shared/infrastructure/prisma.service';
 import { IReadingProgressRepository } from '../application/ports/reading-progress.repository.interface';
+import { ReadingProgressMapper } from './reading-progress.mapper';
+import { ReadingProgress } from '../domain/reading-progress.aggregate';
 
 @Injectable()
 export class PrismaReadingProgressRepository implements IReadingProgressRepository {
@@ -21,11 +23,12 @@ export class PrismaReadingProgressRepository implements IReadingProgressReposito
     });
   }
 
-  async getUserReadingStates(userId: string): Promise<any[]> {
-    return this.prisma.librarianReadingProgress.findMany({
+  async getUserReadingStates(userId: string): Promise<ReadingProgress[]> {
+    const records = await this.prisma.librarianReadingProgress.findMany({
       where: { userId },
-      include: { book: true }, // Pulls in legacy metadata for the UI card
       orderBy: { updatedAt: 'desc' },
     });
+
+    return records.map((record) => ReadingProgressMapper.toDomain(record));
   }
 }

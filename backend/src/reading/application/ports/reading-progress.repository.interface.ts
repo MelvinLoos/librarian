@@ -1,3 +1,5 @@
+import { ReadingProgress } from '../../domain/reading-progress.aggregate';
+
 export interface IReadingProgressRepository {
   upsertProgress(
     userId: string,
@@ -5,5 +7,5 @@ export interface IReadingProgressRepository {
     locator: string,
     percentage: number,
   ): Promise<void>;
-  getUserReadingStates(userId: string): Promise<any[]>;
+  getUserReadingStates(userId: string): Promise<ReadingProgress[]>;
 }

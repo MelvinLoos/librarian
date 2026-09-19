@@ -21,6 +21,7 @@ import {
 import { UpdateReadingProgressUseCase } from '../application/use-cases/update-reading-progress.use-case';
 import { GetReadingStatesUseCase } from '../application/use-cases/get-reading-states.use-case';
 import { UpdateProgressDto } from './dto/update-progress.dto';
+import { ReadingProgress } from '../domain/reading-progress.aggregate';
 import { RolesGuard } from '../../iam/auth/roles.guard';
 import { Roles } from '../../iam/auth/roles.decorator';
 import { Role } from '../../iam/auth/roles.enum';
@@ -94,6 +95,21 @@ export class ProgressController {
     this.logger.log(
       `Received request to get reading states for user: ${userId}`,
     );
-    return this.getReadingStatesUseCase.execute(userId);
+    const states = await this.getReadingStatesUseCase.execute(userId);
+    // HTTP translation: project domain aggregates into the flat wire contract
+    // (id/userId/bookId/locator/percentage/updatedAt), keeping value objects
+    // and aggregate internals off the wire.
+    return states.map((state) => this.toReadingStateResponse(state));
+  }
+
+  private toReadingStateResponse(state: ReadingProgress) {
+    return {
+      id: Number(state.id),
+      userId: state.userId,
+      bookId: state.bookId,
+      locator: state.locator.value,
+      percentage: state.percentage.value,
+      updatedAt: state.updatedAt,
+    };
   }
 }
