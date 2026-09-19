@@ -11,14 +11,21 @@ import { MetadataExtractedEvent } from '../../domain/events/metadata-extracted.e
 import { FilePath } from '../../domain/value-objects/file-path.value-object';
 import { MimeType } from '../../domain/value-objects/mime-type.value-object';
 import { ByteSize } from '../../domain/value-objects/byte-size.value-object';
+import type { IAssetRepository } from '../ports/asset-repository.interface';
+import type { IMetadataExtractor } from '../ports/metadata-extractor.interface';
+import type { IFileStorage } from '../ports/file-storage.interface';
 
 describe('ExtractMetadataUseCase', () => {
   let useCase: ExtractMetadataUseCase;
-  let assetRepository: jest.Mocked<any>;
-  let metadataExtractor: jest.Mocked<any>;
-  let fileStorage: jest.Mocked<any>;
+  let assetRepository: jest.Mocked<IAssetRepository>;
+  let metadataExtractor: jest.Mocked<IMetadataExtractor>;
+  let fileStorage: jest.Mocked<Pick<IFileStorage, 'saveCover'>>;
   let eventEmitter: jest.Mocked<EventEmitter2>;
   let savedStates: AssetProcessingState[];
+
+  /** Typed lookup for string-token Nest providers. */
+  const mockOf = <T>(value: unknown): jest.Mocked<T> =>
+    value as jest.Mocked<T>;
 
   const assetId = 'asset-1';
   const filePath = 'test/path/to/book.epub';
@@ -57,7 +64,7 @@ describe('ExtractMetadataUseCase', () => {
           provide: 'IAssetRepository',
           useValue: {
             findById: jest.fn(),
-            save: jest.fn(async (asset: Asset) => {
+            save: jest.fn((asset: Asset) => {
               savedStates.push(asset.state);
             }),
           },
@@ -78,15 +85,21 @@ describe('ExtractMetadataUseCase', () => {
     }).compile();
 
     useCase = module.get(ExtractMetadataUseCase);
-    assetRepository = module.get('IAssetRepository');
-    metadataExtractor = module.get('IMetadataExtractor');
-    fileStorage = module.get('IFileStorage');
+    assetRepository = mockOf<IAssetRepository>(module.get('IAssetRepository'));
+    metadataExtractor = mockOf<IMetadataExtractor>(
+      module.get('IMetadataExtractor'),
+    );
+    fileStorage = mockOf<Pick<IFileStorage, 'saveCover'>>(
+      module.get('IFileStorage'),
+    );
     eventEmitter = module.get(EventEmitter2);
   });
 
   describe('execute', () => {
     it('should orchestrate extraction, persist transitions, save the cover, and emit an event with real metadata', async () => {
-      assetRepository.findById.mockResolvedValue(makeAsset(AssetProcessingState.UPLOADED));
+      assetRepository.findById.mockResolvedValue(
+        makeAsset(AssetProcessingState.UPLOADED),
+      );
       metadataExtractor.extract.mockResolvedValue(metadata());
       fileStorage.saveCover.mockResolvedValue('.librarian/covers/asset-1.jpg');
 
@@ -108,7 +121,8 @@ describe('ExtractMetadataUseCase', () => {
         'MetadataExtractedEvent',
         expect.any(MetadataExtractedEvent),
       );
-      const event = eventEmitter.emitAsync.mock.calls[0][1] as MetadataExtractedEvent;
+      const event = eventEmitter.emitAsync.mock
+        .calls[0][1] as MetadataExtractedEvent;
       expect(event.metadata?.title).toBe('Dune');
       expect(event.metadata?.authors).toEqual(['Frank Herbert']);
 
@@ -129,7 +143,9 @@ describe('ExtractMetadataUseCase', () => {
     });
 
     it('should mark the asset as FAILED and rethrow when extraction throws', async () => {
-      assetRepository.findById.mockResolvedValue(makeAsset(AssetProcessingState.UPLOADED));
+      assetRepository.findById.mockResolvedValue(
+        makeAsset(AssetProcessingState.UPLOADED),
+      );
       metadataExtractor.extract.mockRejectedValue(new Error('Boom'));
 
       await expect(useCase.execute(command)).rejects.toThrow('Boom');
@@ -142,7 +158,9 @@ describe('ExtractMetadataUseCase', () => {
     });
 
     it('should mark the asset as FAILED when saving the cover fails', async () => {
-      assetRepository.findById.mockResolvedValue(makeAsset(AssetProcessingState.UPLOADED));
+      assetRepository.findById.mockResolvedValue(
+        makeAsset(AssetProcessingState.UPLOADED),
+      );
       metadataExtractor.extract.mockResolvedValue(metadata());
       fileStorage.saveCover.mockRejectedValue(new Error('Disk full'));
 

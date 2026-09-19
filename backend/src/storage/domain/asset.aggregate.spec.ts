@@ -104,7 +104,7 @@ describe('Asset Aggregate Root', () => {
       expect(event.state).toBe(AssetProcessingState.READY);
     });
 
-it('should attach the extracted metadata payload to the emitted event', () => {
+    it('should attach the extracted metadata payload to the emitted event', () => {
       const metadata = new ExtractedMetadata({
         title: 'Dune',
         authors: ['Frank Herbert'],

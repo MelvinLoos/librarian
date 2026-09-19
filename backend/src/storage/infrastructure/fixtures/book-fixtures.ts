@@ -6,8 +6,8 @@ import JSZip from 'jszip';
  */
 
 export const FAKE_JPEG = Buffer.from([
-  0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
-  0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
+  0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01,
+  0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
 ]);
 
 export interface MinimalEpubOptions {
@@ -36,10 +36,7 @@ function buildOpf(opts: MinimalEpubOptions): string {
       : '<dc:identifier opf:scheme="UUID">urn:uuid:test-uuid</dc:identifier>';
 
   const creators = opts.authors
-    .map(
-      (a) =>
-        `<dc:creator opf:role="aut">${escapeXml(a)}</dc:creator>`,
-    )
+    .map((a) => `<dc:creator opf:role="aut">${escapeXml(a)}</dc:creator>`)
     .join('\n    ');
 
   return `<?xml version="1.0" encoding="utf-8"?>
@@ -134,7 +131,8 @@ export function buildMinimalPdf(opts: MinimalPdfOptions): Buffer {
   if (opts.subject) infoEntries.push(`/Subject (${opts.subject})`);
   if (opts.keywords) infoEntries.push(`/Keywords (${opts.keywords})`);
   if (opts.producer) infoEntries.push(`/Producer (${opts.producer})`);
-  if (opts.creationDate) infoEntries.push(`/CreationDate (${opts.creationDate})`);
+  if (opts.creationDate)
+    infoEntries.push(`/CreationDate (${opts.creationDate})`);
   appendObject(`<< ${infoEntries.join(' ')} >>`);
 
   if (opts.includeXmp) {

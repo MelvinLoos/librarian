@@ -76,10 +76,14 @@ describe('Metadata Extraction (SQLite integration)', () => {
     );
     await writeFile(filePath, epub);
 
+    // The domain FilePath is internal/relative; the worker receives the
+    // absolute temp path through the extraction command.
+    const relativeFilePath = '.librarian/assets/integration-asset-1.epub';
+
     const asset = Asset.upload(
       assetId,
       'FORMAT',
-      new FilePath(filePath),
+      new FilePath(relativeFilePath),
       new MimeType('application/epub+zip'),
       new ByteSize(epub.length),
     );
@@ -96,15 +100,17 @@ describe('Metadata Extraction (SQLite integration)', () => {
         return ExtractedMetadata.fromRaw(raw.metadata!);
       },
     };
-    const fileStorage = {
-      saveCover: jest.fn(async () => '.librarian/covers/integration-asset-1.jpg'),
-    } as unknown as IFileStorage;
+    const saveCoverMock = jest.fn(() => '.librarian/covers/integration-asset-1.jpg');
+    const fileStorage = { saveCover: saveCoverMock } as unknown as IFileStorage;
 
     const eventEmitter = new EventEmitter2();
     let capturedEvent: MetadataExtractedEvent | null = null;
-    eventEmitter.on('MetadataExtractedEvent', (event: MetadataExtractedEvent) => {
-      capturedEvent = event;
-    });
+    eventEmitter.on(
+      'MetadataExtractedEvent',
+      (event: MetadataExtractedEvent) => {
+        capturedEvent = event;
+      },
+    );
 
     const useCase = new ExtractMetadataUseCase(
       repository,
@@ -122,7 +128,7 @@ describe('Metadata Extraction (SQLite integration)', () => {
     expect(metadata!.props.cover).toEqual(FAKE_JPEG);
     expect(metadata!.props.coverMimeType).toBe('image/jpeg');
 
-    expect(fileStorage.saveCover).toHaveBeenCalledTimes(1);
+    expect(saveCoverMock).toHaveBeenCalledTimes(1);
 
     expect(capturedEvent).not.toBeNull();
     expect(capturedEvent!.assetId).toBe(assetId);

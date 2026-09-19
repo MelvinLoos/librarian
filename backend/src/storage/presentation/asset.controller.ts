@@ -34,6 +34,7 @@ import { StreamAssetUseCase } from '../application/use-cases/stream-asset.use-ca
 import { DownloadAssetUseCase } from '../application/use-cases/download-asset.use-case';
 import { GetAssetStatusUseCase } from '../application/use-cases/get-asset-status.use-case';
 import { AssetStatusResult } from '../application/use-cases/get-asset-status.use-case';
+import { AssetProcessingState } from '../domain/asset-processing-state.enum';
 
 @ApiTags('Assets')
 @ApiBearerAuth('JWT')
@@ -98,7 +99,8 @@ export class AssetController {
 
     return {
       id: assetId,
-      message: 'Asset upload initiated',
+      state: AssetProcessingState.UPLOADED,
+      message: 'Asset upload initiated, metadata extraction will follow',
     };
   }
 

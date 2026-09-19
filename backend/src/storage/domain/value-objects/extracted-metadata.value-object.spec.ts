@@ -27,25 +27,32 @@ describe('ExtractedMetadata', () => {
   });
 
   it('should throw an error if the title is empty', () => {
-    expect(() =>
-      new ExtractedMetadata({ title: '  ', authors: ['Frank Herbert'] }),
+    expect(
+      () => new ExtractedMetadata({ title: '  ', authors: ['Frank Herbert'] }),
     ).toThrow('ExtractedMetadata title cannot be empty');
   });
 
   it('should throw an error if any author is empty', () => {
-    expect(() =>
-      new ExtractedMetadata({ title: 'Dune', authors: ['', 'Frank Herbert'] }),
+    expect(
+      () =>
+        new ExtractedMetadata({
+          title: 'Dune',
+          authors: ['', 'Frank Herbert'],
+        }),
     ).toThrow('ExtractedMetadata author at index 0 cannot be empty');
   });
 
   it('should throw an error when a cover is provided without a mime type', () => {
-    expect(() =>
-      new ExtractedMetadata({
-        title: 'Dune',
-        authors: ['Frank Herbert'],
-        cover: Buffer.from([0xff]),
-      }),
-    ).toThrow('ExtractedMetadata coverMimeType is required when a cover is set');
+    expect(
+      () =>
+        new ExtractedMetadata({
+          title: 'Dune',
+          authors: ['Frank Herbert'],
+          cover: Buffer.from([0xff]),
+        }),
+    ).toThrow(
+      'ExtractedMetadata coverMimeType is required when a cover is set',
+    );
   });
 
   it('should allow a metadata without cover', () => {

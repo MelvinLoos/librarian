@@ -13,6 +13,7 @@ import { GetCoverStreamUseCase } from './application/use-cases/get-cover-stream.
 import { PrismaBookFormatRepository } from './infrastructure/prisma-book-format.repository';
 import { MetadataExtractionPoolAdapter } from './infrastructure/metadata-extraction-pool.adapter';
 import { AssetUploadedListener } from './infrastructure/asset-uploaded.listener';
+import { ExtractMetadataUseCase } from './application/use-cases/extract-metadata.use-case';
 import { GetAssetStatusUseCase } from './application/use-cases/get-asset-status.use-case';
 @Module({
   imports: [SharedModule, EventEmitterModule.forRoot()],
@@ -23,11 +24,16 @@ import { GetAssetStatusUseCase } from './application/use-cases/get-asset-status.
     DownloadAssetUseCase,
     GetCoverStreamUseCase,
     GetAssetStatusUseCase,
+    ExtractMetadataUseCase,
     MetadataExtractionPoolAdapter,
     AssetUploadedListener,
     {
       provide: 'IAssetRepository',
       useClass: PrismaAssetRepository,
+    },
+    {
+      provide: 'IMetadataExtractor',
+      useExisting: MetadataExtractionPoolAdapter,
     },
     {
       provide: 'ILegacyBookRepository',

@@ -120,7 +120,11 @@ export class Asset {
     }
     this._state = AssetProcessingState.READY;
     this.addDomainEvent(
-      new MetadataExtractedEvent(this._id, AssetProcessingState.READY),
+      new MetadataExtractedEvent(
+        this._id,
+        AssetProcessingState.READY,
+        metadata ? metadata.toPayload() : undefined,
+      ),
     );
   }
 

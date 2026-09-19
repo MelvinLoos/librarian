@@ -23,18 +23,14 @@ export class MetadataExtractionPoolAdapter
   }
 
   async extract(filePath: string): Promise<ExtractedMetadata> {
-    throw new Error('Not implemented');
-  }
-
-  async extractMetadata(
-    filePath: string,
-  ): Promise<MetadataExtractionResult['metadata'] | null> {
     const result: MetadataExtractionResult = await this.piscina.run(filePath);
-    if (result.success) {
-      return result.metadata ?? null;
-    } else {
-      throw new Error(result.reason);
+    if (!result.success) {
+      throw new Error(result.reason ?? 'Metadata extraction failed');
     }
+    if (!result.metadata) {
+      throw new Error('Metadata extraction returned no data');
+    }
+    return ExtractedMetadata.fromRaw(result.metadata);
   }
 
   onModuleDestroy() {
