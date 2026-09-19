@@ -4,7 +4,6 @@ import { ByteSize } from './value-objects/byte-size.value-object';
 import { DomainEvent } from '../../shared/domain/domain-event';
 import { AssetUploadedEvent } from './events/asset-uploaded.event';
 import { MetadataExtractedEvent } from './events/metadata-extracted.event';
-import { FormatConversionRequestedEvent } from './events/format-conversion-requested.event';
 import { AssetProcessingState } from './asset-processing-state.enum';
 
 export type AssetType = 'FORMAT' | 'COVER';
@@ -138,20 +137,6 @@ export class Asset {
       throw new Error('Asset is already linked to a different book');
     }
     this._bookId = bookId;
-  }
-
-  public requestFormatConversion(targetMimeType: MimeType): void {
-    if (this._type !== 'FORMAT') {
-      throw new Error('Can only request format conversion for FORMAT assets');
-    }
-    if (this._state !== AssetProcessingState.READY) {
-      throw new Error(
-        'Asset must be in READY state to request format conversion',
-      );
-    }
-    this.addDomainEvent(
-      new FormatConversionRequestedEvent(this._id, targetMimeType.value),
-    );
   }
 
   get domainEvents(): DomainEvent[] {

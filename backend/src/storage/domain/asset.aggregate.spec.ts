@@ -4,7 +4,6 @@ import { MimeType } from './value-objects/mime-type.value-object';
 import { ByteSize } from './value-objects/byte-size.value-object';
 import { AssetUploadedEvent } from './events/asset-uploaded.event';
 import { MetadataExtractedEvent } from './events/metadata-extracted.event';
-import { FormatConversionRequestedEvent } from './events/format-conversion-requested.event';
 import { AssetProcessingState } from './asset-processing-state.enum';
 
 describe('Asset Aggregate Root', () => {
@@ -160,55 +159,6 @@ describe('Asset Aggregate Root', () => {
       asset.linkToBook(42);
       expect(() => asset.linkToBook(99)).toThrow(
         'Asset is already linked to a different book',
-      );
-    });
-  });
-
-  describe('requestFormatConversion', () => {
-    it('should request format conversion and append FormatConversionRequestedEvent if in READY state', () => {
-      const asset = Asset.reconstruct(
-        id,
-        'FORMAT',
-        filePath,
-        mimeType,
-        byteSize,
-        AssetProcessingState.READY,
-      );
-      asset.clearEvents();
-
-      const targetMimeType = new MimeType('application/pdf');
-      asset.requestFormatConversion(targetMimeType);
-
-      const events = asset.domainEvents;
-      expect(events.length).toBe(1);
-
-      const event = events[0] as FormatConversionRequestedEvent;
-      expect(event).toBeInstanceOf(FormatConversionRequestedEvent);
-      expect(event.assetId).toBe(id);
-      expect(event.targetMimeType).toBe('application/pdf');
-    });
-
-    it('should throw an error if asset type is COVER', () => {
-      const asset = Asset.reconstruct(
-        id,
-        'COVER',
-        filePath,
-        mimeType,
-        byteSize,
-        AssetProcessingState.READY,
-      );
-      const targetMimeType = new MimeType('application/pdf');
-      expect(() => asset.requestFormatConversion(targetMimeType)).toThrow(
-        'Can only request format conversion for FORMAT assets',
-      );
-    });
-
-    it('should throw an error if not in READY state', () => {
-      const asset = Asset.upload(id, 'FORMAT', filePath, mimeType, byteSize);
-      asset.clearEvents();
-      const targetMimeType = new MimeType('application/pdf');
-      expect(() => asset.requestFormatConversion(targetMimeType)).toThrow(
-        'Asset must be in READY state to request format conversion',
       );
     });
   });

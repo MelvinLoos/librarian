@@ -16,6 +16,7 @@ import {
   ParseIntPipe,
   StreamableFile,
   Header,
+  Body,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -33,6 +34,11 @@ import { UploadAssetUseCase } from '../application/use-cases/upload-asset.use-ca
 import { StreamAssetUseCase } from '../application/use-cases/stream-asset.use-case';
 import { DownloadAssetUseCase } from '../application/use-cases/download-asset.use-case';
 import { GetAssetStatusUseCase } from '../application/use-cases/get-asset-status.use-case';
+import { RequestConversionUseCase } from '../application/use-cases/request-conversion.use-case';
+import { GetConversionStatusUseCase, ConversionStatusResult } from '../application/use-cases/get-conversion-status.use-case';
+import { CancelConversionUseCase } from '../application/use-cases/cancel-conversion.use-case';
+import { RequestConversionBody } from './dto/request-conversion.dto';
+import { ConversionStatus } from '../domain/conversion-status.enum';
 import { AssetStatusResult } from '../application/use-cases/get-asset-status.use-case';
 
 @ApiTags('Assets')
@@ -46,6 +52,9 @@ export class AssetController {
     private readonly streamAssetUseCase: StreamAssetUseCase,
     private readonly downloadAssetUseCase: DownloadAssetUseCase,
     private readonly getAssetStatusUseCase: GetAssetStatusUseCase,
+    private readonly requestConversionUseCase: RequestConversionUseCase,
+    private readonly getConversionStatusUseCase: GetConversionStatusUseCase,
+    private readonly cancelConversionUseCase: CancelConversionUseCase,
   ) {}
 
   @Post('upload')
@@ -203,5 +212,28 @@ export class AssetController {
     }
 
     return status;
+  }
+
+  @Post('books/:id/convert')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async requestConversion(
+    @Param('id', ParseIntPipe) bookId: number,
+    @Body() body: RequestConversionBody,
+  ): Promise<{ jobId: string; message: string }> {
+    throw new Error('Not implemented');
+  }
+
+  @Get('conversions/:jobId')
+  async getConversionStatus(
+    @Param('jobId') jobId: string,
+  ): Promise<ConversionStatusResult> {
+    throw new Error('Not implemented');
+  }
+
+  @Delete('conversions/:jobId')
+  async cancelConversion(
+    @Param('jobId') jobId: string,
+  ): Promise<{ jobId: string; status: ConversionStatus }> {
+    throw new Error('Not implemented');
   }
 }
