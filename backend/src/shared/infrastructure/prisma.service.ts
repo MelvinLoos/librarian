@@ -132,6 +132,22 @@ export class PrismaService
       `);
 
       await this.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "LibrarianCustomColumn" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "name" TEXT NOT NULL,
+          "dataType" TEXT NOT NULL DEFAULT 'text',
+          "displayLabel" TEXT,
+          "isMultiple" BOOLEAN NOT NULL DEFAULT FALSE,
+          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      await this.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "LibrarianCustomColumn_name_key" ON "LibrarianCustomColumn"("name");
+      `);
+
+      await this.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "LibrarianConversionJob" (
           "id" TEXT NOT NULL PRIMARY KEY,
           "bookId" INTEGER NOT NULL,

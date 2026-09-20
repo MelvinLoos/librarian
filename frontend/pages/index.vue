@@ -55,8 +55,27 @@
         <NuxtLink to="/" class="mb-1 text-xs font-bold uppercase tracking-[0.3em] text-primary transition hover:text-primary-dim">View All</NuxtLink>
       </div>
 
+      <div v-if="selection.count > 0" class="mt-2 flex items-center gap-3 rounded-full bg-primary/10 px-5 py-2.5">
+        <span class="text-sm text-on-surface">{{ selection.count }} selected</span>
+        <button
+          data-test="edit-selection"
+          class="rounded-full bg-primary-gradient px-5 py-1.5 text-sm font-semibold text-on-primary"
+          @click="showBulkModal = true"
+        >
+          Edit selection
+        </button>
+      </div>
+
       <div class="hide-scrollbar -mx-4 flex gap-6 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0">
         <div v-for="book in recentBooks" :key="book.id" class="w-40 shrink-0 sm:w-48">
+          <label class="flex items-center gap-2 text-xs text-on-surface-variant" :data-test="`book-select-${book.id}`">
+            <input
+              type="checkbox"
+              :checked="selection.has(book.id)"
+              @change="selection.toggle(book.id)"
+            />
+            Select
+          </label>
           <BookCard :book="book" />
         </div>
       </div>
@@ -123,6 +142,8 @@
         View Downloads
       </NuxtLink>
     </div>
+
+    <BulkEditModal :open="showBulkModal" :book-ids="selection.selectedIds" @close="showBulkModal = false" @updated="onBulkUpdated" />
   </div>
 </template>
 
@@ -131,7 +152,9 @@ import { ref, computed } from 'vue'
 import { useApiBase } from '~/composables/useApiBase'
 import { useSearchStore } from '~/stores/search'
 import { useOnlineStatus } from '~/composables/useOnlineStatus'
+import { useLibrarySelectionStore } from '~/stores/librarySelection'
 import BookCard from '~/components/BookCard.vue'
+import BulkEditModal from '~/components/BulkEditModal.vue'
 
 const apiBase = useApiBase()
 const searchStore = useSearchStore()
@@ -197,5 +220,15 @@ const filteredBooks = computed(() => {
 const getReadingProgress = (bookId: number) => {
   const state = readingStatus.value?.find((s: any) => s.bookId === bookId)
   return state?.percentage
+}
+
+const selection = useLibrarySelectionStore()
+const showBulkModal = ref(false)
+
+const onBulkUpdated = (updatedBooks: any[]) => {
+  if (!books.value) return
+  const byId = new Map(updatedBooks.map((book) => [Number(book.id), book]))
+  books.value = books.value.map((book: any) => byId.get(Number(book.id)) ?? book)
+  selection.clear()
 }
 </script>
