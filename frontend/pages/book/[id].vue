@@ -11,14 +11,15 @@
     </div>
 
     <div class="relative mx-auto flex min-h-screen max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 lg:px-8">
-      <button
+      <UiButton
+        data-test="back-button"
+        tone="ghost"
+        size="sm"
         @click="goBack"
-        class="group inline-flex w-fit items-center gap-2 rounded-full bg-surface-variant/10 px-5 py-2.5 text-sm font-semibold text-on-surface shadow-lg backdrop-blur-md transition-all duration-300 hover:bg-surface-variant/20 hover:text-primary hover:shadow-[0_0_20px_rgba(var(--color-primary),0.2)]"
-        type="button"
       >
-        <LucideArrowLeft class="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+        <LucideArrowLeft class="h-4 w-4 group-hover:-translate-x-1" />
         Back to overview
-      </button>
+      </UiButton>
 
       <div class="rounded-[2.5rem] bg-surface-container-high/75 p-8 shadow-[0_20px_40px_rgba(0,0,0,0.3)] backdrop-blur-xl">
         <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
@@ -32,14 +33,15 @@
               <p class="text-sm uppercase tracking-[0.3em] text-primary">Book details</p>
               <h1 class="mt-4 text-3xl font-serif font-semibold tracking-tight text-on-surface md:text-5xl">{{ book?.title || 'Loading…' }}</h1>
               <p class="mt-4 text-lg text-secondary">{{ book?.author || book?.authors?.map(a => a.name).join(', ') || 'Unknown author' }}</p>
-              <button
+              <UiButton
                 type="button"
                 data-test="edit-metadata"
-                class="mt-4 inline-flex items-center gap-2 rounded-full border border-outline-variant/10 bg-surface-variant/10 px-5 py-2.5 text-sm font-semibold text-on-surface transition hover:bg-surface-variant/20 hover:text-primary"
+                tone="secondary"
+                size="sm"
                 @click="showEditModal = true"
               >
                 Edit Metadata
-              </button>
+              </UiButton>
             </div>
           </div>
 
@@ -113,6 +115,7 @@
                 <!-- Toggle button -->
                 <button
                   type="button"
+                  data-test="offline-toggle"
                   :aria-pressed="isOfflineReady || isDownloading"
                   :disabled="!cacheApiAvailable"
                   :title="toggleLabel"

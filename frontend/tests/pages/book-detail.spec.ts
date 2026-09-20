@@ -49,6 +49,8 @@ vi.stubGlobal('useApiFetch', (_url: string) => ({
 }))
 
 import BookDetailPage from '../../pages/book/[id].vue'
+import { markRaw } from 'vue'
+import UiButton from '~/components/ui/UiButton.vue'
 
 const globalStubs = {
   NuxtLink: { template: '<a><slot /></a>' },
@@ -60,6 +62,10 @@ function mountPage() {
     global: {
       plugins: [createPinia()],
       stubs: globalStubs,
+      components: {
+        // Mirror Nuxt auto-import for the Reka UI atoms used by the page.
+        UiButton: markRaw(UiButton),
+      },
     },
   })
 }
@@ -178,5 +184,32 @@ describe('Book detail page – offline toggle', () => {
 
     expect(mockRefreshCacheStatus).toHaveBeenCalledWith([42])
     expect(mockInitSwListener).toHaveBeenCalledOnce()
+  })
+
+  it('composes the back control from the UiButton primitive', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+
+    const back = wrapper.find('[data-test="back-button"]')
+    expect(back.exists()).toBe(true)
+    expect(back.attributes('type')).toBe('button')
+  })
+
+  it('composes the edit metadata control from the UiButton primitive', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+
+    const edit = wrapper.find('[data-test="edit-metadata"]')
+    expect(edit.exists()).toBe(true)
+    expect(edit.attributes('type')).toBe('button')
+  })
+
+  it('exposes a stable hook on the offline toggle', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+
+    const toggle = wrapper.find('[data-test="offline-toggle"]')
+    expect(toggle.exists()).toBe(true)
+    expect(toggle.attributes('aria-pressed')).toBe('false')
   })
 })
