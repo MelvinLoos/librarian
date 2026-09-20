@@ -51,6 +51,8 @@ import { FormatConversionRequestedListener } from './infrastructure/format-conve
     {
       provide: 'IConversionExecutor',
       useClass: ConversionPoolAdapter,
+    },
+    {
       provide: 'IMetadataExtractor',
       useExisting: MetadataExtractionPoolAdapter,
     },
