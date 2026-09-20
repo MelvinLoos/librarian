@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
+import { markRaw } from 'vue'
 
 const { mockGetCustomColumns, mockUpsertCustomColumn, mockDeleteCustomColumn } = vi.hoisted(() => ({
   mockGetCustomColumns: vi.fn(),
@@ -16,6 +17,24 @@ vi.mock('~/infrastructure/api/CatalogApi', () => ({
 }))
 
 import CustomColumnManager from '~/components/CustomColumnManager.vue'
+import UiButton from '~/components/ui/UiButton.vue'
+import UiInput from '~/components/ui/UiInput.vue'
+import UiSelect from '~/components/ui/UiSelect.vue'
+import UiCheckbox from '~/components/ui/UiCheckbox.vue'
+
+function mountManager() {
+  return mount(CustomColumnManager, {
+    global: {
+      components: {
+        // Mirror Nuxt auto-import for the Reka UI atoms.
+        UiButton: markRaw(UiButton),
+        UiInput: markRaw(UiInput),
+        UiSelect: markRaw(UiSelect),
+        UiCheckbox: markRaw(UiCheckbox),
+      },
+    },
+  })
+}
 
 describe('CustomColumnManager', () => {
   beforeEach(() => {
@@ -26,7 +45,7 @@ describe('CustomColumnManager', () => {
   })
 
   it('lists existing custom columns', async () => {
-    const wrapper = mount(CustomColumnManager)
+    const wrapper = mountManager()
     await flushPromises()
 
     expect(mockGetCustomColumns).toHaveBeenCalledTimes(1)
@@ -36,11 +55,11 @@ describe('CustomColumnManager', () => {
 
   it('creates a custom column from the form', async () => {
     mockUpsertCustomColumn.mockResolvedValue({ id: 'col-2' })
-    const wrapper = mount(CustomColumnManager)
+    const wrapper = mountManager()
     await flushPromises()
 
-    await wrapper.find('[data-test="column-name"]').setValue('#genre')
-    const dataType = wrapper.find('[data-test="column-datatype"]')
+    await wrapper.find('[data-test="column-name"] input').setValue('#genre')
+    const dataType = wrapper.find('[data-test="column-datatype"] select')
     await dataType.setValue('series')
     await dataType.trigger('change')
     await wrapper.find('form').trigger('submit')
@@ -56,12 +75,58 @@ describe('CustomColumnManager', () => {
 
   it('deletes a custom column', async () => {
     mockDeleteCustomColumn.mockResolvedValue({ id: 'col-1', deleted: true })
-    const wrapper = mount(CustomColumnManager)
+    const wrapper = mountManager()
     await flushPromises()
 
     await wrapper.find('[data-test="delete-column"]').trigger('click')
     await flushPromises()
 
     expect(mockDeleteCustomColumn).toHaveBeenCalledWith('col-1')
+  })
+it('flags an empty column name as invalid and skips the API', async () => {
+    const wrapper = mountManager()
+    await flushPromises()
+
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(mockUpsertCustomColumn).not.toHaveBeenCalled()
+    const input = wrapper.find('[data-test="column-name"] input')
+    expect(input.attributes('aria-invalid')).toBe('true')
+    expect(wrapper.text()).toContain('Name is required')
+  })
+
+  it('flags duplicate column names as invalid and skips the API', async () => {
+    const wrapper = mountManager()
+    await flushPromises()
+
+    await wrapper.find('[data-test="column-name"] input').setValue('#read_status')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(mockUpsertCustomColumn).not.toHaveBeenCalled()
+    const input = wrapper.find('[data-test="column-name"] input')
+    expect(input.attributes('aria-invalid')).toBe('true')
+    expect(wrapper.text()).toContain('already exists')
+  })
+
+  it('disables the add button while a column is being created', async () => {
+    let resolvePromise: (value: unknown) => void = () => {}
+    mockUpsertCustomColumn.mockReturnValue(
+      new Promise((resolve) => {
+        resolvePromise = resolve
+      }),
+    )
+    const wrapper = mountManager()
+    await flushPromises()
+
+    await wrapper.find('[data-test="column-name"] input').setValue('#genre')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(wrapper.find('[data-test="add-column"]').attributes('disabled')).toBeDefined()
+
+    resolvePromise({ id: 'col-2' })
+    await flushPromises()
   })
 })

@@ -51,6 +51,8 @@ vi.stubGlobal('useApiFetch', () => ({
 }))
 
 import BookDetailPage from '../../pages/book/[id].vue'
+import { markRaw } from 'vue'
+import UiButton from '~/components/ui/UiButton.vue'
 
 function mountPage() {
   return mount(BookDetailPage, {
@@ -59,6 +61,10 @@ function mountPage() {
         NuxtLink: { template: '<a><slot /></a>' },
         LucideArrowLeft: { template: '<span />' },
         EditMetadataModal: false,
+      },
+      components: {
+        // Mirror Nuxt auto-import for the Reka UI atoms used by the page.
+        UiButton: markRaw(UiButton),
       },
     },
   })
