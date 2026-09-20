@@ -212,4 +212,31 @@ describe('Book detail page – offline toggle', () => {
     expect(toggle.exists()).toBe(true)
     expect(toggle.attributes('aria-pressed')).toBe('false')
   })
+
+  it('renders book tags via UiBadge primitives (not raw string spans)', async () => {
+    const bookWithTags = {
+      id: 42,
+      title: 'Dune',
+      hasCover: false,
+      authors: [{ id: '5', name: 'Frank Herbert' }],
+      tags: [
+        { id: '7', name: 'Sci-Fi' },
+        { id: '8', name: 'Classic' },
+      ],
+    }
+
+    vi.stubGlobal('useApiFetch', () => ({
+      data: ref(bookWithTags),
+      pending: ref(false),
+      error: ref(null),
+    }))
+
+    const wrapper = mountPage()
+    await flushPromises()
+
+    const badges = wrapper.findAll('[data-test="ui-badge"]')
+    expect(badges).toHaveLength(2)
+    expect(badges[0].text()).toContain('Sci-Fi')
+    expect(badges[1].text()).toContain('Classic')
+  })
 })

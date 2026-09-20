@@ -51,13 +51,11 @@
             
             <div class="text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">Tags</div>
             <div class="flex flex-wrap gap-2">
-              <span
+              <UiBadge
                 v-for="tag in book?.tags || []"
-                :key="tag"
-                class="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
-              >
-                {{ tag }}
-              </span>
+                :key="tag.id"
+                :label="tag.name"
+              />
               <span v-if="!(book?.tags?.length)" class="text-sm text-on-surface-variant">No tags available</span>
             </div>
           </div>
@@ -183,6 +181,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useApiBase } from '~/composables/useApiBase'
 import { useBookCacheStore } from '~/stores/bookCache'
 import EditMetadataModal from '~/components/EditMetadataModal.vue'
+import UiBadge from '~/components/ui/UiBadge.vue'
 import type { Book } from '~/domain/catalog/Catalog.types'
 
 const route = useRoute()

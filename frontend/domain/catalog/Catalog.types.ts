@@ -1,18 +1,27 @@
+/**
+ * Canonical identifier emitted by the backend DTO layer.
+ *
+ * Domain aggregates expose string ids on the wire (`"7"`); the legacy Calibre
+ * repositories and `/tags/top` expose numeric ids. Code that needs a numeric
+ * identity MUST normalize with `Number(...)` at the boundary.
+ */
+export type EntityId = number | string
+
 export interface Author {
-  id: number;
-  name: string;
+  id: EntityId
+  name: string
 }
 
 export interface Tag {
-  id: number;
-  name: string;
-  count?: number;
+  id: EntityId
+  name: string
+  count?: number
 }
 
 export interface Series {
-  id: number;
-  name: string;
-  index?: number;
+  id: EntityId
+  name: string
+  index?: number
 }
 
 export interface Identifier {
@@ -21,7 +30,7 @@ export interface Identifier {
 }
 
 export interface Book {
-  id: number;
+  id: EntityId;
   title: string;
   authorSort?: string;
   hasCover?: boolean;

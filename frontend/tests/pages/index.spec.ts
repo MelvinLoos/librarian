@@ -66,4 +66,39 @@ describe('Index page loading state', () => {
     await flushPromises()
     expect(wrapper.html()).toContain('animate-pulse')
   })
+
+  it('restricts multi-select to the Your Library grid (no checkboxes in Recent Additions)', async () => {
+    const recentBooks = [
+      { id: 1, title: 'Dune', author: 'Frank Herbert' },
+      { id: 2, title: 'Hyperion', author: 'Dan Simmons' },
+    ]
+
+    vi.stubGlobal('useApiFetch', (url: string) => {
+      if (url === '/books') {
+        return { data: ref(recentBooks), pending: ref(false) }
+      }
+      return { data: ref([]), pending: ref(false) }
+    })
+
+    const wrapper = mount(
+      {
+        components: { IndexPage },
+        template: '<Suspense><IndexPage /></Suspense>',
+      },
+      {
+        global: {
+          plugins: [createPinia()],
+          stubs: {
+            NuxtLink: { template: '<a><slot /></a>' },
+            BookCard: true,
+          },
+        },
+      }
+    )
+
+    await flushPromises()
+
+    // Selection affordance is reserved for the main grid only.
+    expect(wrapper.findAll('[data-test^="book-select-"]')).toHaveLength(0)
+  })
 })
