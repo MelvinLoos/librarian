@@ -26,6 +26,16 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookMetadataDto } from './dto/update-book-metadata.dto';
 import { BulkUpdateBooksDto } from './dto/bulk-update-books.dto';
 import { BulkUpdateCommand } from '../domain/value-objects/bulk-update-command.value-object';
+import type { Book } from '../domain/book.aggregate';
+import type { Tag } from '../domain/entities/tag.entity';
+import type { Author } from '../domain/entities/author.entity';
+import type { Series } from '../domain/entities/series.entity';
+import {
+  CanonicalBookResponseDto,
+  TagResponseDto,
+  AuthorResponseDto,
+  SeriesResponseDto,
+} from './dto/catalog-response.dto';
 
 @ApiTags('Books')
 @ApiBearerAuth('JWT')
@@ -146,6 +156,8 @@ export class BookController {
   @ApiResponse({
     status: 200,
     description: 'Books updated successfully.',
+    type: CanonicalBookResponseDto,
+    isArray: true,
   })
   @ApiResponse({ status: 404, description: 'One of the books was not found.' })
   @ApiResponse({ status: 400, description: 'Bad request payload.' })
@@ -157,7 +169,7 @@ export class BookController {
     const command = BulkUpdateCommand.fromRaw(dto.bookIds, dto.changes);
     const books = await this.bulkUpdateBooksUseCase.execute(command);
 
-    return books.map((book) => ({ id: book.id, title: book.props.title }));
+    return books.map((book) => this.toEditResponse(book));
   }
 
   @Patch(':id')
@@ -174,6 +186,7 @@ export class BookController {
   @ApiResponse({
     status: 200,
     description: 'Book metadata updated successfully.',
+    type: CanonicalBookResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Bad request payload.' })
   @ApiResponse({ status: 404, description: 'Book not found.' })
@@ -183,26 +196,7 @@ export class BookController {
   ) {
     this.logger.log(`Received request to update metadata for book ID: ${id}`);
     const book = await this.updateBookMetadataUseCase.execute(id, dto);
-    return {
-      id: book.id,
-      title: book.props.title,
-      publisher: book.props.publisher,
-      rating: book.props.rating?.props.value,
-      series: book.props.series
-        ? {
-            name: book.props.series.props.name,
-            index: book.props.series.props.index,
-          }
-        : undefined,
-      tags: book.props.tags?.map((tag) => ({ name: tag.props.name })) ?? [],
-      identifiers:
-        book.props.identifiers?.map((i) => ({
-          type: i.props.type,
-          value: i.props.value,
-        })) ?? [],
-      description: book.props.description,
-      authors: book.props.authors?.map((author) => author.props.name) ?? [],
-    };
+    return this.toEditResponse(book);
   }
 
   @Get(':id')
@@ -215,25 +209,70 @@ export class BookController {
     description: 'The unique ID of the book',
     example: '123',
   })
-  @ApiResponse({ status: 200, description: 'Book retrieved successfully.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Book retrieved successfully.',
+    type: CanonicalBookResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Book not found.' })
   async findOne(@Param('id') id: string) {
     this.logger.log(`Received request to find book by ID: ${id}`);
     const book = await this.getBookUseCase.execute(id);
+    return this.toReadResponse(book);
+  }
+
+  private toTagResponse(tag: Tag): TagResponseDto {
+    return { id: tag.id, name: tag.props.name };
+  }
+
+  private toAuthorResponse(author: Author): AuthorResponseDto {
+    return { id: author.id, name: author.props.name };
+  }
+
+  private toSeriesResponse(series: Series): SeriesResponseDto {
+    return {
+      id: series.id,
+      name: series.props.name,
+      index: series.props.index,
+    };
+  }
+
+  /**
+   * Canonical edit DTO shared by PATCH /books/:id and PATCH /books/bulk.
+   * Guarantees byte-for-byte identical JSON output between the two flows.
+   */
+  private toEditResponse(book: Book): CanonicalBookResponseDto {
     return {
       id: book.id,
       title: book.props.title,
+      publisher: book.props.publisher,
+      rating: book.props.rating?.props.value,
+      series: book.props.series
+        ? this.toSeriesResponse(book.props.series)
+        : undefined,
+      tags: (book.props.tags ?? []).map((tag) => this.toTagResponse(tag)),
+      identifiers: (book.props.identifiers ?? []).map((identifier) => ({
+        type: identifier.props.type,
+        value: identifier.props.value,
+      })),
+      description: book.props.description,
+      authors: (book.props.authors ?? []).map((author) =>
+        this.toAuthorResponse(author),
+      ),
+    };
+  }
+
+  /**
+   * Canonical read DTO for GET /books/:id. Extends the edit DTO with
+   * read-context extras while keeping every domain field flat.
+   */
+  private toReadResponse(book: Book): CanonicalBookResponseDto {
+    return {
+      ...this.toEditResponse(book),
       sortTitle: book.props.sortTitle,
       pubdate: book.props.pubdate,
-      hasCover: book.props.hasCover,
-      formats: book.props.formats,
-      description: book.props.description,
-      series: book.props.series,
-      tags: book.props.tags,
-      authors: book.props.authors?.map((author) => ({
-        id: author?.id,
-        name: author?.props?.name || 'Unknown Author',
-      })),
+      hasCover: book.props.hasCover ?? false,
+      formats: book.props.formats ?? [],
     };
   }
 }
