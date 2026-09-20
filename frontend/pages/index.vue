@@ -68,14 +68,6 @@
 
       <div class="hide-scrollbar -mx-4 flex gap-6 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0">
         <div v-for="book in recentBooks" :key="book.id" class="w-40 shrink-0 sm:w-48">
-          <label class="flex items-center gap-2 text-xs text-on-surface-variant" :data-test="`book-select-${book.id}`">
-            <input
-              type="checkbox"
-              :checked="selection.has(book.id)"
-              @change="selection.toggle(book.id)"
-            />
-            Select
-          </label>
           <BookCard :book="book" />
         </div>
       </div>
@@ -124,6 +116,9 @@
           :key="book.id"
           :book="book"
           :reading-progress="getReadingProgress(book.id)"
+          selectable
+          :selected="selection.has(Number(book.id))"
+          @update:selected="onCardSelection"
         />
       </div>
 
@@ -155,6 +150,7 @@ import { useOnlineStatus } from '~/composables/useOnlineStatus'
 import { useLibrarySelectionStore } from '~/stores/librarySelection'
 import BookCard from '~/components/BookCard.vue'
 import BulkEditModal from '~/components/BulkEditModal.vue'
+import type { Book, Tag } from '~/domain/catalog/Catalog.types'
 
 const apiBase = useApiBase()
 const searchStore = useSearchStore()
@@ -186,9 +182,9 @@ const recentBooks = computed(() => {
 const topTags = computed(() => {
   if (!books.value) return []
   const tags: Record<string, number> = {}
-  books.value.forEach((b: any) => {
-    b.tags?.forEach((t: string) => {
-      tags[t] = (tags[t] || 0) + 1
+  books.value.forEach((b: Book) => {
+    b.tags?.forEach((t: Tag) => {
+      tags[t.name] = (tags[t.name] || 0) + 1
     })
   })
   return Object.entries(tags)
@@ -211,7 +207,9 @@ const filteredBooks = computed(() => {
   }
 
   if (selectedTag.value) {
-    result = result.filter((b: any) => b.tags?.includes(selectedTag.value))
+    result = result.filter(
+      (b: Book) => b.tags?.some((t: Tag) => t.name === selectedTag.value),
+    )
   }
 
   return result
@@ -224,6 +222,14 @@ const getReadingProgress = (bookId: number) => {
 
 const selection = useLibrarySelectionStore()
 const showBulkModal = ref(false)
+
+const onCardSelection = (bookId: number, selected: boolean) => {
+  if (selected) {
+    if (!selection.has(bookId)) selection.toggle(bookId)
+  } else if (selection.has(bookId)) {
+    selection.toggle(bookId)
+  }
+}
 
 const onBulkUpdated = (updatedBooks: any[]) => {
   if (!books.value) return
