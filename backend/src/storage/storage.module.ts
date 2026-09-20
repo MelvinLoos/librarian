@@ -13,7 +13,15 @@ import { GetCoverStreamUseCase } from './application/use-cases/get-cover-stream.
 import { PrismaBookFormatRepository } from './infrastructure/prisma-book-format.repository';
 import { MetadataExtractionPoolAdapter } from './infrastructure/metadata-extraction-pool.adapter';
 import { AssetUploadedListener } from './infrastructure/asset-uploaded.listener';
+import { ExtractMetadataUseCase } from './application/use-cases/extract-metadata.use-case';
 import { GetAssetStatusUseCase } from './application/use-cases/get-asset-status.use-case';
+import { RequestConversionUseCase } from './application/use-cases/request-conversion.use-case';
+import { GetConversionStatusUseCase } from './application/use-cases/get-conversion-status.use-case';
+import { CancelConversionUseCase } from './application/use-cases/cancel-conversion.use-case';
+import { ExecuteConversionJobUseCase } from './application/use-cases/execute-conversion-job.use-case';
+import { PrismaConversionJobRepository } from './infrastructure/prisma-conversion-job.repository';
+import { ConversionPoolAdapter } from './infrastructure/conversion-pool.adapter';
+import { FormatConversionRequestedListener } from './infrastructure/format-conversion-requested.listener';
 @Module({
   imports: [SharedModule, EventEmitterModule.forRoot()],
   controllers: [AssetController, CoverController],
@@ -23,11 +31,28 @@ import { GetAssetStatusUseCase } from './application/use-cases/get-asset-status.
     DownloadAssetUseCase,
     GetCoverStreamUseCase,
     GetAssetStatusUseCase,
+    RequestConversionUseCase,
+    GetConversionStatusUseCase,
+    CancelConversionUseCase,
+    ExecuteConversionJobUseCase,
+    ExtractMetadataUseCase,
     MetadataExtractionPoolAdapter,
     AssetUploadedListener,
+    ConversionPoolAdapter,
+    FormatConversionRequestedListener,
     {
       provide: 'IAssetRepository',
       useClass: PrismaAssetRepository,
+    },
+    {
+      provide: 'IConversionJobRepository',
+      useClass: PrismaConversionJobRepository,
+    },
+    {
+      provide: 'IConversionExecutor',
+      useClass: ConversionPoolAdapter,
+      provide: 'IMetadataExtractor',
+      useExisting: MetadataExtractionPoolAdapter,
     },
     {
       provide: 'ILegacyBookRepository',

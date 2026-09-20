@@ -147,6 +147,22 @@ export class PrismaService
         CREATE UNIQUE INDEX IF NOT EXISTS "LibrarianCustomColumn_name_key" ON "LibrarianCustomColumn"("name");
       `);
 
+      await this.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "LibrarianConversionJob" (
+          "id" TEXT NOT NULL PRIMARY KEY,
+          "bookId" INTEGER NOT NULL,
+          "sourceFormat" TEXT NOT NULL,
+          "targetFormat" TEXT NOT NULL,
+          "status" TEXT NOT NULL DEFAULT 'pending',
+          "progress" REAL NOT NULL DEFAULT 0.0,
+          "errorMessage" TEXT,
+          "outputPath" TEXT,
+          "requestedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "LibrarianConversionJob_bookId_fkey" FOREIGN KEY ("bookId") REFERENCES "books" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+        );
+      `);
+
       this.logger.log('Database synchronization complete.');
     } catch (error: any) {
       this.logger.error('Failed to auto-migrate database', error.message);
