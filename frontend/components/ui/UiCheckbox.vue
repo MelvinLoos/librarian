@@ -7,11 +7,13 @@ const props = withDefaults(
     modelValue?: boolean | undefined
     label?: string | undefined
     disabled?: boolean
+    inputAriaLabel?: string | undefined
   }>(),
   {
     modelValue: undefined,
     label: undefined,
     disabled: false,
+    inputAriaLabel: undefined,
   },
 )
 
@@ -36,6 +38,7 @@ const onChange = (event: Event) => {
       class="h-4 w-4 rounded accent-primary"
       :checked="modelValue === true"
       :disabled="disabled"
+      :aria-label="inputAriaLabel"
       @change="onChange"
     />
     <span v-if="label" class="text-sm text-on-surface-variant">{{ label }}</span>
