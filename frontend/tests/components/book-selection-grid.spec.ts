@@ -77,4 +77,28 @@ describe('BookSelectionGrid (Catalog molecule)', () => {
     const rows = wrapper.findAll('[data-test="book-grid-row"]')
     expect(rows[0].find('input').attributes('aria-label')).toContain('Dune')
   })
+
+  it('syncs the visible selection when the parent updates modelValue after mount', async () => {
+    const wrapper = mountGrid([1])
+
+    await wrapper.setProps({ modelValue: [2, 3] })
+
+    expect(wrapper.text()).toContain('2 selected')
+    const rows = wrapper.findAll('[data-test="book-grid-row"]')
+    expect((rows[0].find('input').element as HTMLInputElement).checked).toBe(false)
+    expect((rows[1].find('input').element as HTMLInputElement).checked).toBe(true)
+    expect((rows[2].find('input').element as HTMLInputElement).checked).toBe(true)
+  })
+
+  it('reflects the parent clearing the selection', async () => {
+    const wrapper = mountGrid([1, 2, 3])
+
+    await wrapper.setProps({ modelValue: [] })
+
+    expect(wrapper.text()).toContain('0 selected')
+    const rows = wrapper.findAll('[data-test="book-grid-row"]')
+    for (const row of rows) {
+      expect((row.find('input').element as HTMLInputElement).checked).toBe(false)
+    }
+  })
 })
