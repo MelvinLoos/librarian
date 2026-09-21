@@ -143,7 +143,13 @@
       </NuxtLink>
     </div>
 
-    <BulkEditModal :open="showBulkModal" :book-ids="selection.selectedIds" @close="showBulkModal = false" @updated="onBulkUpdated" />
+    <BulkEditModal
+      :open="showBulkModal"
+      :book-ids="selection.selectedIds"
+      :books="books || []"
+      @close="showBulkModal = false"
+      @updated="onBulkUpdated"
+    />
   </div>
 </template>
 

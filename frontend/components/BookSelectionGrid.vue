@@ -37,17 +37,21 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import type { Book } from '~/domain/catalog/Catalog.types'
 
 const props = defineProps<{
   books: Book[]
-  modelValue?: number[]
 }>()
 
-const emit = defineEmits<{ 'update:modelValue': [ids: number[]] }>()
-
-const selectedIds = ref<number[]>([...(props.modelValue ?? [])])
+/**
+ * Live two-way binding for the selection state.
+ *
+ * Registering the model under the `modelValue` name means:
+ * - reads track every parent-side `:model-value` update (no snapshot drift),
+ * - assignments write back through the native `update:modelValue` event.
+ */
+const selectedIds = defineModel<number[]>('modelValue', { default: () => [] })
 
 const isSelected = (id: number) => selectedIds.value.includes(id)
 
@@ -63,11 +67,9 @@ const onRowToggle = (id: number, checked: boolean) => {
   } else {
     selectedIds.value = selectedIds.value.filter((bookId) => bookId !== id)
   }
-  emit('update:modelValue', [...selectedIds.value])
 }
 
 const onToggleAll = (checked: boolean) => {
   selectedIds.value = checked ? props.books.map((book) => book.id) : []
-  emit('update:modelValue', [...selectedIds.value])
 }
 </script>
