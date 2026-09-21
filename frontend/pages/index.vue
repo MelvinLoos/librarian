@@ -76,7 +76,7 @@
             />
             Select
           </label>
-          <BookCard :book="book" />
+          <BookCard :book="book" :selected="selection.has(book.id)" />
         </div>
       </div>
     </section>
@@ -124,6 +124,7 @@
           :key="book.id"
           :book="book"
           :reading-progress="getReadingProgress(book.id)"
+          :selected="selection.has(book.id)"
         />
       </div>
 

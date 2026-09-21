@@ -1,6 +1,10 @@
 <template>
   <NuxtLink :to="`/book/${book.id}`" class="group block h-full">
-    <div class="relative overflow-hidden rounded-[1.8rem] bg-surface-container shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+    <div
+      data-test="book-card"
+      :data-selected="selected ? 'true' : undefined"
+      class="relative overflow-hidden rounded-[1.8rem] bg-surface-container shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl data-[selected=true]:ring-2 data-[selected=true]:ring-primary data-[selected=true]:ring-offset-2"
+    >
       <!-- Cover Container -->
       <div class="aspect-[2/3] w-full overflow-hidden bg-surface-variant/10">
         <template v-if="book.hasCover">
@@ -46,5 +50,7 @@
 defineProps<{
   book: any
   readingProgress?: number
+  /** When true, the card renders the `data-[selected=true]:ring-2` affordance. */
+  selected?: boolean
 }>()
 </script>
